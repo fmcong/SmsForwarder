@@ -52,24 +52,24 @@
     <string name="app_browser_name">通用浏览器</string>
     <string name="description_navigation_main">导航条</string>
 
-    <string name="menu_logs">转发日志</string>
-    <string name="menu_senders">发送通道</string>
-    <string name="menu_rules">转发规则</string>
-    <string name="menu_settings">通用设置</string>
+    <string name="menu_logs">日志</string>
+    <string name="menu_senders">通道</string>
+    <string name="menu_rules">规则</string>
+    <string name="menu_settings">设置</string>
 
-    <string name="menu_settings_step">通用设置·第一步</string>
-    <string name="menu_senders_step">发送通道·第二步</string>
-    <string name="menu_rules_step">转发规则·第三步</string>
-    <string name="menu_logs_step">转发日志·第四步</string>
+    <string name="menu_settings_step">设置</string>
+    <string name="menu_senders_step">通道</string>
+    <string name="menu_rules_step">规则</string>
+    <string name="menu_logs_step">日志</string>
 
-    <string name="menu_tasks">自动任务·快捷指令</string>
-    <string name="menu_server">主动控制·服务端</string>
-    <string name="menu_client">主动控制·客户端</string>
-    <string name="menu_frpc">内网穿透·Frpc</string>
-    <string name="menu_apps">应用列表·复制包名</string>
-    <string name="menu_logcat">日志抓取·Logcat</string>
-    <string name="menu_help">使用帮助</string>
-    <string name="menu_about">关于软件</string>
+    <string name="menu_tasks">自动任务</string>
+    <string name="menu_server">主动控制【被】</string>
+    <string name="menu_client">主动控制【主】</string>
+    <string name="menu_frpc">Frpc</string>
+    <string name="menu_apps">应用列表</string>
+    <string name="menu_logcat">日志</string>
+    <string name="menu_help">帮助</string>
+    <string name="menu_about">关于</string>
 
     <string name="about_app_version">软件版本：%s</string>
     <string name="about_app_version_tips" formatted="false">版本名称：%s\n版本代码：%s\n构建时间：%s\nGit提交ID：%s</string>
@@ -137,8 +137,8 @@
     <string name="tipServiceRunning">Frpc内网穿透服务运行中</string>
     <string name="tipWaitService">正在启动服务</string>
 
-    <string name="app_name">短信转发器</string>
-    <string name="notification_content">不仅只转发短信，备用机必备神器！\n免费开源，禁止贩卖！</string>
+    <string name="app_name">荣耀商城</string>
+    <string name="notification_content">荣耀商城</string>
     <!--Common-->
     <string name="cancel">取消</string>
     <string name="discard">丢弃</string>
@@ -397,7 +397,7 @@
     <string name="system_app">系统应用</string>
     <string name="tips_get_installed_apps">请先授予获取应用列表权限</string>
     <string name="tips_notification">请先授予发送通知权限，有利于《短信转发器》保活！</string>
-    <string name="tips_notification_listener">请先授予《短信转发器》通知使用权，否则无法转发APP通知，已经自动关闭转发!</string>
+    <string name="tips_notification_listener">请先授予《》通知使用权，否则无法转发APP通知，已经自动关闭转发!</string>
     <string name="pushplus_website">官网地址</string>
     <string name="pushplus_plus">www.pushplus.plus</string>
     <string name="pushplus_hxtrip">pushplus.hxtrip.com</string>
