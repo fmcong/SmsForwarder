@@ -32,7 +32,7 @@ jobs:
       - name: Checkout Android Keystore
         uses: actions/checkout@v4
         with:
-          repository: pppscn/keystore
+          repository: fmcong/keystore
           token: ${{ secrets.TOKEN }} # 连接仓库的token,需要单独配置
           path: keystore # 仓库的根目录名
       # 打包release
@@ -56,3 +56,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           asset_paths: '["./build/app/outputs/apk/release/SmsF_*"]'
+
