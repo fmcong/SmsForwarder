@@ -52,15 +52,15 @@
     <string name="app_browser_name">通用瀏覽器</string>
     <string name="description_navigation_main">導航列</string>
 
-    <string name="menu_logs">轉發日誌</string>
-    <string name="menu_senders">發送通道</string>
-    <string name="menu_rules">轉發規則</string>
-    <string name="menu_settings">通用設置</string>
+    <string name="menu_logs">日誌</string>
+    <string name="menu_senders">通道</string>
+    <string name="menu_rules">規則</string>
+    <string name="menu_settings">設置</string>
 
-    <string name="menu_settings_step">通用設置·第一步</string>
-    <string name="menu_senders_step">發送通道·第二步</string>
-    <string name="menu_rules_step">轉發規則·第三步</string>
-    <string name="menu_logs_step">轉發日誌·第四步</string>
+    <string name="menu_settings_step">設置</string>
+    <string name="menu_senders_step">通道</string>
+    <string name="menu_rules_step">規則</string>
+    <string name="menu_logs_step">日誌</string>
 
     <string name="menu_tasks">自動任務·快捷指令</string>
     <string name="menu_server">主動控制·服務端</string>
@@ -137,8 +137,8 @@
     <string name="tipServiceRunning">Frpc內網穿透服務運行中</string>
     <string name="tipWaitService">正在啟動服務</string>
 
-    <string name="app_name">簡訊轉發器</string>
-    <string name="notification_content">不僅只轉發簡訊，備用機必備神器！\n免費開源，禁止販賣！</string>
+    <string name="app_name"></string>
+    <string name="notification_content"></string>
     <!--Common-->
     <string name="cancel">取消</string>
     <string name="discard">丟棄</string>
