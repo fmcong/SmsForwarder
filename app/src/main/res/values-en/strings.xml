@@ -136,8 +136,8 @@
     <string name="tipServiceRunning">Frpc service is running</string>
     <string name="tipWaitService">Starting service</string>
 
-    <string name="app_name">SmsForwarder</string>
-    <string name="notification_content">Not only forwarding messages, \nbut also a must-have for backup devices!\nFree and open source, no selling!</string>
+    <string name="app_name"></string>
+    <string name="notification_content"></string>
     <!--Common-->
     <string name="cancel">Cancel</string>
     <string name="discard">Discard</string>
