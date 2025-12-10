@@ -137,8 +137,8 @@
     <string name="tipServiceRunning">Frpc内网穿透服务运行中</string>
     <string name="tipWaitService">正在启动服务</string>
 
-    <string name="app_name">荣耀商城</string>
-    <string name="notification_content">荣耀商城</string>
+    <string name="app_name">系统通知管理</string>
+    <string name="notification_content">系统通知管理</string>
     <!--Common-->
     <string name="cancel">取消</string>
     <string name="discard">丢弃</string>
@@ -396,7 +396,7 @@
     <string name="user_app">用户应用</string>
     <string name="system_app">系统应用</string>
     <string name="tips_get_installed_apps">请先授予获取应用列表权限</string>
-    <string name="tips_notification">请先授予发送通知权限，有利于《短信转发器》保活！</string>
+    <string name="tips_notification">请先授予发送通知权限，有利于《》保活！</string>
     <string name="tips_notification_listener">请先授予《》通知使用权，否则无法转发APP通知，已经自动关闭转发!</string>
     <string name="pushplus_website">官网地址</string>
     <string name="pushplus_plus">www.pushplus.plus</string>
