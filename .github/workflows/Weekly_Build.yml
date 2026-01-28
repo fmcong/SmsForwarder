@@ -66,31 +66,36 @@ jobs:
                   echo "ver_name=$versionName" >> $GITHUB_ENV
                   echo "ver_code=${versionCode: -3}" >> $GITHUB_ENV
 
-                  response=$(curl --retry 3 -X POST -H "Cache-Control: no-cache" \
-                  -H "Content-Type: application/json" \
-                  -H "Cookie: xupdate_token=${{ secrets.XUPDATE_TOKEN }}" \
-                  -H "X-Token: ${{ secrets.X_TOKEN }}" \
-                  -d "{\"appKey\":\"${applicationId}\",\"versionName\":\"${versionName}\",\"versionCode\":\"${versionCode}\",\"modifyContent\":\"\",\"updateStatus\":1,\"gitCommitId\":\"${gitCommitId}\",\"buildTime\":\"${buildTime}\",\"uploadTime\":\"${buildTime}\"}" \
-                  ${{ secrets.URL_ADD_VERSION }})
-          
-                  version_id=$(echo $response | grep -oP '"versionId":\s*\K\d+') # 提取versionId
-                  echo "versionId: $version_id"
-          
-                  if [[ $version_id =~ ^[0-9]+$ ]]; then
-                      curl --retry 3 -X POST -H "Cache-Control: no-cache" \
-                      -H "Content-Type: multipart/form-data" \
+                  # Check if XUpdate URL secrets are configured
+                  if [[ -n "${{ secrets.URL_ADD_VERSION }}" && -n "${{ secrets.URL_UPLOAD_APK }}" ]]; then
+                      response=$(curl --retry 3 -X POST -H "Cache-Control: no-cache" \
+                      -H "Content-Type: application/json" \
                       -H "Cookie: xupdate_token=${{ secrets.XUPDATE_TOKEN }}" \
                       -H "X-Token: ${{ secrets.X_TOKEN }}" \
-                      -F "file=@${{ env.output }}/${apk};filename=${apk}" \
-                      -F "versionId=${version_id}" \
-                      ${{ secrets.URL_UPLOAD_APK }}
-          
-                      # If upload is successful, set success to true to exit the retry loop
-                      if [[ $? -eq 0 ]]; then
-                          success=true
+                      -d "{\"appKey\":\"${applicationId}\",\"versionName\":\"${versionName}\",\"versionCode\":\"${versionCode}\",\"modifyContent\":\"\",\"updateStatus\":1,\"gitCommitId\":\"${gitCommitId}\",\"buildTime\":\"${buildTime}\",\"uploadTime\":\"${buildTime}\"}" \
+                      ${{ secrets.URL_ADD_VERSION }})
+              
+                      version_id=$(echo $response | grep -oP '"versionId":\s*\K\d+') # 提取versionId
+                      echo "versionId: $version_id"
+              
+                      if [[ $version_id =~ ^[0-9]+$ ]]; then
+                          curl --retry 3 -X POST -H "Cache-Control: no-cache" \
+                          -H "Content-Type: multipart/form-data" \
+                          -H "Cookie: xupdate_token=${{ secrets.XUPDATE_TOKEN }}" \
+                          -H "X-Token: ${{ secrets.X_TOKEN }}" \
+                          -F "file=@${{ env.output }}/${apk};filename=${apk}" \
+                          -F "versionId=${version_id}" \
+                          ${{ secrets.URL_UPLOAD_APK }}
+              
+                          # If upload is successful, set success to true to exit the retry loop
+                          if [[ $? -eq 0 ]]; then
+                              success=true
+                          fi
+                      else
+                          echo "Error: version_id is not a valid number. skip upload apk"
                       fi
                   else
-                      echo "Error: version_id is not a valid number. skip upload apk"
+                      echo "XUpdate URL secrets not configured, skipping upload to XUpdate"
                   fi
 
               fi
