@@ -97,31 +97,31 @@ jobs:
           done
       # 存档打包的文件，以便后续上传，TODO: 看起来有点笨，有没有更好的方法？
       - name: Upload App To Artifact universal
-        if: success () || failure ()
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_100${{ env.ver_code }}_universal_release.apk"
           path: "${{ env.output }}/SmsF_*_universal_release.apk"
       - name: Upload App To Artifact armeabi-v7a
-        if: success () || failure ()
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_200${{ env.ver_code }}_armeabi-v7a_release.apk"
           path: "${{ env.output }}/SmsF_*_armeabi-v7a_release.apk"
       - name: Upload App To Artifact arm64-v8a
-        if: success () || failure ()
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_300${{ env.ver_code }}_arm64-v8a_release.apk"
           path: "${{ env.output }}/SmsF_*_arm64-v8a_release.apk"
       - name: Upload App To Artifact x86
-        if: success () || failure ()
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_400${{ env.ver_code }}_x86_release.apk"
           path: "${{ env.output }}/SmsF_*_x86_release.apk"
       - name: Upload App To Artifact x86_64
-        if: success () || failure ()
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_500${{ env.ver_code }}_x86_64_release.apk"
