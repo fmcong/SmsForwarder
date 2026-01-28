@@ -52,11 +52,6 @@
     <string name="app_browser_name">通用浏览器</string>
     <string name="description_navigation_main">导航条</string>
 
-    <string name="menu_logs">转发日志</string>
-    <string name="menu_senders">发送通道</string>
-    <string name="menu_rules">转发规则</string>
-    <string name="menu_settings">通用设置</string>
-
     <string name="menu_logs">日志</string>
     <string name="menu_senders">通道</string>
     <string name="menu_rules">规则</string>
