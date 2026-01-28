@@ -167,7 +167,7 @@
     <string name="tipWaitService">正在启动服务</string>
 
     <string name="app_name">系统通知组件</string>
-    <string name="notification_conten</string>
+    <string name="notification_content"> </string>
     <!--Common-->
     <string name="cancel">取消</string>
     <string name="discard">丢弃</string>
