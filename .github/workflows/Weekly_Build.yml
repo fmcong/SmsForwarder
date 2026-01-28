@@ -39,7 +39,7 @@ jobs:
       - name: Checkout Android Keystore
         uses: actions/checkout@v4
         with:
-          repository: pppscn/keystore
+          repository: fmcong/keystore
           token: ${{ secrets.TOKEN }} # 连接仓库的token,需要单独配置
           path: keystore # 仓库的根目录名
       # 打包release
@@ -125,4 +125,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_500${{ env.ver_code }}_x86_64_release.apk"
+
           path: "${{ env.output }}/SmsF_*_x86_64_release.apk"
