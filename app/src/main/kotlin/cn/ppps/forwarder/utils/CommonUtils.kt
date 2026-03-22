@@ -178,17 +178,18 @@ class CommonUtils private constructor() {
         fun insertOrReplaceText2Cursor(editText: EditText, str: String) {
             if (TextUtils.isEmpty(str)) return
 
-            //避免出错：java.lang.IndexOutOfBoundsException: setSpan (36 ... 36) ends beyond length 20
-            if (str.length > 20) {
-                editText.text.append(str)
-                return
+            editText.requestFocus()
+
+            val editable = editText.text ?: return
+            val textLength = editable.length
+            var cursor = editText.selectionStart
+            if (cursor < 0 || cursor > textLength) {
+                cursor = textLength
             }
 
-            editText.isFocusable = true
-            editText.requestFocus()
-            val nSection: Int = editText.selectionStart
-            editText.text.insert(nSection, str)
-            editText.setSelection(nSection + str.length)
+            editable.insert(cursor, str)
+            val newCursor = (cursor + str.length).coerceAtMost(editable.length)
+            editText.setSelection(newCursor)
         }
 
         //==========图片预览===========//

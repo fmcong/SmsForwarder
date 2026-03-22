@@ -220,16 +220,12 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
                         return
                     }
 
-                    var jsonStr = FileIOUtils.readFile2String(file)
+                    val jsonStr = FileIOUtils.readFile2String(file)
                     Log.d(TAG, "jsonStr = $jsonStr")
                     if (TextUtils.isEmpty(jsonStr)) {
                         XToastUtils.error(getString(R.string.import_failed))
                         return
                     }
-                    //替换旧包名
-                    val oldPackageName = "com.idormy.sms.forwarder"
-                    val newPackageName = AppUtils.getAppPackageName()
-                    jsonStr = jsonStr.replace(oldPackageName, newPackageName)
 
                     //替换Date字段为当前时间
                     val builder = GsonBuilder()
@@ -451,11 +447,6 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
                         val decryptCBC = SM4Crypt.decrypt(encryptCBC, sm4Key)
                         json = String(decryptCBC)
                     }
-
-                    //替换旧包名
-                    val oldPackageName = "com.idormy.sms.forwarder"
-                    val newPackageName = AppUtils.getAppPackageName()
-                    json = json.replace(oldPackageName, newPackageName)
 
                     //替换Date字段为当前时间
                     val builder = GsonBuilder()
