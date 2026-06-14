@@ -617,6 +617,7 @@
     <string name="bark_encryption_key_error2">加密密鑰必須是24位</string>
     <string name="bark_encryption_key_error3">加密密鑰必須是32位</string>
     <string name="bark_encryption_key_error4">偏移向量必須是16位 或 留空</string>
+    <string name="bark_encryption_key_error5">GCM偏移向量必須是12位 或 留空</string>
 
     <string name="from_email_hint">填寫 @ 前面的用戶名</string>
     <string name="other_mail_type">其他郵箱</string>
@@ -651,6 +652,8 @@
     <string name="select_sender_type">請選擇發送通道類型</string>
     <string name="feishu_webhook_hint">群機器人→Webhook 地址</string>
     <string name="feishu_secret_hint">群機器人→安全設置→簽名驗證</string>
+    <string name="feishu_at_open_ids">@ 指定人 (open_id 或 user_id)</string>
+    <string name="feishu_at_open_ids_tip">填寫用戶的 open_id 或 user_id，多個用英文逗號分隔，留空則不@</string>
     <string name="pushplus_token_hint">請前往對應的官網地址獲取</string>
     <string name="choose_rule">下拉選擇，關鍵字模糊匹配</string>
     <string name="choose_sender">下拉選擇，關鍵字模糊匹配</string>
@@ -829,6 +832,7 @@
     <string name="reach_level_min">【電量預警】已達到電量預警下限，請及時充電！%s</string>
     <string name="reach_level_max">【電量預警】已達到電量預警上限，請拔掉充電器！%s</string>
     <string name="battery_status_changed">【充電狀態】發生變化：</string>
+    <string name="battery_status_required">至少選擇一個充電狀態</string>
     <string name="no_indentation_allowed_on_the_first_line">第一行不允許縮進</string>
     <string name="sign_required">服務端啟用簽名密鑰，sign節點必傳</string>
     <string name="timestamp_required">服務端啟用簽名密鑰，timestamp節點必傳</string>
@@ -858,6 +862,7 @@
     <string name="optional_components">可選組件：</string>
     <string name="enable_cactus">啟用 Cactus 增強保活措施（會增加耗電）</string>
     <string name="enable_cactus_tips">雙進程前台服務/JobScheduler/WorkManager/1像素/無聲音樂</string>
+    <string name="music_interval">喚醒間隔</string>
     <string name="load_app_list">啟動時異步獲取已安裝App列表</string>
     <string name="load_app_list_tips">用於加速進入應用列表/編輯轉發規則下拉選擇/替換{{APP_NAME}}</string>
     <string name="load_app_list_toast">開啟異步獲取已安裝App列表時必選一個類型</string>

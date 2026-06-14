@@ -616,6 +616,7 @@
     <string name="bark_encryption_key_error2">AES Key must be 24 characters</string>
     <string name="bark_encryption_key_error3">AES Key must be 32 characters</string>
     <string name="bark_encryption_key_error4">AES iv must be 16 characters or empty</string>
+    <string name="bark_encryption_key_error5">GCM iv must be 12 characters or empty</string>
 
     <string name="from_email_hint">Fill in the username before @</string>
     <string name="other_mail_type">other</string>
@@ -650,6 +651,8 @@
     <string name="select_sender_type">Please select sender type</string>
     <string name="feishu_webhook_hint">Group Robot → Webhook Address</string>
     <string name="feishu_secret_hint">Group Robot → Security Settings → Signature Verification</string>
+    <string name="feishu_at_open_ids">@ Specific Users (open_id or user_id)</string>
+    <string name="feishu_at_open_ids_tip">Enter open_ids or user_ids separated by commas; leave empty to skip @mention</string>
     <string name="pushplus_token_hint">Please go to the corresponding official website to obtain</string>
     <string name="choose_rule">Drop-down selection, keyword fuzzy match</string>
     <string name="choose_sender">Drop-down selection, keyword fuzzy match</string>
@@ -828,6 +831,7 @@
     <string name="reach_level_min">[Battery Warning] The lower limit of the battery warning has been reached, please charge it in time!%s</string>
     <string name="reach_level_max">[Battery Warning] The upper limit of battery warning has been reached, please unplug the charger!%s</string>
     <string name="battery_status_changed">[Charging status] changes:</string>
+    <string name="battery_status_required">Select at least one battery status</string>
     <string name="no_indentation_allowed_on_the_first_line">No indentation allowed on the first line</string>
     <string name="sign_required">The server enables the signing key, and the sign node required</string>
     <string name="timestamp_required">The server enables the signing key, and the timestamp node required</string>
@@ -857,6 +861,7 @@
     <string name="optional_components">Opt.:</string>
     <string name="enable_cactus">Enable Cactus Keep Alive</string>
     <string name="enable_cactus_tips">Dual foreground service/JobScheduler/WorkManager/1px/silent music</string>
+    <string name="music_interval">Wakeup Interval</string>
     <string name="load_app_list">Get installed app info async at startup</string>
     <string name="load_app_list_tips">Used to speed up entering the application list/editing forwarding rules drop-down selection/replacement {{APP_NAME}}</string>
     <string name="load_app_list_toast">A type must be selected when enabling asynchronous loading of the list of installed apps</string>
