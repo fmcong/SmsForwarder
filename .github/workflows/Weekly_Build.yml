@@ -1,9 +1,6 @@
 name: Weekly Build
 
-# 触发器
 on:
-  schedule:
-    - cron: '0 15 * * 0' #每周天在国际标准时间15点(北京时间+8，即 23:00)
   workflow_dispatch:
     inputs:
       root_sol:
@@ -16,113 +13,175 @@ jobs:
     runs-on: ubuntu-latest
     env:
       output: "${{ github.workspace }}/build/app/outputs/apk/release"
+      ver_suffix_1: 100
+      ver_suffix_2: 200
+      ver_suffix_3: 300
+      ver_suffix_4: 400
+      ver_suffix_5: 500
+
     steps:
-      # 检出代码
-      - uses: actions/checkout@v4
-      # 删除旧的工作流
-      - name: Delete Weekly Build
+      # 1. 检出代码
+      - name: Checkout source code
+        uses: actions/checkout@v5
+
+      # 2. 清理旧的工作流运行（保留最近 3 次，保留最近 7 天内的）
+      #    如果您不需要自动清理，可删除此步骤
+      - name: Delete old workflow runs
         uses: Mattraks/delete-workflow-runs@v2
         with:
           token: ${{ secrets.TOKEN }}
           repository: ${{ github.repository }}
-          retain_days: 0 # 全部删除只留正在跑的一条
-          keep_minimum_runs: 0 # 全部删除只留正在跑的一条
+          retain_days: 7
+          keep_minimum_runs: 3
           delete_workflow_pattern: 'Weekly Build'
-      # 设置jdk环境为11
-      - name: set up JDK 11
+
+      # 3. 设置 JDK 11
+      - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '11'
           java-package: jdk
-      # 获取打包秘钥
+
+      # 4. 缓存 Gradle 依赖
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # 5. 检出 Keystore 并复制到项目根目录
       - name: Checkout Android Keystore
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: fmcong/keystore
-          token: ${{ secrets.TOKEN }} # 连接仓库的token,需要单独配置
-          path: keystore # 仓库的根目录名
-      # 打包release
+          token: ${{ secrets.TOKEN }}
+          path: keystore
+
+      - name: Copy keystore to app folder
+        run: |
+          if ls keystore/*.jks 1> /dev/null 2>&1; then
+            cp keystore/*.jks app/
+          elif ls keystore/*.keystore 1> /dev/null 2>&1; then
+            cp keystore/*.keystore app/
+          else
+            echo "No keystore file found in keystore directory"
+            exit 1
+          fi
+
+      # 6. 构建 Release APK
       - name: Build with Gradle
         run: bash ./gradlew assembleRelease
-      # 自动发布预览计划
-      - name: Parse output-metadata.json and upload APKs to XUpdate
+
+      # 7. 解析 output-metadata.json 并上传 APK 到 XUpdate
+      - name: Parse metadata and upload APKs to XUpdate
+        id: upload_xupdate
         run: |
           metadata_file="${{ env.output }}/output-metadata.json"
+          if [ ! -f "$metadata_file" ]; then
+            echo "Error: output-metadata.json not found!"
+            exit 1
+          fi
+
           applicationId=$(jq -r '.applicationId' "$metadata_file")
           buildDate=$(jq -r '.buildDate' "$metadata_file")
           buildTime=$(jq -r '.buildTime' "$metadata_file")
           gitCommitId=$(jq -r '.gitCommitId' "$metadata_file")
 
-          # 遍历 elements，并从 outputFile 中提取 versionName 和 versionCode
-          jq -r '.elements | sort_by(.outputFile) | .[].outputFile' "$metadata_file" |
-          while IFS= read -r apk; do
-              echo "APK: $apk"
-              # 使用正则表达式从文件名中提取 versionName、versionCode 和 ABI
-              if [[ $apk =~ SmsF_([^_]+)_([^_]+)_(.+)_release.apk ]]; then
-                  versionName="${BASH_REMATCH[1]}"
-                  versionCode="${BASH_REMATCH[2]}"
-                  abi="${BASH_REMATCH[3]}"
-                  echo "ver_name=$versionName" >> $GITHUB_ENV
-                  echo "ver_code=${versionCode: -3}" >> $GITHUB_ENV
+          first_apk=$(jq -r '.elements[0].outputFile' "$metadata_file")
+          if [[ $first_apk =~ SmsF_([^_]+)_([^_]+)_(.+)_release\.apk ]]; then
+            versionName="${BASH_REMATCH[1]}"
+            versionCode="${BASH_REMATCH[2]}"
+            echo "ver_name=${versionName}" >> $GITHUB_ENV
+            echo "ver_code=${versionCode: -3}" >> $GITHUB_ENV
+          else
+            echo "Error: Cannot parse version from filename: $first_apk"
+            exit 1
+          fi
 
-                  response=$(curl --retry 3 -X POST -H "Cache-Control: no-cache" \
-                  -H "Content-Type: application/json" \
-                  -H "Cookie: xupdate_token=${{ secrets.XUPDATE_TOKEN }}" \
-                  -H "X-Token: ${{ secrets.X_TOKEN }}" \
-                  -d "{\"appKey\":\"${applicationId}\",\"versionName\":\"${versionName}\",\"versionCode\":\"${versionCode}\",\"modifyContent\":\"\",\"updateStatus\":1,\"gitCommitId\":\"${gitCommitId}\",\"buildTime\":\"${buildTime}\",\"uploadTime\":\"${buildTime}\"}" \
-                  ${{ secrets.URL_ADD_VERSION }})
-          
-                  version_id=$(echo $response | grep -oP '"versionId":\s*\K\d+') # 提取versionId
-                  echo "versionId: $version_id"
-          
-                  if [[ $version_id =~ ^[0-9]+$ ]]; then
-                      curl --retry 3 -X POST -H "Cache-Control: no-cache" \
-                      -H "Content-Type: multipart/form-data" \
-                      -H "Cookie: xupdate_token=${{ secrets.XUPDATE_TOKEN }}" \
-                      -H "X-Token: ${{ secrets.X_TOKEN }}" \
-                      -F "file=@${{ env.output }}/${apk};filename=${apk}" \
-                      -F "versionId=${version_id}" \
-                      ${{ secrets.URL_UPLOAD_APK }}
-          
-                      # If upload is successful, set success to true to exit the retry loop
-                      if [[ $? -eq 0 ]]; then
-                          success=true
-                      fi
-                  else
-                      echo "Error: version_id is not a valid number. skip upload apk"
-                  fi
+          jq -r '.elements[].outputFile' "$metadata_file" | while IFS= read -r apk_file; do
+            echo "Processing APK: $apk_file"
 
-              fi
+            if [[ $apk_file =~ SmsF_([^_]+)_([^_]+)_(.+)_release\.apk ]]; then
+              apk_versionName="${BASH_REMATCH[1]}"
+              apk_versionCode="${BASH_REMATCH[2]}"
+              abi="${BASH_REMATCH[3]}"
+            else
+              echo "Skipping invalid APK filename: $apk_file"
+              continue
+            fi
+
+            response=$(curl --retry 3 -X POST -H "Cache-Control: no-cache" \
+              -H "Content-Type: application/json" \
+              -H "Cookie: xupdate_token=${{ secrets.XUPDATE_TOKEN }}" \
+              -H "X-Token: ${{ secrets.X_TOKEN }}" \
+              -d "{\"appKey\":\"${applicationId}\",\"versionName\":\"${apk_versionName}\",\"versionCode\":\"${apk_versionCode}\",\"modifyContent\":\"\",\"updateStatus\":1,\"gitCommitId\":\"${gitCommitId}\",\"buildTime\":\"${buildTime}\",\"uploadTime\":\"${buildTime}\"}" \
+              ${{ secrets.URL_ADD_VERSION }})
+
+            version_id=$(echo "$response" | jq -r '.versionId')
+            if [[ -z "$version_id" || "$version_id" == "null" ]]; then
+              echo "Error: Failed to get versionId, response: $response"
+              continue
+            fi
+
+            echo "Got versionId: $version_id"
+
+            curl --retry 3 -X POST -H "Cache-Control: no-cache" \
+              -H "Content-Type: multipart/form-data" \
+              -H "Cookie: xupdate_token=${{ secrets.XUPDATE_TOKEN }}" \
+              -H "X-Token: ${{ secrets.X_TOKEN }}" \
+              -F "file=@${{ env.output }}/${apk_file};filename=${apk_file}" \
+              -F "versionId=${version_id}" \
+              ${{ secrets.URL_UPLOAD_APK }}
+
+            if [ $? -ne 0 ]; then
+              echo "Error uploading APK: $apk_file"
+            else
+              echo "Successfully uploaded $apk_file"
+            fi
           done
-      # 存档打包的文件，以便后续上传，TODO: 看起来有点笨，有没有更好的方法？
-      - name: Upload App To Artifact universal
-        if: success () || failure ()
-        uses: actions/upload-artifact@v4
+
+      # 8. 上传 APK 为 Artifacts
+      - name: Upload universal APK
+        if: success()
+        uses: actions/upload-artifact@v5
         with:
-          name: "SmsF_${{ env.ver_name }}_100${{ env.ver_code }}_universal_release.apk"
+          name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_1 }}${{ env.ver_code }}_universal_release.apk"
           path: "${{ env.output }}/SmsF_*_universal_release.apk"
-      - name: Upload App To Artifact armeabi-v7a
-        if: success () || failure ()
-        uses: actions/upload-artifact@v4
+          if-no-files-found: warn
+
+      - name: Upload armeabi-v7a APK
+        if: success()
+        uses: actions/upload-artifact@v5
         with:
-          name: "SmsF_${{ env.ver_name }}_200${{ env.ver_code }}_armeabi-v7a_release.apk"
+          name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_2 }}${{ env.ver_code }}_armeabi-v7a_release.apk"
           path: "${{ env.output }}/SmsF_*_armeabi-v7a_release.apk"
-      - name: Upload App To Artifact arm64-v8a
-        if: success () || failure ()
-        uses: actions/upload-artifact@v4
+          if-no-files-found: warn
+
+      - name: Upload arm64-v8a APK
+        if: success()
+        uses: actions/upload-artifact@v5
         with:
-          name: "SmsF_${{ env.ver_name }}_300${{ env.ver_code }}_arm64-v8a_release.apk"
+          name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_3 }}${{ env.ver_code }}_arm64-v8a_release.apk"
           path: "${{ env.output }}/SmsF_*_arm64-v8a_release.apk"
-      - name: Upload App To Artifact x86
-        if: success () || failure ()
-        uses: actions/upload-artifact@v4
+          if-no-files-found: warn
+
+      - name: Upload x86 APK
+        if: success()
+        uses: actions/upload-artifact@v5
         with:
-          name: "SmsF_${{ env.ver_name }}_400${{ env.ver_code }}_x86_release.apk"
+          name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_4 }}${{ env.ver_code }}_x86_release.apk"
           path: "${{ env.output }}/SmsF_*_x86_release.apk"
-      - name: Upload App To Artifact x86_64
-        if: success () || failure ()
-        uses: actions/upload-artifact@v4
+          if-no-files-found: warn
+
+      - name: Upload x86_64 APK
+        if: success()
+        uses: actions/upload-artifact@v5
         with:
-          name: "SmsF_${{ env.ver_name }}_500${{ env.ver_code }}_x86_64_release.apk"
+          name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_5 }}${{ env.ver_code }}_x86_64_release.apk"
           path: "${{ env.output }}/SmsF_*_x86_64_release.apk"
+          if-no-files-found: warn
