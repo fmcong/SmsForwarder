@@ -50,6 +50,7 @@ const val SP_ENABLE_CALL_TYPE_6 = "enable_call_type_6"
 const val SP_ENABLE_APP_NOTIFY = "enable_app_notify"
 const val SP_ENABLE_CANCEL_APP_NOTIFY = "enable_cancel_app_notify"
 const val SP_CANCEL_EXTRA_APP_NOTIFY = "cancel_extra_app_notify_list"
+const val SP_APP_NOTIFY_BLACKLIST = "app_notify_blacklist"
 const val SP_ENABLE_NOT_USER_PRESENT = "enable_not_user_present"
 
 const val SP_ENABLE_SMS_COMMAND = "enable_sms_command"

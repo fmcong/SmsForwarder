@@ -11,6 +11,7 @@ import cn.ppps.forwarder.utils.SettingUtils
 import cn.ppps.forwarder.utils.mail.EmailSender
 import com.xuexiang.xutil.resource.ResUtils.getString
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.bouncycastle.openpgp.PGPPublicKeyRing
@@ -205,6 +206,31 @@ class EmailUtils {
                             }
                         }
 
+                        //失败重试次数及间隔（复用请求接口失败重试的设置）
+                        val retryTimes = SettingUtils.requestRetryTimes
+                        val delayTime = SettingUtils.requestDelayTime
+
+                        //带失败重试的发送：内部拦截每次发送结果，失败则延迟重试，最终结果才上报给 listener
+                        suspend fun sendWithRetry(build: (EmailSender.EmailTaskListener) -> EmailSender) {
+                            var attempt = 0
+                            var success = false
+                            var resultMessage = ""
+                            while (true) {
+                                val innerListener = object : EmailSender.EmailTaskListener {
+                                    override fun onEmailSent(s: Boolean, message: String) {
+                                        success = s
+                                        resultMessage = message
+                                    }
+                                }
+                                build(innerListener).sendEmail()
+                                if (success || attempt >= retryTimes) break
+                                attempt++
+                                Log.w(TAG, "发送邮件失败，准备第 $attempt/$retryTimes 次重试，延迟 ${delayTime}s，原因：$resultMessage")
+                                if (delayTime > 0) delay(delayTime * 1000L)
+                            }
+                            listener.onEmailSent(success, resultMessage)
+                        }
+
                         //逐一发送加密邮件
                         val recipientsWithoutCert = mutableListOf<String>()
                         setting.recipients.forEach { (email, cert) ->
@@ -279,7 +305,36 @@ class EmailUtils {
                             }
 
                             if (recipientX509Cert != null || recipientPGPPublicKeyRing != null) {
-                                val senderWithRecipientCert = EmailSender(
+                                sendWithRetry { emailListener ->
+                                    EmailSender(
+                                        host,
+                                        port,
+                                        from,
+                                        password,
+                                        fromAlias,
+                                        nickname,
+                                        title,
+                                        content,
+                                        toAddress = mutableListOf(email),
+                                        listener = emailListener,
+                                        openSSL = openSSL,
+                                        startTls = startTls,
+                                        encryptionProtocol = setting.encryptionProtocol,
+                                        recipientX509Cert = recipientX509Cert,
+                                        senderPrivateKey = signingPrivateKey,
+                                        senderX509Cert = signingCertificate,
+                                        recipientPGPPublicKeyRing = recipientPGPPublicKeyRing,
+                                        senderPGPSecretKeyRing = senderPGPSecretKeyRing,
+                                        senderPGPSecretKeyPassword = senderPGPSecretKeyPassword,
+                                    )
+                                }
+                            }
+                        }
+
+                        //批量发送明文邮件
+                        if (recipientsWithoutCert.isNotEmpty()) {
+                            sendWithRetry { emailListener ->
+                                EmailSender(
                                     host,
                                     port,
                                     from,
@@ -288,45 +343,18 @@ class EmailUtils {
                                     nickname,
                                     title,
                                     content,
-                                    toAddress = mutableListOf(email),
-                                    listener = listener,
+                                    toAddress = recipientsWithoutCert,
+                                    listener = emailListener,
                                     openSSL = openSSL,
                                     startTls = startTls,
                                     encryptionProtocol = setting.encryptionProtocol,
-                                    recipientX509Cert = recipientX509Cert,
                                     senderPrivateKey = signingPrivateKey,
                                     senderX509Cert = signingCertificate,
-                                    recipientPGPPublicKeyRing = recipientPGPPublicKeyRing,
+                                    //TODO: OpenPGP 只签名不加密时，提示无效的数字签名，暂未解决
                                     senderPGPSecretKeyRing = senderPGPSecretKeyRing,
                                     senderPGPSecretKeyPassword = senderPGPSecretKeyPassword,
                                 )
-                                senderWithRecipientCert.sendEmail()
                             }
-                        }
-
-                        //批量发送明文邮件
-                        if (recipientsWithoutCert.isNotEmpty()) {
-                            val senderWithoutRecipientCert = EmailSender(
-                                host,
-                                port,
-                                from,
-                                password,
-                                fromAlias,
-                                nickname,
-                                title,
-                                content,
-                                toAddress = recipientsWithoutCert,
-                                listener = listener,
-                                openSSL = openSSL,
-                                startTls = startTls,
-                                encryptionProtocol = setting.encryptionProtocol,
-                                senderPrivateKey = signingPrivateKey,
-                                senderX509Cert = signingCertificate,
-                                //TODO: OpenPGP 只签名不加密时，提示无效的数字签名，暂未解决
-                                senderPGPSecretKeyRing = senderPGPSecretKeyRing,
-                                senderPGPSecretKeyPassword = senderPGPSecretKeyPassword,
-                            )
-                            senderWithoutRecipientCert.sendEmail()
                         }
 
                     } catch (e: Exception) {

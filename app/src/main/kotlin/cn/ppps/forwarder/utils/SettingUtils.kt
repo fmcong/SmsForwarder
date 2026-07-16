@@ -56,6 +56,9 @@ class SettingUtils private constructor() {
         //是否转发应用通知——自动消除额外APP通知
         var cancelExtraAppNotify: String by SharedPreference(SP_CANCEL_EXTRA_APP_NOTIFY, "")
 
+        //是否转发应用通知——关键词黑名单（一行一个，支持正则，命中标题或内容则不转发）
+        var appNotifyBlacklist: String by SharedPreference(SP_APP_NOTIFY_BLACKLIST, "")
+
         //是否转发应用通知——仅锁屏状态
         var enableNotUserPresent: Boolean by SharedPreference(SP_ENABLE_NOT_USER_PRESENT, false)
 

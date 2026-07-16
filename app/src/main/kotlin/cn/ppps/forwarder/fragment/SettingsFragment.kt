@@ -28,12 +28,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.hjq.language.LocaleContract
-import com.hjq.language.MultiLanguages
-import com.hjq.permissions.OnPermissionCallback
-import com.hjq.permissions.XXPermissions
-import com.hjq.permissions.permission.PermissionLists
-import com.hjq.permissions.permission.base.IPermission
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.R
 import cn.ppps.forwarder.activity.MainActivity
@@ -68,6 +62,12 @@ import cn.ppps.forwarder.utils.SettingUtils
 import cn.ppps.forwarder.utils.XToastUtils
 import cn.ppps.forwarder.widget.GuideTipsDialog
 import cn.ppps.forwarder.workers.LoadAppListWorker
+import com.hjq.language.LocaleContract
+import com.hjq.language.MultiLanguages
+import com.hjq.permissions.OnPermissionCallback
+import com.hjq.permissions.XXPermissions
+import com.hjq.permissions.permission.PermissionLists
+import com.hjq.permissions.permission.base.IPermission
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.xuexiang.xaop.annotation.SingleClick
 import com.xuexiang.xpage.annotation.Page
@@ -158,6 +158,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         switchEnableLoadAppList(binding!!.sbEnableLoadAppList, binding!!.scbLoadUserApp, binding!!.scbLoadSystemApp)
         //设置自动消除额外APP通知
         editExtraAppList(binding!!.etAppList)
+        //设置APP通知关键词黑名单
+        editAppNotifyBlacklist(binding!!.etAppNotifyBlacklist)
         //自动过滤多久内重复消息
         binding!!.xsbDuplicateMessagesLimits.setDefaultValue(SettingUtils.duplicateMessagesLimits)
         binding!!.xsbDuplicateMessagesLimits.setOnSeekBarListener { _: XSeekBar?, newValue: Int ->
@@ -792,7 +794,19 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable) {
-                SettingUtils.cancelExtraAppNotify = textAppList.text.toString().trim().removeSuffix("\n")
+                SettingUtils.cancelExtraAppNotify = textAppList.text.toString().trim().replace("\r", "").replace("\n+", "\n").removeSuffix("\n")
+            }
+        })
+    }
+
+    //设置APP通知关键词黑名单
+    private fun editAppNotifyBlacklist(textBlacklist: EditText) {
+        textBlacklist.setText(SettingUtils.appNotifyBlacklist)
+        textBlacklist.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable) {
+                SettingUtils.appNotifyBlacklist = textBlacklist.text.toString().trim().replace("\r", "").replace("\n+", "\n").removeSuffix("\n")
             }
         })
     }

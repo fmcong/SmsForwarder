@@ -917,6 +917,32 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/layout_app_notify_blacklist"
+                style="@style/BarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_notify_blacklist"
+                    android:textStyle="bold"
+                    tools:ignore="RelativeOverlap" />
+
+                <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                    android:id="@+id/et_app_notify_blacklist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/app_notify_blacklist_hint"
+                    android:inputType="textMultiLine"
+                    app:met_clearButton="true"
+                    tools:ignore="TextContrastCheck" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 style="@style/BarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

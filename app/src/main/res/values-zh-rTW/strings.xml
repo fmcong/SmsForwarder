@@ -662,6 +662,8 @@
     <string name="choose_app">已裝APP列表</string>
     <string name="extra_app">額外消除應用通知</string>
     <string name="extra_app_hint">一行一個包名\n開啟異步加載App列表以便選擇</string>
+    <string name="app_notify_blacklist">APP通知關鍵詞黑名單</string>
+    <string name="app_notify_blacklist_hint">一行一個關鍵詞，支持正則表達式\n通知標題或內容命中任一關鍵詞則不轉發</string>
     <string name="choose_app_hint">下拉選擇獲取包名，關鍵字模糊匹配APP名稱</string>
     <string name="regex_multi_match" tools:ignore="TypographyDashes">^\\s*(並且|或者)\\s(是|不是)\\s(手機號|APP包名|簡訊內容|通知內容|通知標題|卡槽信息|通話類型|UID)\\s(相等|包含|不包含|開頭|結尾|正則匹配)\\s(.*)$</string>
     <string name="privacy_content_1">歡迎使用</string>

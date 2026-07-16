@@ -98,6 +98,12 @@ class NotificationService : NotificationListenerService() {
             //不处理空消息（标题跟内容都为空）
             if (TextUtils.isEmpty(title) && TextUtils.isEmpty(text)) return
 
+            //关键词黑名单：一行一个，支持正则，命中标题或内容则不转发
+            if (isInBlacklist(title, text)) {
+                Log.d(TAG, "命中APP通知关键词黑名单，跳过转发。title=$title, text=$text")
+                return
+            }
+
             val msgInfo = MsgInfo("app", from, text, Date(), title, -1)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 Log.d(TAG, "消息的UID====>" + sbn.uid)
@@ -130,6 +136,30 @@ class NotificationService : NotificationListenerService() {
             Log.e(TAG, "Parsing Notification failed: " + e.message.toString())
         }
 
+    }
+
+    //关键词黑名单匹配：一行一个关键词，支持正则表达式，命中通知标题或内容任意一项即返回 true
+    private fun isInBlacklist(title: String, text: String): Boolean {
+        val blacklist = SettingUtils.appNotifyBlacklist
+        if (TextUtils.isEmpty(blacklist)) return false
+
+        for (line in blacklist.split("\n")) {
+            val keyword = line.trim()
+            if (keyword.isEmpty()) continue
+            try {
+                val regex = Regex(keyword)
+                if (regex.containsMatchIn(title) || regex.containsMatchIn(text)) {
+                    return true
+                }
+            } catch (e: Exception) {
+                //正则表达式非法时，降级为普通包含匹配
+                Log.w(TAG, "黑名单关键词正则非法，降级为包含匹配：$keyword, ${e.message}")
+                if (title.contains(keyword) || text.contains(keyword)) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {

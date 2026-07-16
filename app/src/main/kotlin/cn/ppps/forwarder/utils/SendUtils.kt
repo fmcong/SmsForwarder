@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.google.gson.Gson
 import cn.ppps.forwarder.R
 import cn.ppps.forwarder.core.Core
 import cn.ppps.forwarder.database.entity.MsgAndLogs
@@ -46,6 +45,7 @@ import cn.ppps.forwarder.utils.sender.WeworkRobotUtils
 import cn.ppps.forwarder.workers.SendLogicWorker
 import cn.ppps.forwarder.workers.SendWorker
 import cn.ppps.forwarder.workers.UpdateLogsWorker
+import com.google.gson.Gson
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.xuexiang.xutil.XUtil
 import com.xuexiang.xutil.resource.ResUtils.getString
@@ -98,32 +98,24 @@ object SendUtils {
                 senderLogic(0, msgInfo, rule, senderIndex, msgId)
                 return
             }
-            //免打扰(禁用转发)日期段
-            Log.d(TAG, "silentDayOfWeek = ${rule.silentDayOfWeek}")
-            if (rule.silentDayOfWeek.isNotBlank()) {
-                val silentDayOfWeek = rule.silentDayOfWeek.split(",").mapNotNull { it.trim().toIntOrNull() }
-                if (silentDayOfWeek.isNotEmpty()) {
-                    val dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-                    if (silentDayOfWeek.contains(dayOfWeek)) {
-                        Log.d(TAG, "免打扰(禁用转发)日期段")
-                        updateLogs(logId, 0, getString(R.string.silent_time_period))
-                        senderLogic(0, msgInfo, rule, senderIndex, msgId)
-                        return
-                    }
-                }
-            }
 
-            //免打扰(禁用转发)时间段
-            Log.d(TAG, "silentPeriodStart = ${rule.silentPeriodStart}, silentPeriodEnd = ${rule.silentPeriodEnd}")
-            if (rule.silentPeriodStart != rule.silentPeriodEnd) {
-                val isSilentPeriod = DataProvider.isCurrentTimeInPeriod(rule.silentPeriodStart, rule.silentPeriodEnd)
-                if (isSilentPeriod) {
+            //免打扰(禁用转发)：日期段 与 时间段 为「与」关系，且至少配置一项才生效
+            //未配置星期视为「不限星期」，未配置时段视为「不限时段」，二者都命中才拦截
+            Log.d(TAG, "silentDayOfWeek = ${rule.silentDayOfWeek}, silentPeriodStart = ${rule.silentPeriodStart}, silentPeriodEnd = ${rule.silentPeriodEnd}")
+            val silentDayOfWeek = rule.silentDayOfWeek.split(",").mapNotNull { it.trim().toIntOrNull() }
+            val dayConfigured = silentDayOfWeek.isNotEmpty()
+            val periodConfigured = rule.silentPeriodStart != rule.silentPeriodEnd
+            if (dayConfigured || periodConfigured) {
+                val dayMatched = !dayConfigured || silentDayOfWeek.contains(Calendar.getInstance().get(Calendar.DAY_OF_WEEK))
+                val periodMatched = !periodConfigured || DataProvider.isCurrentTimeInPeriod(rule.silentPeriodStart, rule.silentPeriodEnd)
+                if (dayMatched && periodMatched) {
                     Log.d(TAG, "免打扰(禁用转发)时间段")
                     updateLogs(logId, 0, getString(R.string.silent_time_period))
                     senderLogic(0, msgInfo, rule, senderIndex, msgId)
                     return
                 }
             }
+
             when (sender.type) {
                 TYPE_DINGTALK_GROUP_ROBOT -> {
                     val settingVo = Gson().fromJson(sender.jsonSetting, DingtalkGroupRobotSetting::class.java)
