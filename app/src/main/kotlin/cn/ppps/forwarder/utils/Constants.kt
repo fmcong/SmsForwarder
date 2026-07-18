@@ -32,6 +32,11 @@ const val AUTO_CHECK_UPDATE = "auto_check_update"
 const val JOIN_PREVIEW_PROGRAM = "join_preview_program"
 const val IS_AGREE_PRIVACY_KEY = "is_agree_privacy_key"
 
+//首次启动引导：是否已请求过核心功能权限（避免反复弹窗）
+const val SP_REQUESTED_CORE_PERMISSIONS = "requested_core_permissions"
+//首次启动引导：是否已提示过电池优化白名单
+const val SP_PROMPTED_BATTERY_OPT = "prompted_battery_opt"
+
 //数据库
 const val DATABASE_NAME = "sms_forwarder.db"
 const val PACKAGE_NAME = "cn.ppps.forwarder"

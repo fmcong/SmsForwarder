@@ -16,6 +16,12 @@ class SettingUtils private constructor() {
         //是否同意隐私政策
         var isAgreePrivacy: Boolean by SharedPreference(IS_AGREE_PRIVACY_KEY, false)
 
+        //是否已请求过核心功能权限（短信/电话/通话记录/联系人），仅首次启动引导一次
+        var requestedCorePermissions: Boolean by SharedPreference(SP_REQUESTED_CORE_PERMISSIONS, false)
+
+        //是否已提示过电池优化白名单（保证后台保活）
+        var promptedBatteryOptimization: Boolean by SharedPreference(SP_PROMPTED_BATTERY_OPT, false)
+
         //是否转发短信
         var enableSms: Boolean by SharedPreference(SP_ENABLE_SMS, false)
 

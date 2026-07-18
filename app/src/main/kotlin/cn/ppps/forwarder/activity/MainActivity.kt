@@ -1,5 +1,6 @@
 package cn.ppps.forwarder.activity
 
+import android.Manifest
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
@@ -42,6 +43,7 @@ import cn.ppps.forwarder.utils.CommonUtils.Companion.restartApplication
 import cn.ppps.forwarder.utils.EVENT_LOAD_APP_LIST
 import cn.ppps.forwarder.utils.FRPC_LIB_DOWNLOAD_URL
 import cn.ppps.forwarder.utils.FRPC_LIB_VERSION
+import cn.ppps.forwarder.utils.KeepAliveUtils
 import cn.ppps.forwarder.utils.Log
 import cn.ppps.forwarder.utils.SettingUtils
 import cn.ppps.forwarder.utils.XToastUtils
@@ -144,6 +146,68 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
                 openNewPage(AppListFragment::class.java)
             }
         }
+
+        //首次启动引导：主动请求短信/电话/通话记录/联系人等核心权限（Android 不允许自动授予，必须弹窗）
+        requestCorePermissions()
+
+        //首次启动引导：提示将应用加入电池优化白名单，保证后台持续保活且更省电
+        promptBatteryOptimization()
+    }
+
+    /**
+     * 首次启动主动请求核心危险权限，避免装完手机后功能因权限未授予而静默失效。
+     * 仅引导一次，已授予/已拒绝的不会再弹窗。
+     */
+    private fun requestCorePermissions() {
+        if (SettingUtils.requestedCorePermissions) return
+        SettingUtils.requestedCorePermissions = true
+
+        val corePermissions = arrayOf(
+            Manifest.permission.RECEIVE_SMS,
+            Manifest.permission.READ_SMS,
+            Manifest.permission.SEND_SMS,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_PHONE_NUMBERS,
+            Manifest.permission.CALL_PHONE,
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.READ_CONTACTS
+        )
+
+        XXPermissions.with(this)
+            .permission(*corePermissions)
+            .request(object : OnPermissionCallback {
+                override fun onResult(grantedList: MutableList<IPermission>, deniedList: MutableList<IPermission>) {
+                    if (deniedList.isEmpty()) return
+                    // 若用户勾选了“不再询问”，引导去系统设置手动开启
+                    if (XXPermissions.isDoNotAskAgainPermissions(getTopActivity(), deniedList)) {
+                        XXPermissions.startPermissionActivity(getTopActivity(), deniedList)
+                    } else {
+                        XToastUtils.error(R.string.tips_core_permissions)
+                    }
+                }
+            })
+    }
+
+    /**
+     * 首次启动提示将应用加入电池优化白名单。
+     * 不加入白名单时，系统会在省电模式下杀掉前台服务，导致转发中断；
+     * 加入后既保证后台持续运行，又避免被反复杀掉重启造成的额外耗电。
+     */
+    private fun promptBatteryOptimization() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        if (SettingUtils.promptedBatteryOptimization) return
+        if (KeepAliveUtils.isIgnoreBatteryOptimization(this)) return
+        SettingUtils.promptedBatteryOptimization = true
+
+        MaterialDialog.Builder(this)
+            .title(R.string.title_reminder)
+            .content(getString(R.string.tips_battery_optimization, getString(R.string.app_name)))
+            .positiveText(R.string.lab_yes)
+            .negativeText(R.string.lab_no)
+            .onPositive { _: MaterialDialog?, _: DialogAction? ->
+                KeepAliveUtils.ignoreBatteryOptimization(this)
+            }
+            .show()
     }
 
     override val isSupportSlideBack: Boolean

@@ -402,6 +402,8 @@
     <string name="tips_get_installed_apps">Please grant GET_INSTALLED_APPS permission</string>
     <string name="tips_notification">Please grant Notification permission, in order to keep the App alive!</string>
     <string name="tips_notification_listener">Please grant Notification reading permission to SmsForwarder, before other Apps\'s notification could be forwarded. Forwarding automatically canceled!</string>
+    <string name="tips_core_permissions">Please grant SMS, Phone, Call Log and Contacts permissions, otherwise SMS and call forwarding will not work; if denied, enable them in system settings</string>
+    <string name="tips_battery_optimization">To keep %1$s running in the background and prevent the system from killing it, add the app to the battery optimization whitelist (ignore battery optimizations)</string>
     <string name="pushplus_website">Official website</string>
     <string name="pushplus_plus">www.pushplus.plus</string>
     <string name="pushplus_hxtrip">pushplus.hxtrip.com</string>

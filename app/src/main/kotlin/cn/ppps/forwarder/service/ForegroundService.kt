@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.media.AudioAttributes
@@ -65,6 +66,15 @@ class ForegroundService : Service() {
 
     private val TAG: String = ForegroundService::class.java.simpleName
     private var notificationManager: NotificationManager? = null
+
+    // 缓存通知大图标，避免每次更新通知都重新解码 bitmap 造成内存抖动
+    private val cachedLargeIcon: Bitmap? by lazy {
+        try {
+            BitmapFactory.decodeResource(resources, R.drawable.ic_menu_frpc)
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     private val compositeDisposable = CompositeDisposable()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -379,7 +389,7 @@ class ForegroundService : Service() {
         if (largeIconResId != null) {
             builder.setLargeIcon(BitmapFactory.decodeResource(resources, largeIconResId))
         } else {
-            builder.setLargeIcon(BitmapFactory.decodeResource(resources, R.drawable.ic_menu_frpc))
+            cachedLargeIcon?.let { builder.setLargeIcon(it) }
         }
 
         // 添加停止按钮（可选）

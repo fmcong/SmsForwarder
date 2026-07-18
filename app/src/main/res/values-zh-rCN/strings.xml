@@ -403,6 +403,8 @@
     <string name="tips_get_installed_apps">请先授予获取应用列表权限</string>
     <string name="tips_notification">请先授予发送通知权限，有利于《》保活！</string>
     <string name="tips_notification_listener">请先授予《》通知使用权，否则无法转发APP通知，已经自动关闭转发!</string>
+    <string name="tips_core_permissions">请授予短信、电话、通话记录、联系人等权限，否则无法转发短信与通话；若已拒绝，请到系统设置中手动开启</string>
+    <string name="tips_battery_optimization">为保证《》在后台持续运行、不被系统杀掉，建议将应用加入电池优化白名单（忽略电池优化）</string>
     <string name="pushplus_website">官网地址</string>
     <string name="pushplus_plus">www.pushplus.plus</string>
     <string name="pushplus_hxtrip">pushplus.hxtrip.com</string>

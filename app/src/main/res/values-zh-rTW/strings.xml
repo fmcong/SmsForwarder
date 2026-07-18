@@ -403,6 +403,8 @@
     <string name="tips_get_installed_apps">請先授予獲取應用列表權限</string>
     <string name="tips_notification">請先授予發送通知權限，有利於《簡訊轉發器》保活！</string>
     <string name="tips_notification_listener">請先授予《簡訊轉發器》通知使用權，否則無法轉發應用程式通知，已經自動關閉轉發！</string>
+    <string name="tips_core_permissions">請授予簡訊、電話、通話紀錄、聯絡人等權限，否則無法轉發簡訊與通話；若已拒絕，請到系統設定中手動開啟</string>
+    <string name="tips_battery_optimization">為保證《簡訊轉發器》在背景持續運作、不被系統殺掉，建議將應用程式加入電池最佳化白名單（忽略電池最佳化）</string>
     <string name="pushplus_website">官網地址</string>
     <string name="pushplus_plus">www.pushplus.plus</string>
     <string name="pushplus_hxtrip">pushplus.hxtrip.com</string>
