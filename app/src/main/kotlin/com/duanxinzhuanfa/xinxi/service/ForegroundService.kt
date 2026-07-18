@@ -317,6 +317,14 @@ class ForegroundService : Service() {
                 }
             }
 
+            //启动 WebDAV 定期云备份（每 6 小时，URL 已配置且非纯客户端模式才会执行）
+            try {
+                com.duanxinzhuanfa.xinxi.workers.WebDavBackupWorker.schedule(this)
+                Log.d(TAG, "WebDAV 云备份已调度")
+            } catch (e: Exception) {
+                Log.w(TAG, "WebDAV 云备份调度失败: ${e.message}")
+            }
+
             //启动定时任务
             serviceScope.launch {
                 val taskList = Core.task.getByType(TASK_CONDITION_CRON)

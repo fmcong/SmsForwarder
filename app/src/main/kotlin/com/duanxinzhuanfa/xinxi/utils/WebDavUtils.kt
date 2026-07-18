@@ -5,10 +5,10 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import okhttp3.Credentials
-import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.RequestBody
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit
  * - pullLatestFromWebDav(url, deviceName): 拉取当前设备的最新配置
  * - listConfigFiles(url): 列出目录下所有配置文件
  */
-@Suppress("PrivatePropertyName", "DEPRECATION")
+@Suppress("PrivatePropertyName", "DEPRECATION", "unused")
 object WebDavUtils {
 
     private val TAG = "WebDavUtils"
@@ -174,7 +174,8 @@ object WebDavUtils {
         username: String? = null, password: String? = null
     ): Boolean {
         val url = "${baseUrl.trimEnd('/')}/$fileName"
-        val requestBody = content.toRequestBody("application/json".toMediaType())
+        @Suppress("DEPRECATION")
+        val requestBody = RequestBody.create(MediaType.parse("application/json"), content)
         val request = Request.Builder()
             .url(url)
             .apply { authHeader(username, password)?.let { header("Authorization", it) } }
