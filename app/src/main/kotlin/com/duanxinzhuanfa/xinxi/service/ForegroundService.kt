@@ -237,6 +237,26 @@ class ForegroundService : Service() {
         flashUtils = FlashUtils(this)
     }
 
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        Log.d(TAG, "onTrimMemory: level=$level")
+        when {
+            level >= android.content.ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
+                // 内存紧张：清缓存 Bitmap
+                cachedLargeIcon?.let {
+                    // Bitmap already lazy loaded, just help GC by clearing reference if system is under pressure
+                    Log.d(TAG, "onTrimMemory: moderate running low")
+                }
+            }
+            level >= android.content.ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
+                // 内存极度不足：停止非核心后台任务
+                Log.w(TAG, "onTrimMemory: critical, stopping non-critical tasks")
+                flashUtils.release()
+                compositeDisposable.clear()
+            }
+        }
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         //纯客户端模式

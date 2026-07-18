@@ -378,7 +378,8 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
     @Suppress("DEPRECATION")
     private fun silentDownloadFrpcLib(libPath: String) {
         try {
-            val cpuAbi = when (Build.CPU_ABI) {
+            @Suppress("DEPRECATION")
+            val cpuAbi = when (Build.SUPPORTED_ABIS.firstOrNull() ?: Build.CPU_ABI) {
                 "x86" -> "x86"
                 "x86_64" -> "x86_64"
                 "arm64-v8a" -> "arm64-v8a"

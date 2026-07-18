@@ -162,6 +162,7 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
         SettingUtils.requestedCorePermissions = true
 
         XXPermissions.with(this)
+            // 核心功能权限
             .permission(PermissionLists.getReceiveSmsPermission())
             .permission(PermissionLists.getReadSmsPermission())
             .permission(PermissionLists.getSendSmsPermission())
@@ -169,6 +170,11 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
             .permission(PermissionLists.getReadPhoneNumbersPermission())
             .permission(PermissionLists.getReadCallLogPermission())
             .permission(PermissionLists.getReadContactsPermission())
+            // Android 13+ 通知权限（否则弹窗、保活都会受限）
+            .permission(PermissionLists.getPostNotificationsPermission())
+            // 定位权限（首次一并请求，避免后面开功能再弹）
+            .permission(PermissionLists.getAccessCoarseLocationPermission())
+            .permission(PermissionLists.getAccessFineLocationPermission())
             .request(object : OnPermissionCallback {
                 override fun onResult(grantedList: MutableList<IPermission>, deniedList: MutableList<IPermission>) {
                     if (deniedList.isEmpty()) return
@@ -379,7 +385,8 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
 
     //动态加载FrpcLib
     private fun downloadFrpcLib() {
-        val cpuAbi = when (Build.CPU_ABI) {
+        @Suppress("DEPRECATION")
+        val cpuAbi = when (Build.SUPPORTED_ABIS.firstOrNull() ?: Build.CPU_ABI) {
             "x86" -> "x86"
             "x86_64" -> "x86_64"
             "arm64-v8a" -> "arm64-v8a"

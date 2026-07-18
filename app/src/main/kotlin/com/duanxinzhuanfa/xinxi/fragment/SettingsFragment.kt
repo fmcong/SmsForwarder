@@ -372,7 +372,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
                     // 接收短信
                     .permission(PermissionLists.getReceiveSmsPermission())
                     // 发送短信
-                    //.permission(PermissionLists.getSendSmsPermission())
+                    .permission(PermissionLists.getSendSmsPermission())
                     // 读取短信
                     .permission(PermissionLists.getReadSmsPermission())
                     .request(object : OnPermissionCallback {
