@@ -33,21 +33,66 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
             return serialize(preference.all)
         }
 
-        //导入全部数据
-        fun importPreference(data: String) {
-            val map = deSerialization<Map<String, Any>>(data)
+        // 旧 fork 源残留 key 前缀，导入时自动跳过以保持 SP 清洁
+        private val OLD_FORK_KEY_PREFIXES = listOf(
+            "com.idormy.sms.forwarder",
+            "cn.ppps.forwarder.widget"
+        )
+
+        /**
+         * 清理旧 fork 源的残留 SharedPreferences key。
+         * 在 App 初始化后调用，一次性清除无用的旧数据。
+         */
+        fun cleanOldForkKeys() {
             val editor = preference.edit()
-            for ((key, value) in map) {
-                when (value) {
-                    is Long -> editor.putLong(key, value)
-                    is Int -> editor.putInt(key, value)
-                    is String -> editor.putString(key, value)
-                    is Boolean -> editor.putBoolean(key, value)
-                    is Float -> editor.putFloat(key, value)
-                    else -> editor.putString(key, serialize(value))
+            var cleaned = 0
+            for (key in preference.all.keys) {
+                if (OLD_FORK_KEY_PREFIXES.any { key.startsWith(it) }) {
+                    editor.remove(key)
+                    cleaned++
                 }
             }
-            editor.apply()
+            if (cleaned > 0) {
+                editor.apply()
+                Log.d("SharedPreference", "Cleaned $cleaned old fork source keys")
+            }
+        }
+
+        //导入全部数据
+        fun importPreference(data: String) {
+            try {
+                val map = deSerialization<Map<String, Any>>(data)
+                val editor = preference.edit()
+                var skipped = 0
+                for ((key, value) in map) {
+                    // 跳过旧 fork 源的 key
+                    if (OLD_FORK_KEY_PREFIXES.any { key.startsWith(it) }) {
+                        skipped++
+                        continue
+                    }
+                    try {
+                        when (value) {
+                            is Long -> editor.putLong(key, value)
+                            is Int -> editor.putInt(key, value)
+                            is String -> editor.putString(key, value)
+                            is Boolean -> editor.putBoolean(key, value)
+                            is Float -> editor.putFloat(key, value)
+                            else -> editor.putString(key, serialize(value))
+                        }
+                    } catch (e: Exception) {
+                        // 单个 key 反序列化失败不阻塞其他 key 的导入
+                        Log.w("SharedPreference", "importPreference: skip key '$key', ${e.message}")
+                        skipped++
+                    }
+                }
+                editor.apply()
+                if (skipped > 0) {
+                    Log.d("SharedPreference", "importPreference: skipped $skipped incompatible keys")
+                }
+            } catch (e: Exception) {
+                // 整体导入失败（如整个文件格式损坏）不崩溃
+                Log.e("SharedPreference", "importPreference failed: ${e.message}")
+            }
         }
 
         /**
@@ -103,6 +148,9 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
      * 如果查找不到类型就采用反序列化方法来返回类型
      * default是默认对象 以防止会返回空对象的异常
      * 即如果name没有查找到value 就返回默认的序列化对象，然后经过反序列化返回
+     *
+     * 安全策略：旧版本数据（如 cn.ppps.forwarder.entity.LocationInfo）在包名变更后
+     * 反序列化会抛出 ClassNotFoundException，此处捕获并返回默认值，同时清理旧数据。
      */
     private fun getPreference(name: String, default: T): T = with(preference) {
         val res: Any = when (default) {
@@ -111,8 +159,18 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
             is Int -> getInt(name, default)
             is Boolean -> getBoolean(name, default)
             is Float -> getFloat(name, default)
-            //else -> throw IllegalArgumentException("This type can be get from Preferences")
-            else -> deSerialization(getString(name, serialize(default)).toString())
+            else -> {
+                try {
+                    val stored = getString(name, null) ?: return@with default
+                    deSerialization<T>(stored) ?: default
+                } catch (e: Exception) {
+                    // 包名变更后旧序列化数据无法反序列化（ClassNotFoundException），
+                    // 返回默认值并清除旧数据，避免反复报错
+                    Log.w("SharedPreference", "Failed to deserialize key '$name', clearing old data: ${e.message}")
+                    preference.edit().remove(name).apply()
+                    default
+                }
+            }
         }
         return res as T
     }

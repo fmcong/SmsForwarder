@@ -329,6 +329,8 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
         Core.init(this)
         // 配置文件初始化
         SharedPreference.init(applicationContext)
+        // 清理旧 fork 源残留的 SharedPreferences key（如 com.idormy.*, cn.ppps.forwarder.widget.*）
+        SharedPreference.cleanOldForkKeys()
         // X系列基础库初始化
         XBasicLibInit.init(this)
         // 初始化日志打印
