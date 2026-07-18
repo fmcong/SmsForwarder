@@ -273,6 +273,15 @@ tasks.withType(Test).configureEach {
     systemProperty "xaop.enable", "false"
 }
 
+//统一 kotlin-stdlib 变体版本：cactus 等本地 aar 的传递依赖会引入旧版 kotlin-stdlib-jdk7/jdk8(1.7.21)，
+//与 room 等库传递引入的 kotlin-stdlib:1.8.10 产生重复类冲突，强制 jdk7/jdk8 与主库版本一致
+configurations.all {
+    resolutionStrategy {
+        force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
+        force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //frpc
