@@ -393,7 +393,8 @@ dependencies {
 
     //Android Keep Alive(安卓保活)，Cactus 集成双进程前台服务，JobScheduler，onePix(一像素)，WorkManager，无声音乐
     //https://github.com/gyf-dev/Cactus
-    implementation 'com.gyf.cactus:cactus:1.1.3-beta13'
+    //该库原发布于已关停的 jcenter，CI 无法解析，故改为本地 aar（传递依赖 kotlin-stdlib/appcompat/work-runtime/gson 仍从远程解析）
+    implementation files('libs/cactus-1.1.3-beta13.aar')
 
     //HTTP服务器：https://github.com/yanzhenjie/AndServer
     implementation 'cn.ppps.andserver:api:2.1.12'
