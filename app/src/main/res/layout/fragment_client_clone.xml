@@ -140,12 +140,13 @@
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp">
 
-                    <com.xuexiang.xui.widget.textview.supertextview.SuperTextView
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:stv_centerText="@string/webdav_config_title"
-                        app:stv_centerTextColor="?attr/xui_config_color_main_text"
-                        app:stv_centerTextSize="@dimen/text_size_medium" />
+                        android:text="@string/webdav_config_title"
+                        android:textColor="?attr/xui_config_color_main_text"
+                        android:textSize="@dimen/text_size_medium"
+                        android:textStyle="bold" />
 
                     <EditText
                         android:id="@+id/et_webdav_url"
