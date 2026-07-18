@@ -14,7 +14,6 @@ import com.duanxinzhuanfa.xinxi.core.Core
 import com.duanxinzhuanfa.xinxi.entity.MsgInfo
 import com.duanxinzhuanfa.xinxi.utils.Log
 import com.duanxinzhuanfa.xinxi.utils.SettingUtils
-import com.duanxinzhuanfa.xinxi.utils.Worker
 import com.duanxinzhuanfa.xinxi.workers.SendWorker
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -170,7 +169,7 @@ class ClipboardService : Service() {
         try {
             Log.d(TAG, "Forwarding clipboard via SendWorker")
             val data = workDataOf(
-                Worker.MSG_INFO to Gson().toJson(msgInfo)
+                com.duanxinzhuanfa.xinxi.utils.Worker.MSG_INFO to Gson().toJson(msgInfo)
             )
             val request = OneTimeWorkRequestBuilder<SendWorker>()
                 .setInputData(data)

@@ -152,31 +152,27 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
      * 安全策略：旧版本数据（如 cn.ppps.forwarder.entity.LocationInfo）在包名变更后
      * 反序列化会抛出 ClassNotFoundException，此处捕获并返回默认值，同时清理旧数据。
      */
+    @Suppress("UNCHECKED_CAST")
     private fun getPreference(name: String, default: T): T = with(preference) {
-        val res: Any = when (default) {
-            is Long -> getLong(name, default)
-            is String -> this.getString(name, default)!!
-            is Int -> getInt(name, default)
-            is Boolean -> getBoolean(name, default)
-            is Float -> getFloat(name, default)
+        when (default) {
+            is Long -> return getLong(name, default) as T
+            is String -> return this.getString(name, default)!! as T
+            is Int -> return getInt(name, default) as T
+            is Boolean -> return getBoolean(name, default) as T
+            is Float -> return getFloat(name, default) as T
             else -> {
                 try {
-                    val stored = getString(name, null) ?: return@with default
-                    deSerialization<T>(stored) ?: default
+                    val stored = getString(name, null) ?: return default
+                    return deSerialization(stored) ?: default
                 } catch (e: Exception) {
                     // 包名变更后旧序列化数据无法反序列化（ClassNotFoundException），
                     // 返回默认值并清除旧数据，避免反复报错
                     Log.w("SharedPreference", "Failed to deserialize key '$name', clearing old data: ${e.message}")
                     preference.edit().remove(name).apply()
-                    @Suppress("UNCHECKED_CAST")
-                    val result = default as T
-                    result
+                    return default
                 }
             }
         }
-        @Suppress("UNCHECKED_CAST")
-        val result = res as T
-        result
     }
 
     private fun putPreference(name: String, value: T) = with(preference.edit()) {
