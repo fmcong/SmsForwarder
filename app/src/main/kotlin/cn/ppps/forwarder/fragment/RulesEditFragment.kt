@@ -11,6 +11,8 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -834,7 +836,7 @@ class RulesEditFragment : BaseFragment<FragmentRulesEditBinding?>(), View.OnClic
                     throw Exception(getString(R.string.unmatched_rule))
                 }
 
-                Thread {
+                lifecycleScope.launch(Dispatchers.IO) {
                     try {
                         SendUtils.sendMsgSender(msgInfo, rule)
                     } catch (e: Exception) {
@@ -842,11 +844,17 @@ class RulesEditFragment : BaseFragment<FragmentRulesEditBinding?>(), View.OnClic
                         Log.e(TAG, e.toString())
                         LiveEventBus.get(EVENT_TOAST_ERROR, String::class.java).post(e.message.toString())
                     }
-                }.start()
+                }
 
             } catch (e: Exception) {
                 XToastUtils.error(e.message.toString())
             }
         }.show()
+    }
+
+    override fun onDestroyView() {
+        //移除观察者，避免 Fragment 重建后观察者累积导致重复加载与内存泄漏
+        LiveEventBus.get(EVENT_LOAD_APP_LIST, String::class.java).removeObserver(appListObserver)
+        super.onDestroyView()
     }
 }

@@ -438,10 +438,14 @@ CREATE TABLE "Task" (
                     val tagTW = TAG_LIST[i]["zh_TW"].toString()
                     val tagEN = TAG_LIST[i]["en"].toString()
                     smsTemplate = smsTemplate.replace(tagCN, tagEN)
-                    ruleColumnCN = "REPLACE($ruleColumnCN, '$tagCN', '$tagEN')"
-                    ruleColumnTW = "REPLACE($ruleColumnTW, '$tagTW', '$tagEN')"
-                    senderColumnCN = "REPLACE($senderColumnCN, '$tagCN', '$tagEN')"
-                    senderColumnTW = "REPLACE($senderColumnTW, '$tagTW', '$tagEN')"
+                    // SQL 字符串拼接前对单引号转义，避免标签含 ' 时迁移失败
+                    val tagCNEsc = tagCN.replace("'", "''")
+                    val tagTWEsc = tagTW.replace("'", "''")
+                    val tagENEsc = tagEN.replace("'", "''")
+                    ruleColumnCN = "REPLACE($ruleColumnCN, '$tagCNEsc', '$tagENEsc')"
+                    ruleColumnTW = "REPLACE($ruleColumnTW, '$tagTWEsc', '$tagENEsc')"
+                    senderColumnCN = "REPLACE($senderColumnCN, '$tagCNEsc', '$tagENEsc')"
+                    senderColumnTW = "REPLACE($senderColumnTW, '$tagTWEsc', '$tagENEsc')"
                 }
 
                 database.execSQL("UPDATE Rule SET sms_template = $ruleColumnCN WHERE sms_template != ''")
