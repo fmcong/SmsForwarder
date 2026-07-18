@@ -312,6 +312,10 @@
 -keep class gatewayapps.crondroid.** { *; }
 -keep class net.redhogs.cronparser.** { *; }
 
+# frpclib（Go gomobile 生成的 Java 类，含 native 方法，需完整保留防 R8 剥离）
+-keep class frpclib.** { *; }
+-keepclassmembers class frpclib.** { *; }
+
 # 忽略所有 R8 stack map warnings
 -ignorewarnings
 -dontwarn **

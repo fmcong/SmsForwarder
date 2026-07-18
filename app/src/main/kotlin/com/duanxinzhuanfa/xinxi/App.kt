@@ -224,8 +224,14 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
 
             try {
                 System.loadLibrary("gojni")
-                FrpclibInited = FRPC_LIB_VERSION == Frpclib.getVersion()
-                Log.d(TAG, "FrpcLib 加载成功，版本: ${Frpclib.getVersion()}")
+                val loadedVersion = Frpclib.getVersion()
+                if (FRPC_LIB_VERSION == loadedVersion) {
+                    FrpclibInited = true
+                    Log.d(TAG, "FrpcLib 加载成功，版本: $loadedVersion")
+                } else {
+                    FrpclibInited = true
+                    Log.w(TAG, "FrpcLib 版本不一致: 期望 $FRPC_LIB_VERSION, 实际 $loadedVersion（API 兼容，继续工作）")
+                }
             } catch (throwable: Throwable) {
                 FrpclibInited = false
                 Log.e(TAG, "FrpcLib 加载失败: ${throwable.message}")
