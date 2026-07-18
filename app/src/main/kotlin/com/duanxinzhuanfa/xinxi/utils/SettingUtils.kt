@@ -126,6 +126,10 @@ class SettingUtils private constructor() {
         var webdavUrl: String by SharedPreference(SP_WEBDAV_URL, "")
         var webdavUsername: String by SharedPreference(SP_WEBDAV_USERNAME, "")
         var webdavPassword: String by SharedPreference(SP_WEBDAV_PASSWORD, "")
+        // 智能同步状态（上次上传哈希 + 时间戳，用于去重省电省流量）
+        var lastWebdavUploadHash: String by SharedPreference(SP_LAST_WEBDAV_UPLOAD_HASH, "")
+        var lastWebdavUploadTime: Long by SharedPreference(SP_LAST_WEBDAV_UPLOAD_TIME, 0L)
+        var lastWebdavSyncTime: Long by SharedPreference(SP_LAST_WEBDAV_SYNC_TIME, 0L)
 
         //SIM1主键
         var subidSim1: Int by SharedPreference(SP_SUBID_SIM1, 0)

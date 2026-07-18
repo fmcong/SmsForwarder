@@ -199,54 +199,91 @@ object WebDavUtils {
     // ==================== 高层业务 API ====================
 
     /**
-     * 备份当前配置到 WebDAV。
-     * @return 上传的文件名，失败返回 null
+     * 计算当前配置的 MD5 哈希（用于去重比较）。
      */
-    fun backupToWebDav(
+    fun computeConfigHash(): String {
+        return try {
+            val cloneInfo = HttpServerUtils.exportSettings()
+            val jsonStr = Gson().toJson(cloneInfo)
+            val md = java.security.MessageDigest.getInstance("MD5")
+            val digest = md.digest(jsonStr.toByteArray(Charsets.UTF_8))
+            digest.joinToString("") { "%02x".format(it) }
+        } catch (e: Exception) {
+            Log.e(TAG, "computeConfigHash error: ${e.message}")
+            ""
+        }
+    }
+
+    /**
+     * 智能备份：仅当配置内容发生变化时才上传。
+     * 比较当前配置哈希与上次上传的哈希，相同则跳过以节省流量和电量。
+     *
+     * @return "uploaded"=已上传, "skipped"=内容相同跳过, null=失败
+     */
+    fun smartBackupToWebDav(
         baseUrl: String, deviceName: String,
         username: String? = null, password: String? = null
     ): String? {
-        if (baseUrl.isBlank()) {
-            Log.w(TAG, "backupToWebDav: baseUrl is blank")
-            return null
-        }
+        if (baseUrl.isBlank()) return null
         try {
+            val currentHash = computeConfigHash()
+            if (currentHash.isEmpty()) return null
+
+            // 内容未变化，跳过上传
+            if (currentHash == SettingUtils.lastWebdavUploadHash) {
+                Log.d(TAG, "smartBackup: config unchanged (hash=$currentHash), skipped")
+                return "skipped"
+            }
+
             val fileName = "${sanitizeFileName(deviceName)}_${DATE_FORMAT.format(Date())}.json"
             val cloneInfo = HttpServerUtils.exportSettings()
             val jsonStr = Gson().toJson(cloneInfo)
             val success = uploadFile(baseUrl, fileName, jsonStr, username, password)
             if (success) {
-                Log.d(TAG, "backupToWebDav: uploaded $fileName")
-                return fileName
+                SettingUtils.lastWebdavUploadHash = currentHash
+                SettingUtils.lastWebdavUploadTime = System.currentTimeMillis()
+                Log.d(TAG, "smartBackup: uploaded $fileName (hash=$currentHash)")
+                return "uploaded"
             }
         } catch (e: Exception) {
-            Log.e(TAG, "backupToWebDav error: ${e.message}")
+            Log.e(TAG, "smartBackup error: ${e.message}")
         }
         return null
     }
 
     /**
-     * 从 WebDAV 拉取当前设备最新的配置文件并恢复。
-     * @return 恢复成功返回文件名，失败返回 null
+     * 智能拉取：仅当远程配置文件比本地更新时才下载同步。
+     * 通过 PROPFIND 获取最新文件的修改时间，与上次同步时间比较。
+     *
+     * @return "restored"=已恢复, "skipped"=远程未更新, null=失败
      */
-    fun pullLatestFromWebDav(
+    fun smartPullFromWebDav(
         baseUrl: String, deviceName: String,
         username: String? = null, password: String? = null
     ): String? {
         if (baseUrl.isBlank()) return null
         try {
             val files = listConfigFiles(baseUrl, username, password)
-            // 找到匹配当前设备名的文件（前缀匹配），取最新的（已按时间降序排列）
             val matchFile = files.firstOrNull { (name, _) ->
                 name.startsWith(sanitizeFileName(deviceName)) && name.endsWith(".json")
             } ?: files.firstOrNull()
 
             if (matchFile == null) {
-                Log.w(TAG, "pullLatestFromWebDav: no config file found for device '$deviceName'")
+                Log.w(TAG, "smartPull: no config file for '$deviceName'")
                 return null
             }
 
-            val (fileName, _) = matchFile
+            val (fileName, fileTime) = matchFile
+
+            // 解析远程文件时间并与上次同步时间比较
+            val remoteTime = parseWebDavTime(fileTime)
+            val lastSync = SettingUtils.lastWebdavSyncTime
+            if (remoteTime > 0 && lastSync > 0 && remoteTime <= lastSync) {
+                Log.d(TAG, "smartPull: remote not newer (remote=$fileTime, lastSync=$lastSync), skipped")
+                return "skipped"
+            }
+
+            // 远程更新了，下载并恢复
             val jsonStr = downloadFile(baseUrl, fileName, username, password)
             if (jsonStr.isNullOrBlank()) return null
 
@@ -258,13 +295,49 @@ object WebDavUtils {
             HttpServerUtils.compareVersion(cloneInfo)
             val restored = HttpServerUtils.restoreSettings(cloneInfo)
             if (restored) {
-                Log.d(TAG, "pullLatestFromWebDav: restored from $fileName")
-                return fileName
+                SettingUtils.lastWebdavSyncTime = System.currentTimeMillis()
+                Log.d(TAG, "smartPull: restored from $fileName")
+                return "restored"
             }
         } catch (e: Exception) {
-            Log.e(TAG, "pullLatestFromWebDav error: ${e.message}")
+            Log.e(TAG, "smartPull error: ${e.message}")
         }
         return null
+    }
+
+    /** 解析 WebDAV 返回的时间字符串为毫秒时间戳 */
+    private fun parseWebDavTime(timeStr: String): Long {
+        if (timeStr.isBlank()) return 0
+        return try {
+            // WebDAV 返回格式: "Sat, 19 Jul 2026 12:00:00 GMT"
+            val format = java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US)
+            format.timeZone = java.util.TimeZone.getTimeZone("GMT")
+            format.parse(timeStr)?.time ?: 0
+        } catch (e: Exception) {
+            0
+        }
+    }
+
+    /**
+     * 备份当前配置到 WebDAV（兼容旧接口，内部调用智能版本）。
+     * @return 上传的文件名，"skipped"=跳过，null=失败
+     */
+    fun backupToWebDav(
+        baseUrl: String, deviceName: String,
+        username: String? = null, password: String? = null
+    ): String? {
+        return smartBackupToWebDav(baseUrl, deviceName, username, password)
+    }
+
+    /**
+     * 从 WebDAV 拉取当前设备最新的配置文件并恢复（兼容旧接口）。
+     * @return 文件名，"skipped"=跳过，"restored"=已恢复，null=失败
+     */
+    fun pullLatestFromWebDav(
+        baseUrl: String, deviceName: String,
+        username: String? = null, password: String? = null
+    ): String? {
+        return smartPullFromWebDav(baseUrl, deviceName, username, password)
     }
 
     /** 文件名安全化：去除路径分隔符和特殊字符 */

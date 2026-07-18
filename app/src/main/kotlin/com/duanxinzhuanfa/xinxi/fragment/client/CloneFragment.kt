@@ -265,20 +265,27 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
         showWebDavStatus("正在备份到云端...")
 
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-            val result = WebDavUtils.backupToWebDav(url, deviceName, user, pass)
+            val result = WebDavUtils.smartBackupToWebDav(url, deviceName, user, pass)
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                if (result != null) {
-                    XToastUtils.success(String.format(getString(R.string.webdav_backup_success), result))
-                    showWebDavStatus("上次备份: $result")
-                } else {
-                    XToastUtils.error(getString(R.string.webdav_backup_failed))
-                    showWebDavStatus("备份失败")
+                when (result) {
+                    "uploaded" -> {
+                        XToastUtils.success("云备份成功")
+                        showWebDavStatus("已备份 (内容有更新)")
+                    }
+                    "skipped" -> {
+                        XToastUtils.info("配置未变化，跳过备份（省流量）")
+                        showWebDavStatus("已跳过 (内容相同)")
+                    }
+                    else -> {
+                        XToastUtils.error(getString(R.string.webdav_backup_failed))
+                        showWebDavStatus("备份失败")
+                    }
                 }
             }
         }
     }
 
-    /** 从 WebDAV 拉取最新配置并恢复 */
+    /** 从 WebDAV 智能拉取最新配置并恢复 */
     private fun pullFromWebDav() {
         val (url, user, pass) = getWebDavConfig()
         if (url.isBlank()) {
@@ -286,17 +293,24 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
             return
         }
         val deviceName = SettingUtils.extraDeviceMark.ifBlank { PhoneUtils.getDeviceName() }
-        showWebDavStatus("正在从云端同步...")
+        showWebDavStatus("正在检查云端更新...")
 
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-            val result = WebDavUtils.pullLatestFromWebDav(url, deviceName, user, pass)
+            val result = WebDavUtils.smartPullFromWebDav(url, deviceName, user, pass)
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                if (result != null) {
-                    XToastUtils.success(String.format(getString(R.string.webdav_pull_success), result))
-                    showWebDavStatus("已同步: $result")
-                } else {
-                    XToastUtils.error(getString(R.string.webdav_pull_failed))
-                    showWebDavStatus("同步失败")
+                when (result) {
+                    "restored" -> {
+                        XToastUtils.success("云同步成功！重启后生效")
+                        showWebDavStatus("已同步 (远程更新)")
+                    }
+                    "skipped" -> {
+                        XToastUtils.info("云端配置未更新，跳过同步（省流量）")
+                        showWebDavStatus("已跳过 (本地最新)")
+                    }
+                    else -> {
+                        XToastUtils.error(getString(R.string.webdav_pull_failed))
+                        showWebDavStatus("同步失败")
+                    }
                 }
             }
         }

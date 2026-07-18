@@ -48,11 +48,11 @@ class WebDavBackupWorker(context: Context, params: WorkerParameters) : Coroutine
     override suspend fun doWork(): Result {
         val url = SettingUtils.webdavUrl
         if (url.isBlank()) {
-            Log.d(TAG, "WebDAV URL not configured, skipping backup")
+            Log.d(TAG, "WebDAV URL not configured, skipping")
             return Result.success()
         }
         if (SettingUtils.enablePureClientMode) {
-            Log.d(TAG, "Pure client mode, skipping backup")
+            Log.d(TAG, "Pure client mode, skipping")
             return Result.success()
         }
 
@@ -61,13 +61,21 @@ class WebDavBackupWorker(context: Context, params: WorkerParameters) : Coroutine
         val password = SettingUtils.webdavPassword.ifBlank { null }
 
         return try {
-            val result = WebDavUtils.backupToWebDav(url, deviceName, username, password)
-            if (result != null) {
-                Log.d(TAG, "Auto backup success: $result")
-                Result.success()
-            } else {
-                Log.w(TAG, "Auto backup failed")
-                Result.retry() // 失败重试
+            // 智能备份：内容未变化自动跳过，省电省流量
+            val result = WebDavUtils.smartBackupToWebDav(url, deviceName, username, password)
+            when (result) {
+                "uploaded" -> {
+                    Log.d(TAG, "Auto backup: uploaded")
+                    Result.success()
+                }
+                "skipped" -> {
+                    Log.d(TAG, "Auto backup: skipped (unchanged)")
+                    Result.success()
+                }
+                else -> {
+                    Log.w(TAG, "Auto backup failed, will retry")
+                    Result.retry()
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Auto backup error: ${e.message}")
