@@ -49,6 +49,9 @@ class SettingUtils private constructor() {
         //是否转发应用通知
         var enableAppNotify: Boolean by SharedPreference(SP_ENABLE_APP_NOTIFY, false)
 
+        //是否监控剪切板变化并转发
+        var enableClipboardMonitor: Boolean by SharedPreference(SP_ENABLE_CLIPBOARD_MONITOR, false)
+
         //是否接受短信指令
         var enableSmsCommand: Boolean by SharedPreference(SP_ENABLE_SMS_COMMAND, false)
         var smsCommandSafePhone: String by SharedPreference(SP_SMS_COMMAND_SAFE_PHONE, "")

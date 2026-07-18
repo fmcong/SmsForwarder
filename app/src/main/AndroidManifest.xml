@@ -249,6 +249,10 @@
             android:name=".service.HttpServerService"
             android:enabled="true" />
         <service
+            android:name=".service.ClipboardService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
             android:name=".service.LocationService"
             android:enabled="true"
             android:foregroundServiceType="location" />

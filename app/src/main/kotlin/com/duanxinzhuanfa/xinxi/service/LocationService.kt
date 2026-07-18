@@ -184,37 +184,52 @@ class LocationService : Service() {
     @Volatile
     private var locationSilentlyEnabled = false
 
+    // 动态省电：根据屏幕状态和电量调整定位间隔
+    private var currentIntervalMs = SettingUtils.locationMinInterval
+    private var isPowerSaving = false
+
     private fun restartLocation() {
         //如果已经开始定位，则先停止定位
         if (App.LocationClient.isStarted()) {
             App.LocationClient.stopLocation()
         }
 
-        // 如果系统定位未开启，尝试静默启用（针对远程查位置等场景）
-        if (!LocationUtils.isLocationEnabled(App.context)) {
-            previousLocationMode = LocationUtils.getCurrentLocationMode(App.context)
-            locationSilentlyEnabled = LocationUtils.enableLocationSilently(App.context)
-            if (locationSilentlyEnabled) {
-                Log.d(TAG, "restartLocation: 已静默开启系统定位，原模式=$previousLocationMode")
+        val locationEnabled = LocationUtils.isLocationEnabled(App.context)
+        val screenOff = LocationUtils.isScreenOff(App.context)
+
+        // 智能 GPS 策略：
+        // 1. 用户已开定位 → 直接获取，不做任何修改
+        // 2. 用户关了定位 + 息屏 → 偷偷打开，获取完立即关闭
+        // 3. 用户关了定位 + 亮屏 → 不改变状态，只用网络定位
+        if (!locationEnabled) {
+            if (screenOff) {
+                previousLocationMode = LocationUtils.getCurrentLocationMode(App.context)
+                locationSilentlyEnabled = LocationUtils.enableLocationSilently(App.context)
+                if (locationSilentlyEnabled) {
+                    Log.d(TAG, "GPS策略: 息屏+定位关 → 静默开启 (原模式=$previousLocationMode)，获取后即关")
+                }
+            } else {
+                Log.d(TAG, "GPS策略: 亮屏+定位关 → 不动状态，仅用网络定位")
             }
+        } else {
+            Log.d(TAG, "GPS策略: 用户已开定位 → 直接使用，不动开关")
         }
 
         if (LocationUtils.isLocationEnabled(App.context) && LocationUtils.hasLocationCapability(App.context)) {
-            // 定位配置：优先使用网络定位（基站/WiFi），GPS 作为辅助。
-            // 这样即使 GPS 关闭，只要系统定位开着，就能通过网络获取大致位置。
-            // POWER_LOW + ACCURACY_COARSE 偏向网络定位，省电且对用户无感。
+            // 动态省电：根据屏幕和电量调整定位间隔
+            adjustLocationInterval()
+
             val locationOption = App.LocationClient.getLocationOption()
-                .setAccuracy(android.location.Criteria.ACCURACY_COARSE) // 偏向网络定位
+                .setAccuracy(android.location.Criteria.ACCURACY_COARSE) // 偏向网络定位，省电
                 .setPowerRequirement(android.location.Criteria.POWER_LOW) // 低功耗优先
-                .setMinTime(SettingUtils.locationMinInterval)//设置位置更新最小时间间隔（单位：毫秒）
-                .setMinDistance(SettingUtils.locationMinDistance)//设置位置更新最小距离（单位：米）
+                .setMinTime(currentIntervalMs)
+                .setMinDistance(SettingUtils.locationMinDistance)
                 .setOnceLocation(false)
                 .setLastKnownLocation(false)
             App.LocationClient.setLocationOption(locationOption)
             App.LocationClient.startLocation()
         } else {
-            Log.w(TAG, "restartLocation: 定位不可用（即使尝试静默开启后）")
-             // 定位失败后恢复原始状态
+            Log.w(TAG, "restartLocation: 定位不可用")
             if (locationSilentlyEnabled && previousLocationMode >= 0) {
                 LocationUtils.restoreLocationState(App.context, previousLocationMode)
                 locationSilentlyEnabled = false
@@ -223,12 +238,49 @@ class LocationService : Service() {
     }
 
     /**
-     * 在获取到一次有效位置后，恢复原始定位状态
+     * 动态调整定位间隔以省电：
+     * - 亮屏/充电：正常间隔（用户配置）
+     * - 息屏：延长至 2 倍（后台不需要高频）
+     * - 低电量(<20%)：延长至 5 倍
+     */
+    private fun adjustLocationInterval() {
+        val baseInterval = SettingUtils.locationMinInterval
+        val screenOff = LocationUtils.isScreenOff(App.context)
+        val batteryLow = getBatteryLevel() < 20
+
+        currentIntervalMs = when {
+            batteryLow -> (baseInterval * 5).coerceAtMost(600_000) // 低电量最多 10 分钟
+            screenOff -> (baseInterval * 2).coerceAtMost(300_000)  // 息屏最多 5 分钟
+            else -> baseInterval
+        }
+
+        if (currentIntervalMs != baseInterval) {
+            isPowerSaving = true
+            Log.d(TAG, "省电模式: interval=${currentIntervalMs}ms (screenOff=$screenOff, batteryLow=$batteryLow)")
+        } else {
+            isPowerSaving = false
+        }
+    }
+
+    /** 获取当前电量百分比 */
+    private fun getBatteryLevel(): Int {
+        return try {
+            val batteryIntent = registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
+            val level = batteryIntent?.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) ?: -1
+            val scale = batteryIntent?.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1) ?: -1
+            if (level >= 0 && scale > 0) (level * 100 / scale) else 100
+        } catch (e: Exception) {
+            100
+        }
+    }
+
+    /**
+     * 在获取到一次有效位置后，立即恢复原始定位状态（如果之前是被我们偷偷打开的）
      * 在 onLocationChanged 中首次获取到有效位置时调用
      */
     fun tryRestoreLocationState() {
         if (locationSilentlyEnabled && previousLocationMode >= 0) {
-            Log.d(TAG, "tryRestoreLocationState: 获取到位置，恢复原定位模式=$previousLocationMode")
+            Log.d(TAG, "GPS恢复: 获取到位置，立即关闭定位 (恢复模式=$previousLocationMode)")
             LocationUtils.restoreLocationState(App.context, previousLocationMode)
             locationSilentlyEnabled = false
             previousLocationMode = -1

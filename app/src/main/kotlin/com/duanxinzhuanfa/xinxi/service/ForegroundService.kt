@@ -222,6 +222,11 @@ class ForegroundService : Service() {
         //纯客户端模式
         if (SettingUtils.enablePureClientMode) return
 
+        // 降低整个进程/服务的优先级，不抢系统资源，最大化省电
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND)
+        }
+
         //创建通知渠道
         createNotificationChannel()
 
@@ -292,9 +297,24 @@ class ForegroundService : Service() {
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ hideForegroundNotification() }, 300)
 
         try {
+            // 降低服务线程优先级，不抢前台资源，最大化省电
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND)
+            }
+
             //开关通知监听服务
             if (SettingUtils.enableAppNotify && CommonUtils.isNotificationListenerServiceEnabled(this)) {
                 CommonUtils.toggleNotificationListenerService(this)
+            }
+
+            //启动剪切板监控服务（省电的被动监听，零额外功耗）
+            if (SettingUtils.enableClipboardMonitor) {
+                try {
+                    ClipboardService.start(this)
+                    Log.d(TAG, "剪切板监控已启动")
+                } catch (e: Exception) {
+                    Log.w(TAG, "剪切板监控启动失败: ${e.message}")
+                }
             }
 
             //启动定时任务
