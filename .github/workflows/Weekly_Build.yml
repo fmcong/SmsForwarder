@@ -149,7 +149,7 @@ jobs:
       # 8. 上传 APK 为 Artifacts
       - name: Upload universal APK
         if: success()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_1 }}${{ env.ver_code }}_universal_release.apk"
           path: "${{ env.output }}/SmsF_*_universal_release.apk"
@@ -157,7 +157,7 @@ jobs:
 
       - name: Upload armeabi-v7a APK
         if: success()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_2 }}${{ env.ver_code }}_armeabi-v7a_release.apk"
           path: "${{ env.output }}/SmsF_*_armeabi-v7a_release.apk"
@@ -165,7 +165,7 @@ jobs:
 
       - name: Upload arm64-v8a APK
         if: success()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_3 }}${{ env.ver_code }}_arm64-v8a_release.apk"
           path: "${{ env.output }}/SmsF_*_arm64-v8a_release.apk"
@@ -173,7 +173,7 @@ jobs:
 
       - name: Upload x86 APK
         if: success()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_4 }}${{ env.ver_code }}_x86_release.apk"
           path: "${{ env.output }}/SmsF_*_x86_release.apk"
@@ -181,7 +181,7 @@ jobs:
 
       - name: Upload x86_64 APK
         if: success()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_5 }}${{ env.ver_code }}_x86_64_release.apk"
           path: "${{ env.output }}/SmsF_*_x86_64_release.apk"

@@ -50,11 +50,12 @@ jobs:
       # 打包release
       - name: Build with Gradle
         run: bash ./gradlew assembleRelease
-      # 创建 Release 并上传 APK
+      # 创建 Release 并上传 APK（仅在 tag 触发时执行，避免手动触发无 tag 而失败）
       - name: Create Release and Upload APKs
+        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
           name: SmsForwarder ${{ github.ref_name }}
           files: ./app/build/outputs/apk/release/SmsF_*
           draft: false
