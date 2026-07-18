@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity.result
+package com.duanxinzhuanfa.xinxi.entity.result
 
 data class DingtalkInnerRobotResult(
     //获取access_token返回

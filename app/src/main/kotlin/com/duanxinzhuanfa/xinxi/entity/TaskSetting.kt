@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity
+package com.duanxinzhuanfa.xinxi.entity
 
 import com.duanxinzhuanfa.xinxi.utils.task.TaskUtils
 import java.io.Serializable

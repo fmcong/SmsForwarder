@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity
+package com.duanxinzhuanfa.xinxi.entity
 
 import android.annotation.SuppressLint
 import android.text.TextUtils

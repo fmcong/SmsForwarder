@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter.base.broccoli
+package com.duanxinzhuanfa.xinxi.adapter.base.broccoli
 
 import android.view.View
 import com.xuexiang.xui.adapter.recyclerview.BaseRecyclerAdapter

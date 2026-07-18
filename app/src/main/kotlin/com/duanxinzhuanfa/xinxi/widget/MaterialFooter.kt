@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.widget
+package com.duanxinzhuanfa.xinxi.widget
 
 import android.annotation.SuppressLint
 import android.content.Context

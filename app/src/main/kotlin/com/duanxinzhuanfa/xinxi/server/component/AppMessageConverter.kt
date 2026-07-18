@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.component
+package com.duanxinzhuanfa.xinxi.server.component
 
 import com.duanxinzhuanfa.xinxi.utils.Log
 import com.google.gson.GsonBuilder

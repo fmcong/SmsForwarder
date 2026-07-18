@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils
+package com.duanxinzhuanfa.xinxi.utils
 
 import android.location.Criteria
 import com.duanxinzhuanfa.xinxi.R

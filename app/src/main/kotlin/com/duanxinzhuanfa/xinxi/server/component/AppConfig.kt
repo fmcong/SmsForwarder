@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.component
+package com.duanxinzhuanfa.xinxi.server.component
 
 import android.content.Context
 import com.duanxinzhuanfa.xinxi.utils.HttpServerUtils

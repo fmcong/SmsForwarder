@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.sender
+package com.duanxinzhuanfa.xinxi.utils.sender
 
 import com.duanxinzhuanfa.xinxi.R
 import com.duanxinzhuanfa.xinxi.database.entity.Rule

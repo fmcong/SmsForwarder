@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity.condition
+package com.duanxinzhuanfa.xinxi.entity.condition
 
 import android.content.Intent
 import com.duanxinzhuanfa.xinxi.R

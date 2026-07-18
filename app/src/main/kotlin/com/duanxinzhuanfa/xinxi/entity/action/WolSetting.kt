@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity.action
+package com.duanxinzhuanfa.xinxi.entity.action
 
 class WolSetting(
     var description: String = "",

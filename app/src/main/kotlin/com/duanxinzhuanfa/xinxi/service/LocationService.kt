@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.service
+package com.duanxinzhuanfa.xinxi.service
 
 import android.annotation.SuppressLint
 import android.app.Service

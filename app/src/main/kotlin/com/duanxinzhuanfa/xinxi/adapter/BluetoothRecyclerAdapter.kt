@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter
+package com.duanxinzhuanfa.xinxi.adapter
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothClass

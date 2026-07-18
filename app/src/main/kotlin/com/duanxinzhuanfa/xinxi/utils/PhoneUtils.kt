@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils
+package com.duanxinzhuanfa.xinxi.utils
 
 import android.Manifest.permission
 import android.annotation.SuppressLint

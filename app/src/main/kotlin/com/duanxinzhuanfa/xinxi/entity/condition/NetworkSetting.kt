@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity.condition
+package com.duanxinzhuanfa.xinxi.entity.condition
 
 import com.duanxinzhuanfa.xinxi.R
 import com.xuexiang.xutil.resource.ResUtils.getString

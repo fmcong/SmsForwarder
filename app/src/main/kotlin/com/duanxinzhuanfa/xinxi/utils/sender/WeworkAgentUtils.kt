@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.sender
+package com.duanxinzhuanfa.xinxi.utils.sender
 
 import android.text.TextUtils
 import com.google.gson.Gson

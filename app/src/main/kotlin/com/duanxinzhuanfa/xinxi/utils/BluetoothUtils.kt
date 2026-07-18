@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils
+package com.duanxinzhuanfa.xinxi.utils
 
 import android.bluetooth.BluetoothAdapter
 import android.content.Context

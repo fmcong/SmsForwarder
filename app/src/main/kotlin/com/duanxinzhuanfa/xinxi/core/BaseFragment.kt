@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.core
+package com.duanxinzhuanfa.xinxi.core
 
 import android.app.Activity
 import android.content.Context

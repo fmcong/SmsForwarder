@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.mail
+package com.duanxinzhuanfa.xinxi.utils.mail
 
 import android.text.Html
 import android.text.Spanned

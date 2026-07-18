@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity.setting
+package com.duanxinzhuanfa.xinxi.entity.setting
 
 import com.duanxinzhuanfa.xinxi.R
 import java.io.Serializable

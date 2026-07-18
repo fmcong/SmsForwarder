@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.model
+package com.duanxinzhuanfa.xinxi.server.model
 
 data class BaseRequest<T>(
     var data: T,

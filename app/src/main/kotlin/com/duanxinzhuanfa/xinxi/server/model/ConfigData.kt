@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.model
+package com.duanxinzhuanfa.xinxi.server.model
 
 import com.google.gson.annotations.SerializedName
 import com.duanxinzhuanfa.xinxi.entity.SimInfo

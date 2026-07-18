@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.update
+package com.duanxinzhuanfa.xinxi.utils.update
 
 import android.content.DialogInterface
 import android.content.Intent

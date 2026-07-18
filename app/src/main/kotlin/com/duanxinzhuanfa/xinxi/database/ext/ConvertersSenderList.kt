@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.ext
+package com.duanxinzhuanfa.xinxi.database.ext
 
 import androidx.room.TypeConverter
 import com.duanxinzhuanfa.xinxi.core.Core

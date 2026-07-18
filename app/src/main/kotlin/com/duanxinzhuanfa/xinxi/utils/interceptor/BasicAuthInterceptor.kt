@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.interceptor
+package com.duanxinzhuanfa.xinxi.utils.interceptor
 
 import okhttp3.Credentials
 import okhttp3.Interceptor

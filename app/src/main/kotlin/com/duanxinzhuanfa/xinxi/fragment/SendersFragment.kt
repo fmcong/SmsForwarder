@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.fragment
+package com.duanxinzhuanfa.xinxi.fragment
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

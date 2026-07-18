@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.core.http.subscriber
+package com.duanxinzhuanfa.xinxi.core.http.subscriber
 
 import com.duanxinzhuanfa.xinxi.utils.XToastUtils
 import com.xuexiang.xhttp2.exception.ApiException

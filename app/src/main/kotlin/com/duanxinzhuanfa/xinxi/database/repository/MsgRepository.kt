@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.repository
+package com.duanxinzhuanfa.xinxi.database.repository
 
 import androidx.annotation.WorkerThread
 import com.duanxinzhuanfa.xinxi.database.dao.MsgDao

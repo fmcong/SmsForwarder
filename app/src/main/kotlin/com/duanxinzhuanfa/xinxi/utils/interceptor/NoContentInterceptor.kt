@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.interceptor
+package com.duanxinzhuanfa.xinxi.utils.interceptor
 
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils
+package com.duanxinzhuanfa.xinxi.utils
 
 import com.duanxinzhuanfa.xinxi.R
 import com.duanxinzhuanfa.xinxi.entity.MsgInfo

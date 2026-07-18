@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils
+package com.duanxinzhuanfa.xinxi.utils
 
 import android.annotation.SuppressLint
 import androidx.annotation.MainThread

@@ -1,4 +1,4 @@
-﻿@file:Suppress("unused")
+@file:Suppress("unused")
 
 package com.duanxinzhuanfa.xinxi.adapter.base.broccoli
 

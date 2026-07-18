@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity.condition
+package com.duanxinzhuanfa.xinxi.entity.condition
 
 import java.io.Serializable
 

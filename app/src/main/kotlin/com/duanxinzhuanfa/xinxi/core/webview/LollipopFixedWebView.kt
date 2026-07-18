@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.core.webview
+package com.duanxinzhuanfa.xinxi.core.webview
 
 import android.annotation.TargetApi
 import android.content.Context

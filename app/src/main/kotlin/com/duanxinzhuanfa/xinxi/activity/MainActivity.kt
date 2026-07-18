@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.activity
+package com.duanxinzhuanfa.xinxi.activity
 
 import android.app.ActivityManager
 import android.content.Context

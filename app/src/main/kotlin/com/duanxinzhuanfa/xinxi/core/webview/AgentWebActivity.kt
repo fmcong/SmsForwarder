@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.core.webview
+package com.duanxinzhuanfa.xinxi.core.webview
 
 import android.content.Context
 import android.content.Intent

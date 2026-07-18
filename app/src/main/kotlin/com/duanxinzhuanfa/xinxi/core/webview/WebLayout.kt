@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.core.webview
+package com.duanxinzhuanfa.xinxi.core.webview
 
 import android.app.Activity
 import android.view.LayoutInflater

@@ -1,4 +1,4 @@
-﻿<resources xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="tag_from" translatable="false">{{FROM}}</string>
     <string name="tag_sms" translatable="false">{{SMS}}</string>
     <string name="tag_package_name" translatable="false">{{PACKAGE_NAME}}</string>

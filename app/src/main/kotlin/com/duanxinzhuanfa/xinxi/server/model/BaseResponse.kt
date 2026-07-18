@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.model
+package com.duanxinzhuanfa.xinxi.server.model
 
 data class BaseResponse<T>(
     var code: Int = 200,

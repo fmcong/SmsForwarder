@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter.base
+package com.duanxinzhuanfa.xinxi.adapter.base
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView

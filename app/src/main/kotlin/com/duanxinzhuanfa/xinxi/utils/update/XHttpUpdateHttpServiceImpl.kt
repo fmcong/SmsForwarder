@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.update
+package com.duanxinzhuanfa.xinxi.utils.update
 
 import com.duanxinzhuanfa.xinxi.R
 import com.duanxinzhuanfa.xinxi.utils.XToastUtils

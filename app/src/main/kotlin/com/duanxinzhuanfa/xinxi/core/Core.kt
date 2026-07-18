@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.core
+package com.duanxinzhuanfa.xinxi.core
 
 import android.app.Application
 import androidx.work.Configuration

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.fragment.client
+package com.duanxinzhuanfa.xinxi.fragment.client
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

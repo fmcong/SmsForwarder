@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.workers
+package com.duanxinzhuanfa.xinxi.workers
 
 import android.content.Context
 import androidx.work.CoroutineWorker

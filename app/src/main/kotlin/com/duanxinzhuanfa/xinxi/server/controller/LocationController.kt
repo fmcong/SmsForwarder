@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.controller
+package com.duanxinzhuanfa.xinxi.server.controller
 
 import android.annotation.SuppressLint
 import com.duanxinzhuanfa.xinxi.entity.LocationInfo

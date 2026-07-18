@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils
+package com.duanxinzhuanfa.xinxi.utils
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.SecureRandom

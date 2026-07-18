@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.core.http.loader
+package com.duanxinzhuanfa.xinxi.core.http.loader
 
 import android.content.Context
 import com.xuexiang.xhttp2.subsciber.impl.IProgressLoader

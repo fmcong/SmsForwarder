@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity.action
+package com.duanxinzhuanfa.xinxi.entity.action
 
 import com.duanxinzhuanfa.xinxi.database.entity.Sender
 import java.io.Serializable

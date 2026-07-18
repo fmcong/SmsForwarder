@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.sdkinit
+package com.duanxinzhuanfa.xinxi.utils.sdkinit
 
 import android.app.Application
 import android.content.Context

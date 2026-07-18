@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter
+package com.duanxinzhuanfa.xinxi.adapter
 
 import android.widget.ImageView
 import com.duanxinzhuanfa.xinxi.R

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.tinker
+package com.duanxinzhuanfa.xinxi.utils.tinker
 
 import android.annotation.SuppressLint
 import android.content.Context

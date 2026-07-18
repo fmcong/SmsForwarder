@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter.base.delegate
+package com.duanxinzhuanfa.xinxi.adapter.base.delegate
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.fragment.senders
+package com.duanxinzhuanfa.xinxi.fragment.senders
 
 import android.os.Environment
 import android.text.TextUtils

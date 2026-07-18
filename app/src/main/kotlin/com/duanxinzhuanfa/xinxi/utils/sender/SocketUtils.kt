@@ -1,4 +1,4 @@
-﻿@file:OptIn(ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class)
 
 package com.duanxinzhuanfa.xinxi.utils.sender
 

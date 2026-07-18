@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.sender
+package com.duanxinzhuanfa.xinxi.utils.sender
 
 import com.google.gson.Gson
 import com.duanxinzhuanfa.xinxi.database.entity.Rule

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.dao
+package com.duanxinzhuanfa.xinxi.database.dao
 
 import androidx.paging.PagingSource
 import androidx.room.Dao

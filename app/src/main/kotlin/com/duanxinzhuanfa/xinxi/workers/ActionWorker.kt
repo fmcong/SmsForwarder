@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.workers
+package com.duanxinzhuanfa.xinxi.workers
 
 import android.Manifest
 import android.content.Context

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.entity
+package com.duanxinzhuanfa.xinxi.database.entity
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo

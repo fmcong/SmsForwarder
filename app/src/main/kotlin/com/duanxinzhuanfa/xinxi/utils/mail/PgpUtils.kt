@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.mail
+package com.duanxinzhuanfa.xinxi.utils.mail
 
 import jakarta.activation.DataHandler
 import jakarta.activation.FileDataSource

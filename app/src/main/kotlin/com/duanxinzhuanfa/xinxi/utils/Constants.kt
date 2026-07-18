@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils
+package com.duanxinzhuanfa.xinxi.utils
 
 object Worker {
     const val SEND_MSG_INFO = "send_msg_info"

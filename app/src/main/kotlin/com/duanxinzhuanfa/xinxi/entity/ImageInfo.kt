@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity
+package com.duanxinzhuanfa.xinxi.entity
 
 import android.graphics.Rect
 import android.os.Parcel

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.component
+package com.duanxinzhuanfa.xinxi.server.component
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader

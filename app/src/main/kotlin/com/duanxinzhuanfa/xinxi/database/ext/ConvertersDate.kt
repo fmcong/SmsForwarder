@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.ext
+package com.duanxinzhuanfa.xinxi.database.ext
 
 import androidx.room.TypeConverter
 import java.util.Date

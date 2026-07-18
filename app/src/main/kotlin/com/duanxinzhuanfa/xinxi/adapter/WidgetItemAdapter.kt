@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter
+package com.duanxinzhuanfa.xinxi.adapter
 
 import com.duanxinzhuanfa.xinxi.R
 import com.xuexiang.xpage.model.PageInfo

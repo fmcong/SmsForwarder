@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.fragment
+package com.duanxinzhuanfa.xinxi.fragment
 
 import android.Manifest
 import android.annotation.SuppressLint

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter.menu
+package com.duanxinzhuanfa.xinxi.adapter.menu
 
 import android.view.ViewGroup
 

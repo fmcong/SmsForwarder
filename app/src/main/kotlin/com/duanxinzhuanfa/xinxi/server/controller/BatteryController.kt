@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.controller
+package com.duanxinzhuanfa.xinxi.server.controller
 
 import android.content.Intent
 import android.content.IntentFilter

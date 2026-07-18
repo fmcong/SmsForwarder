@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.server.controller
+package com.duanxinzhuanfa.xinxi.server.controller
 
 import com.duanxinzhuanfa.xinxi.utils.Log
 import com.duanxinzhuanfa.xinxi.server.model.BaseRequest

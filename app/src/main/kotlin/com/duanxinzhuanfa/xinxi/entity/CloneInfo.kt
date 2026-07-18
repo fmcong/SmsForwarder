@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.entity
+package com.duanxinzhuanfa.xinxi.entity
 
 import com.google.gson.annotations.SerializedName
 import com.duanxinzhuanfa.xinxi.database.entity.Frpc

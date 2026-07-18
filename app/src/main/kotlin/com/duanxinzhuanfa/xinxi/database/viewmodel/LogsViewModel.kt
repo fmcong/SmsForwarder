@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.viewmodel
+package com.duanxinzhuanfa.xinxi.database.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.duanxinzhuanfa.xinxi.database.dao.LogsDao

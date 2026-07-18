@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.repository
+package com.duanxinzhuanfa.xinxi.database.repository
 
 import androidx.annotation.WorkerThread
 import androidx.sqlite.db.SimpleSQLiteQuery

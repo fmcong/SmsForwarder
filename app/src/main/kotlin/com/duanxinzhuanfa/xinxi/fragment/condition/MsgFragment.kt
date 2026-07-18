@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.fragment.condition
+package com.duanxinzhuanfa.xinxi.fragment.condition
 
 import android.content.Intent
 import android.view.LayoutInflater

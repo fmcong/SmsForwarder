@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.receiver
+package com.duanxinzhuanfa.xinxi.receiver
 
 import android.Manifest
 import android.annotation.SuppressLint

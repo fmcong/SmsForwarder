@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter.menu
+package com.duanxinzhuanfa.xinxi.adapter.menu
 
 import android.content.Context
 import android.view.View

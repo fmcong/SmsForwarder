@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.update
+package com.duanxinzhuanfa.xinxi.utils.update
 
 import com.xuexiang.xupdate.entity.UpdateEntity
 import com.xuexiang.xupdate.proxy.impl.AbstractUpdateParser

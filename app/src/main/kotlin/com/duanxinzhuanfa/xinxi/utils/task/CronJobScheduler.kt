@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.task
+package com.duanxinzhuanfa.xinxi.utils.task
 
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy

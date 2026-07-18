@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.viewmodel
+package com.duanxinzhuanfa.xinxi.database.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel

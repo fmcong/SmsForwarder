@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter.menu
+package com.duanxinzhuanfa.xinxi.adapter.menu
 
 import android.util.SparseArray
 import android.view.View

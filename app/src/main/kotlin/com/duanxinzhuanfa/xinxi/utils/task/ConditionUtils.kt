@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.task
+package com.duanxinzhuanfa.xinxi.utils.task
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice

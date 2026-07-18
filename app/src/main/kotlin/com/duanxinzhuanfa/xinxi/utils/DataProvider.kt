@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils
+package com.duanxinzhuanfa.xinxi.utils
 
 import android.annotation.SuppressLint
 import com.duanxinzhuanfa.xinxi.entity.CallInfo

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.adapter.spinner
+package com.duanxinzhuanfa.xinxi.adapter.spinner
 
 import android.annotation.SuppressLint
 import android.os.Build

@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.utils.interceptor
+package com.duanxinzhuanfa.xinxi.utils.interceptor
 
 import com.duanxinzhuanfa.xinxi.App
 import com.duanxinzhuanfa.xinxi.utils.Log

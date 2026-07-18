@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.receiver
+package com.duanxinzhuanfa.xinxi.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context

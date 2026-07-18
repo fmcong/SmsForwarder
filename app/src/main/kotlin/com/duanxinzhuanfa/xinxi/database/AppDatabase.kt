@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database
+package com.duanxinzhuanfa.xinxi.database
 
 import android.content.Context
 import androidx.room.Database

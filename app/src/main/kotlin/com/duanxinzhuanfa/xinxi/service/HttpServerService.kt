@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.service
+package com.duanxinzhuanfa.xinxi.service
 
 import android.app.Service
 import android.content.Intent

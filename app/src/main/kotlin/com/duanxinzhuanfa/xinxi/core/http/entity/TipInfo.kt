@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.core.http.entity
+package com.duanxinzhuanfa.xinxi.core.http.entity
 
 import androidx.annotation.Keep
 

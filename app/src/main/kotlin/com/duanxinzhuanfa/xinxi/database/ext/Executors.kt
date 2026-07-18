@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.database.ext
+package com.duanxinzhuanfa.xinxi.database.ext
 
 import java.util.concurrent.Executors
 

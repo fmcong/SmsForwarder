@@ -1,4 +1,4 @@
-﻿package com.duanxinzhuanfa.xinxi.widget
+package com.duanxinzhuanfa.xinxi.widget
 
 import android.content.Context
 import android.view.View
