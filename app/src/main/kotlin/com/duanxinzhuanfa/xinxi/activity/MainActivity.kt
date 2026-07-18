@@ -40,7 +40,6 @@ import com.duanxinzhuanfa.xinxi.service.ForegroundService
 import com.duanxinzhuanfa.xinxi.utils.ACTION_START
 import com.duanxinzhuanfa.xinxi.utils.CommonUtils.Companion.restartApplication
 import com.duanxinzhuanfa.xinxi.utils.EVENT_LOAD_APP_LIST
-import com.duanxinzhuanfa.xinxi.utils.FRPC_LIB_DOWNLOAD_URL
 import com.duanxinzhuanfa.xinxi.utils.FRPC_LIB_VERSION
 import com.duanxinzhuanfa.xinxi.utils.KeepAliveUtils
 import com.duanxinzhuanfa.xinxi.utils.Log
@@ -50,18 +49,11 @@ import com.duanxinzhuanfa.xinxi.utils.sdkinit.XUpdateInit
 import com.duanxinzhuanfa.xinxi.widget.GuideTipsDialog.Companion.showTips
 import com.duanxinzhuanfa.xinxi.workers.LoadAppListWorker
 import com.jeremyliao.liveeventbus.LiveEventBus
-import com.xuexiang.xhttp2.XHttp
-import com.xuexiang.xhttp2.callback.DownloadProgressCallBack
-import com.xuexiang.xhttp2.exception.ApiException
 import com.xuexiang.xui.XUI.getContext
 import com.xuexiang.xui.utils.ResUtils
 import com.xuexiang.xui.utils.ThemeUtils
 import com.xuexiang.xui.utils.ViewUtils
 import com.xuexiang.xui.utils.WidgetUtils
-import com.xuexiang.xui.widget.dialog.materialdialog.DialogAction
-import com.xuexiang.xui.widget.dialog.materialdialog.GravityEnum
-import com.xuexiang.xui.widget.dialog.materialdialog.MaterialDialog
-import com.xuexiang.xutil.file.FileUtils
 import com.xuexiang.xutil.net.NetworkUtils
 import com.yarolegovich.slidingrootnav.SlideGravity
 import com.yarolegovich.slidingrootnav.SlidingRootNav
@@ -178,7 +170,7 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
             .request(object : OnPermissionCallback {
                 override fun onResult(grantedList: MutableList<IPermission>, deniedList: MutableList<IPermission>) {
                     if (deniedList.isEmpty()) return
-                    // 若用户勾选了“不再询问”，引导去系统设置手动开启
+                    // 若用户勾选了"不再询问"，引导去系统设置手动开启
                     if (XXPermissions.isDoNotAskAgainPermissions(getTopActivity(), deniedList)) {
                         XXPermissions.startPermissionActivity(getTopActivity(), deniedList)
                     } else {
@@ -323,20 +315,11 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
                     return
                 }
 
-                val title = if (!FileUtils.isFileExists(filesDir.absolutePath + "/libs/libgojni.so")) {
-                    String.format(getString(R.string.frpclib_download_title), FRPC_LIB_VERSION)
-                } else {
-                    getString(R.string.frpclib_version_mismatch)
-                }
-
                 MaterialDialog.Builder(this)
-                    .title(title)
-                    .content(R.string.download_frpc_tips)
-                    .positiveText(R.string.lab_yes)
-                    .negativeText(R.string.lab_no)
-                    .onPositive { _: MaterialDialog?, _: DialogAction? ->
-                        downloadFrpcLib()
-                    }
+                    .iconRes(R.drawable.ic_menu_frpc)
+                    .title(R.string.menu_frpc)
+                    .content(R.string.frpclib_load_failed)
+                    .positiveText(R.string.confirm)
                     .show()
             }
 
@@ -383,69 +366,19 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
             .withSelectedTextTint(ThemeUtils.getMainThemeColor(this))
     }
 
-    //动态加载FrpcLib
+    //查看FrpcLib版本（已内置在APK中）
     private fun downloadFrpcLib() {
-        @Suppress("DEPRECATION")
-        val cpuAbi = when (Build.SUPPORTED_ABIS.firstOrNull() ?: Build.CPU_ABI) {
-            "x86" -> "x86"
-            "x86_64" -> "x86_64"
-            "arm64-v8a" -> "arm64-v8a"
-            else -> "armeabi-v7a"
+        val version = try {
+            frpclib.Frpclib.getVersion()
+        } catch (e: Throwable) {
+            getString(R.string.unknown)
         }
-
-        val libPath = filesDir.absolutePath + "/libs"
-        val soFile = File(libPath)
-        if (!soFile.exists()) soFile.mkdirs()
-        val downloadUrl = String.format(FRPC_LIB_DOWNLOAD_URL, FRPC_LIB_VERSION, cpuAbi)
-        val mContext = this
-        val dialog: MaterialDialog = MaterialDialog.Builder(mContext)
-            .title(String.format(getString(R.string.frpclib_download_title), FRPC_LIB_VERSION))
-            .content(getString(R.string.frpclib_download_content))
-            .contentGravity(GravityEnum.CENTER)
-            .progress(false, 0, true)
-            .progressNumberFormat("%2dMB/%1dMB")
-            .build()
-
-        XHttp.downLoad(downloadUrl)
-            .ignoreHttpsCert()
-            .savePath(cacheDir.absolutePath)
-            .execute(object : DownloadProgressCallBack<String?>() {
-                override fun onStart() {
-                    dialog.show()
-                }
-
-                override fun onError(e: ApiException) {
-                    dialog.dismiss()
-                    XToastUtils.error(e.message.toString())
-                }
-
-                override fun update(bytesRead: Long, contentLength: Long, done: Boolean) {
-                    Log.d(TAG, "onProgress: bytesRead=$bytesRead, contentLength=$contentLength")
-                    dialog.maxProgress = (contentLength / 1048576L).toInt()
-                    dialog.setProgress((bytesRead / 1048576L).toInt())
-                }
-
-                override fun onComplete(srcPath: String) {
-                    dialog.dismiss()
-                    Log.d(TAG, "srcPath = $srcPath")
-
-                    val srcFile = File(srcPath)
-                    val destFile = File("$libPath/libgojni.so")
-                    FileUtils.moveFile(srcFile, destFile, null)
-
-                    MaterialDialog.Builder(this@MainActivity)
-                        .iconRes(R.drawable.ic_menu_frpc)
-                        .title(R.string.menu_frpc)
-                        .content(R.string.download_frpc_tips2)
-                        .cancelable(false)
-                        .positiveText(R.string.confirm)
-                        .onPositive { _: MaterialDialog?, _: DialogAction? ->
-                            restartApplication()
-                        }
-                        .show()
-                }
-            })
-
+        MaterialDialog.Builder(this)
+            .iconRes(R.drawable.ic_menu_frpc)
+            .title(R.string.menu_frpc)
+            .content(getString(R.string.frpclib_builtin_tips, FRPC_LIB_VERSION, version))
+            .positiveText(R.string.confirm)
+            .show()
     }
 
 }

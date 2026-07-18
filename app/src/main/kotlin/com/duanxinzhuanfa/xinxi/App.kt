@@ -41,7 +41,6 @@ import com.duanxinzhuanfa.xinxi.utils.CactusSave
 import com.duanxinzhuanfa.xinxi.utils.FRONT_CHANNEL_ID
 import com.duanxinzhuanfa.xinxi.utils.FRONT_CHANNEL_NAME
 import com.duanxinzhuanfa.xinxi.utils.FRONT_NOTIFY_ID
-import com.duanxinzhuanfa.xinxi.utils.FRPC_LIB_DOWNLOAD_URL
 import com.duanxinzhuanfa.xinxi.utils.FRPC_LIB_VERSION
 import com.duanxinzhuanfa.xinxi.utils.PhoneUtils
 import com.duanxinzhuanfa.xinxi.utils.HistoryUtils
@@ -53,25 +52,20 @@ import com.duanxinzhuanfa.xinxi.utils.SharedPreference
 import com.duanxinzhuanfa.xinxi.utils.sdkinit.UMengInit
 import com.duanxinzhuanfa.xinxi.utils.sdkinit.XBasicLibInit
 import com.duanxinzhuanfa.xinxi.utils.sdkinit.XUpdateInit
-import com.duanxinzhuanfa.xinxi.utils.tinker.TinkerLoadLibrary
 import com.gyf.cactus.Cactus
 import com.gyf.cactus.callback.CactusCallback
 import com.gyf.cactus.ext.cactus
 import com.hjq.language.MultiLanguages
 import com.hjq.language.OnLanguageListener
 import com.king.location.LocationClient
-import com.xuexiang.xutil.file.FileUtils
 import frpclib.Frpclib
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import java.io.BufferedWriter
-import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -226,24 +220,15 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 }
             }
 
-            //========== 动态加载FrpcLib ==========
+            //========== 加载 FrpcLib（已打包进 APK） ==========
 
-            val libPath = filesDir.absolutePath + "/libs"
-            val soFile = File(libPath)
-            if (soFile.exists()) {
-                try {
-                    TinkerLoadLibrary.installNativeLibraryPath(classLoader, soFile)
-                    FrpclibInited = FileUtils.isFileExists(filesDir.absolutePath + "/libs/libgojni.so") && FRPC_LIB_VERSION == Frpclib.getVersion()
-                } catch (throwable: Throwable) {
-                    Log.e("APP", throwable.message.toString())
-                }
-            }
-
-            //若 FrpcLib 未初始化，在后台静默下载（无弹窗）
-            if (!FrpclibInited) {
-                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                    silentDownloadFrpcLib(libPath)
-                }
+            try {
+                System.loadLibrary("gojni")
+                FrpclibInited = FRPC_LIB_VERSION == Frpclib.getVersion()
+                Log.d(TAG, "FrpcLib 加载成功，版本: ${Frpclib.getVersion()}")
+            } catch (throwable: Throwable) {
+                FrpclibInited = false
+                Log.e(TAG, "FrpcLib 加载失败: ${throwable.message}")
             }
 
             //启动前台服务
@@ -372,47 +357,6 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
     /**
      * 初始化基础库
      */
-    /**
-     * 静默下载 FrpcLib（无弹窗），在后台线程使用 OkHttp 下载 libgojni.so
-     */
-    @Suppress("DEPRECATION")
-    private fun silentDownloadFrpcLib(libPath: String) {
-        try {
-            @Suppress("DEPRECATION")
-            val cpuAbi = when (Build.SUPPORTED_ABIS.firstOrNull() ?: Build.CPU_ABI) {
-                "x86" -> "x86"
-                "x86_64" -> "x86_64"
-                "arm64-v8a" -> "arm64-v8a"
-                else -> "armeabi-v7a"
-            }
-            val downloadUrl = String.format(FRPC_LIB_DOWNLOAD_URL, FRPC_LIB_VERSION, cpuAbi)
-            Log.d(TAG, "silentDownloadFrpcLib: url=$downloadUrl")
-
-            val request = okhttp3.Request.Builder().url(downloadUrl).build()
-            val response = okhttp3.OkHttpClient.Builder()
-                .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-                .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                .build()
-                .newCall(request)
-                .execute()
-
-            @Suppress("DEPRECATION")
-            if (response.isSuccessful() && response.body() != null) {
-                val libDir = File(libPath)
-                if (!libDir.exists()) libDir.mkdirs()
-                val destFile = File(libPath, "libgojni.so")
-                val bytes = response.body()!!.bytes()
-                destFile.writeBytes(bytes)
-                Log.d(TAG, "silentDownloadFrpcLib: success (${bytes.size} bytes)")
-            } else {
-                Log.w(TAG, "silentDownloadFrpcLib: HTTP ${response.code()}, download skipped")
-            }
-            response.close()
-        } catch (e: Exception) {
-            Log.w(TAG, "silentDownloadFrpcLib: ${e.message}")
-        }
-    }
-
     private fun initLibs() {
         Core.init(this)
         // 配置文件初始化
