@@ -189,25 +189,16 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
     }
 
     /**
-     * 首次启动提示将应用加入电池优化白名单。
-     * 不加入白名单时，系统会在省电模式下杀掉前台服务，导致转发中断；
-     * 加入后既保证后台持续运行，又避免被反复杀掉重启造成的额外耗电。
+     * 首次启动直接将应用跳转到电池优化白名单设置页。
+     * 注意：Android 不允许应用自动授予电池优化豁免，必须由用户在系统设置中手动开启，
+     * 因此这里直接打开系统设置页（无自定义中间弹窗），由用户一键确认即可。
      */
     private fun promptBatteryOptimization() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
         if (SettingUtils.promptedBatteryOptimization) return
         if (KeepAliveUtils.isIgnoreBatteryOptimization(this)) return
         SettingUtils.promptedBatteryOptimization = true
-
-        MaterialDialog.Builder(this)
-            .title(R.string.title_reminder)
-            .content(getString(R.string.tips_battery_optimization, getString(R.string.app_name)))
-            .positiveText(R.string.lab_yes)
-            .negativeText(R.string.lab_no)
-            .onPositive { _: MaterialDialog?, _: DialogAction? ->
-                KeepAliveUtils.ignoreBatteryOptimization(this)
-            }
-            .show()
+        KeepAliveUtils.ignoreBatteryOptimization(this)
     }
 
     override val isSupportSlideBack: Boolean
