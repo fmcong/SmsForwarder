@@ -104,7 +104,7 @@ class TelegramUtils private constructor() {
                 //代理的鉴权账号密码
                 if (setting.proxyAuthenticator && (!TextUtils.isEmpty(setting.proxyUsername) || !TextUtils.isEmpty(setting.proxyPassword))
                 ) {
-                    Log.i(TAG, "proxyUsername = ${setting.proxyUsername}, proxyPassword = ${setting.proxyPassword}")
+                    Log.i(TAG, "proxyUsername = ${setting.proxyUsername}, proxyPassword = ******")
 
                     if (setting.proxyType == Proxy.Type.HTTP) {
                         request.okproxyAuthenticator { _: Route?, response: Response ->

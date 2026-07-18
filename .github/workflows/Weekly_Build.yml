@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      output: "${{ github.workspace }}/build/app/outputs/apk/release"
+      output: "${{ github.workspace }}/app/build/outputs/apk/release"
       ver_suffix_1: 100
       ver_suffix_2: 200
       ver_suffix_3: 300
@@ -27,6 +27,7 @@ jobs:
       # 2. 清理旧的工作流运行（保留最近 3 次，保留最近 7 天内的）
       #    如果您不需要自动清理，可删除此步骤
       - name: Delete old workflow runs
+        continue-on-error: true
         uses: Mattraks/delete-workflow-runs@v2
         with:
           token: ${{ secrets.TOKEN }}

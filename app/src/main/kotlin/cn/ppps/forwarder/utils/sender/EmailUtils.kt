@@ -171,19 +171,21 @@ class EmailUtils {
                                     val decodedBytes = Base64.decode(setting.keystore)
                                     ByteArrayInputStream(decodedBytes)
                                 }
-                                when (setting.encryptionProtocol) {
-                                    "S/MIME" -> {
-                                        val keystorePassword = setting.password
-                                        val keyStore = KeyStore.getInstance("PKCS12")
-                                        keyStore.load(keystoreStream, keystorePassword.toCharArray())
-                                        val privateKeyAlias = keyStore.aliases().toList().first { keyStore.isKeyEntry(it) }
-                                        signingPrivateKey = keyStore.getKey(privateKeyAlias, keystorePassword.toCharArray()) as PrivateKey
-                                        signingCertificate = keyStore.getCertificate(privateKeyAlias) as X509Certificate
-                                    }
+                                keystoreStream.use { ks ->
+                                    when (setting.encryptionProtocol) {
+                                        "S/MIME" -> {
+                                            val keystorePassword = setting.password
+                                            val keyStore = KeyStore.getInstance("PKCS12")
+                                            keyStore.load(ks, keystorePassword.toCharArray())
+                                            val privateKeyAlias = keyStore.aliases().toList().first { keyStore.isKeyEntry(it) }
+                                            signingPrivateKey = keyStore.getKey(privateKeyAlias, keystorePassword.toCharArray()) as PrivateKey
+                                            signingCertificate = keyStore.getCertificate(privateKeyAlias) as X509Certificate
+                                        }
 
-                                    "OpenPGP" -> {
-                                        senderPGPSecretKeyRing = PGPainless.readKeyRing().secretKeyRing(keystoreStream)
-                                        senderPGPSecretKeyPassword = setting.password
+                                        "OpenPGP" -> {
+                                            senderPGPSecretKeyRing = PGPainless.readKeyRing().secretKeyRing(ks)
+                                            senderPGPSecretKeyPassword = setting.password
+                                        }
                                     }
                                 }
                             } catch (e: Exception) {
@@ -248,21 +250,22 @@ class EmailUtils {
                                             val decodedBytes = Base64.decode(keystoreBase64)
                                             ByteArrayInputStream(decodedBytes)
                                         }
+                                        keystoreStream.use { ks ->
+                                            when (setting.encryptionProtocol) {
+                                                "S/MIME" -> {
+                                                    val keyStore = KeyStore.getInstance("PKCS12")
+                                                    keyStore.load(ks, keystorePassword.toCharArray())
+                                                    val alias = keyStore.aliases().nextElement()
+                                                    recipientX509Cert = keyStore.getCertificate(alias) as X509Certificate
+                                                }
 
-                                        when (setting.encryptionProtocol) {
-                                            "S/MIME" -> {
-                                                val keyStore = KeyStore.getInstance("PKCS12")
-                                                keyStore.load(keystoreStream, keystorePassword.toCharArray())
-                                                val alias = keyStore.aliases().nextElement()
-                                                recipientX509Cert = keyStore.getCertificate(alias) as X509Certificate
-                                            }
-
-                                            "OpenPGP" -> {
-                                                val recipientPGPSecretKeyRing = PGPainless.readKeyRing().secretKeyRing(keystoreStream)
-                                                recipientPGPPublicKeyRing = recipientPGPSecretKeyRing?.let { PGPainless.extractCertificate(it) }
-                                                if (recipientPGPPublicKeyRing != null) {
-                                                    val keyInfo = KeyRingInfo(recipientPGPPublicKeyRing)
-                                                    Log.d(TAG, "Recipient key info: $keyInfo")
+                                                "OpenPGP" -> {
+                                                    val recipientPGPSecretKeyRing = PGPainless.readKeyRing().secretKeyRing(ks)
+                                                    recipientPGPPublicKeyRing = recipientPGPSecretKeyRing?.let { PGPainless.extractCertificate(it) }
+                                                    if (recipientPGPPublicKeyRing != null) {
+                                                        val keyInfo = KeyRingInfo(recipientPGPPublicKeyRing)
+                                                        Log.d(TAG, "Recipient key info: $keyInfo")
+                                                    }
                                                 }
                                             }
                                         }
@@ -276,18 +279,19 @@ class EmailUtils {
                                             val decodedBytes = Base64.decode(keystoreBase64)
                                             ByteArrayInputStream(decodedBytes)
                                         }
+                                        keystoreStream.use { ks ->
+                                            when (setting.encryptionProtocol) {
+                                                "S/MIME" -> {
+                                                    val certFactory = CertificateFactory.getInstance("X.509")
+                                                    recipientX509Cert = certFactory.generateCertificate(ks) as X509Certificate
+                                                }
 
-                                        when (setting.encryptionProtocol) {
-                                            "S/MIME" -> {
-                                                val certFactory = CertificateFactory.getInstance("X.509")
-                                                recipientX509Cert = certFactory.generateCertificate(FileInputStream(keystoreBase64)) as X509Certificate
-                                            }
-
-                                            "OpenPGP" -> {
-                                                recipientPGPPublicKeyRing = PGPainless.readKeyRing().publicKeyRing(keystoreStream)
-                                                if (recipientPGPPublicKeyRing != null) {
-                                                    val keyInfo = KeyRingInfo(recipientPGPPublicKeyRing)
-                                                    Log.d(TAG, "Recipient key info: $keyInfo")
+                                                "OpenPGP" -> {
+                                                    recipientPGPPublicKeyRing = PGPainless.readKeyRing().publicKeyRing(ks)
+                                                    if (recipientPGPPublicKeyRing != null) {
+                                                        val keyInfo = KeyRingInfo(recipientPGPPublicKeyRing)
+                                                        Log.d(TAG, "Recipient key info: $keyInfo")
+                                                    }
                                                 }
                                             }
                                         }

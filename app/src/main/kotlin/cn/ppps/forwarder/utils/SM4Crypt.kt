@@ -42,21 +42,16 @@ object SM4Crypt {
     }
 
     private fun doSM4(forEncryption: Boolean, source: ByteArray, key: ByteArray, mode: String, iv: ByteArray?): ByteArray {
-        return try {
-            val cryptMode = if (forEncryption) 1 else 2
-            val sm4Key = SecretKeySpec(key, "SM4")
-            val cipher = Cipher.getInstance(mode, BC_PROVIDER)
-            if (iv == null) {
-                cipher.init(cryptMode, sm4Key)
-            } else {
-                val ivParameterSpec = IvParameterSpec(iv)
-                cipher.init(cryptMode, sm4Key, ivParameterSpec)
-            }
-            cipher.doFinal(source)
-        } catch (var9: Exception) {
-            var9.printStackTrace()
-            ByteArray(0)
+        val cryptMode = if (forEncryption) 1 else 2
+        val sm4Key = SecretKeySpec(key, "SM4")
+        val cipher = Cipher.getInstance(mode, BC_PROVIDER)
+        if (iv == null) {
+            cipher.init(cryptMode, sm4Key)
+        } else {
+            val ivParameterSpec = IvParameterSpec(iv)
+            cipher.init(cryptMode, sm4Key, ivParameterSpec)
         }
+        return cipher.doFinal(source)
     }
 
 }

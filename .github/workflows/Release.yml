@@ -5,15 +5,16 @@ on:
   push:
     tags:
       - v*
-  pull_request:
-    tags:
-      - v*
   workflow_dispatch:
     inputs:
       root_sol:
         description: "Release Title"
         required: true
         default: "SmsForwarder"
+
+# 创建 Release 需要写权限
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -35,24 +36,26 @@ jobs:
           repository: fmcong/keystore
           token: ${{ secrets.TOKEN }} # 连接仓库的token,需要单独配置
           path: keystore # 仓库的根目录名
+      # 复制 keystore 到 app 目录（签名配置默认从 app/ 读取 storeFile）
+      - name: Copy keystore to app folder
+        run: |
+          if ls keystore/*.jks 1> /dev/null 2>&1; then
+            cp keystore/*.jks app/
+          elif ls keystore/*.keystore 1> /dev/null 2>&1; then
+            cp keystore/*.keystore app/
+          else
+            echo "No keystore file found in keystore directory"
+            exit 1
+          fi
       # 打包release
       - name: Build with Gradle
         run: bash ./gradlew assembleRelease
-      # 创建release
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # 创建 Release 并上传 APK
+      - name: Create Release and Upload APKs
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref }}
-          release_name: SmsForwarder ${{ github.ref }}
+          name: SmsForwarder ${{ github.ref_name }}
+          files: ./app/build/outputs/apk/release/SmsF_*
           draft: false
           prerelease: false
-      # 上传至release的资源
-      - name: Upload release binaries
-        uses: alexellis/upload-assets@0.2.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          asset_paths: '["./build/app/outputs/apk/release/SmsF_*"]'

@@ -48,7 +48,7 @@ class WeworkAgentUtils private constructor() {
             var getTokenUrl = "$customApi/cgi-bin/gettoken?"
             getTokenUrl += "corpid=" + setting.corpID
             getTokenUrl += "&corpsecret=" + setting.secret
-            Log.d(TAG, "getTokenUrl：$getTokenUrl")
+            Log.d(TAG, "getTokenUrl：$customApi/cgi-bin/gettoken?corpid=${setting.corpID}&corpsecret=******")
 
             val request = XHttp.get(getTokenUrl)
 
@@ -63,7 +63,7 @@ class WeworkAgentUtils private constructor() {
 
                 //代理的鉴权账号密码
                 if (setting.proxyAuthenticator && (!TextUtils.isEmpty(setting.proxyUsername) || !TextUtils.isEmpty(setting.proxyPassword))) {
-                    Log.i(TAG, "proxyUsername = ${setting.proxyUsername}, proxyPassword = ${setting.proxyPassword}")
+                    Log.i(TAG, "proxyUsername = ${setting.proxyUsername}, proxyPassword = ******")
 
                     if (setting.proxyType == Proxy.Type.HTTP) {
                         request.okproxyAuthenticator { _: Route?, response: Response ->
@@ -159,7 +159,7 @@ class WeworkAgentUtils private constructor() {
 
                 //代理的鉴权账号密码
                 if (setting.proxyAuthenticator && (!TextUtils.isEmpty(setting.proxyUsername) || !TextUtils.isEmpty(setting.proxyPassword))) {
-                    Log.i(TAG, "proxyUsername = ${setting.proxyUsername}, proxyPassword = ${setting.proxyPassword}")
+                    Log.i(TAG, "proxyUsername = ${setting.proxyUsername}, proxyPassword = ******")
 
                     if (setting.proxyType == Proxy.Type.HTTP) {
                         request.okproxyAuthenticator { _: Route?, response: Response ->

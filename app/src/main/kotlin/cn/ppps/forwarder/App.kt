@@ -74,6 +74,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 @Suppress("DEPRECATION")
@@ -112,8 +113,8 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
         var BARK_LEVEL_MAP: MutableMap<String, String> = mutableMapOf()
         var BARK_ENCRYPTION_ALGORITHM_MAP: MutableMap<String, String> = mutableMapOf()
 
-        //已插入SIM卡信息
-        var SimInfoList: MutableMap<Int, SimInfo> = mutableMapOf()
+        //已插入SIM卡信息（使用线程安全的 ConcurrentHashMap，避免广播/WorkManager 并发读写导致的 ConcurrentModificationException）
+        var SimInfoList: MutableMap<Int, SimInfo> = ConcurrentHashMap()
 
         //已安装App信息
         var LoadingAppList = false
