@@ -144,7 +144,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/webdav_config_title"
-                        android:textColor="?attr/xui_config_color_main_text"
+                        android:textColor="?android:attr/textColorPrimary"
                         android:textSize="@dimen/text_size_medium"
                         android:textStyle="bold" />
 
