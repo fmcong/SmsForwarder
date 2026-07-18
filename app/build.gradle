@@ -68,7 +68,7 @@ android {
     def gitCommitId = getGitCommitId()
 
     defaultConfig {
-        applicationId "cn.ppps.forwarder"
+        applicationId "com.duanxinzhuanfa.xinxi"
         minSdkVersion build_versions.min_sdk
         targetSdkVersion build_versions.target_sdk
         versionCode build_versions.version_code
@@ -143,10 +143,9 @@ android {
             // 调试模式开关
             debuggable true
             jniDebuggable true
-            // 移除无用的资源
-            shrinkResources true
-            // 代码混淆开关
-            minifyEnabled true
+            // Debug 关闭混淆/压缩以加速增量编译
+            shrinkResources false
+            minifyEnabled false
             // 混淆配置
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (isNeedPackage.toBoolean()) {
@@ -238,7 +237,7 @@ android {
     lint {
         abortOnError false
     }
-    namespace 'cn.ppps.forwarder'
+    namespace 'com.duanxinzhuanfa.xinxi'
 
     /**
      * ⚠️ Windows + XAOP 下，避免 debug/test 触发 clean

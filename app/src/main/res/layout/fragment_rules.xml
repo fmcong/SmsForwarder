@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -39,7 +39,7 @@
             tools:listitem="@layout/adapter_rules_card_view_list_item" />
 
         <!-- TODO:注意修改包名时，这里也需要修改 -->
-        <cn.ppps.forwarder.widget.MaterialFooter
+        <com.duanxinzhuanfa.xinxi.widget.MaterialFooter
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 

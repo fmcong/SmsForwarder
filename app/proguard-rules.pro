@@ -1,4 +1,4 @@
-#=========================================基础不变的混淆配置=========================================##
+﻿#=========================================基础不变的混淆配置=========================================##
 #指定代码的压缩级别
 -optimizationpasses 5
 #包名不混合大小写
@@ -7,8 +7,7 @@
 #-dontskipnonpubliclibraryclasses
 # 指定不去忽略非公共的库的类的成员
 #-dontskipnonpubliclibraryclassmembers
-#优化  不优化输入的类文件
--dontoptimize
+#优化  不优化输入的类文件（移除 dontoptimize，启用 R8 全量优化以减小 APK 体积）
 #预校验
 #-dontpreverify
 #混淆时是否记录日志
@@ -268,10 +267,10 @@
 -keep class com.gyf.cactus.entity.* {*;}
 
 # 排除实体类
--keep class cn.ppps.forwarder.core.http.entity.** {*;}
--keep class cn.ppps.forwarder.database.entity.** {*;}
--keep class cn.ppps.forwarder.entity.** {*;}
--keep class cn.ppps.forwarder.server.model.** {*;}
+-keep class com.duanxinzhuanfa.xinxi.core.http.entity.** {*;}
+-keep class com.duanxinzhuanfa.xinxi.database.entity.** {*;}
+-keep class com.duanxinzhuanfa.xinxi.entity.** {*;}
+-keep class com.duanxinzhuanfa.xinxi.server.model.** {*;}
 
 # javax.mail
 -dontwarn com.sun.**
@@ -281,7 +280,7 @@
 -keep class javax.mail.** { *;}
 -keep class javax.activation.** { *;}
 -keep class com.smailnet.emailkit.** { *;}
--keep class cn.ppps.forwarder.utils.mail.** {*;}
+-keep class com.duanxinzhuanfa.xinxi.utils.mail.** {*;}
 -keep class com.gitee.xuankaicat.kmnkt.** {*;}
 -keep class org.eclipse.paho.client.** {*;}
 
