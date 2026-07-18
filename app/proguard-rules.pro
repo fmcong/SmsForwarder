@@ -7,7 +7,8 @@
 #-dontskipnonpubliclibraryclasses
 # 指定不去忽略非公共的库的类的成员
 #-dontskipnonpubliclibraryclassmembers
-#优化  不优化输入的类文件（移除 dontoptimize，启用 R8 全量优化以减小 APK 体积）
+#优化  不优化输入的类文件
+-dontoptimize
 #预校验
 #-dontpreverify
 #混淆时是否记录日志
