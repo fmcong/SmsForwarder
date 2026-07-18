@@ -1,5 +1,6 @@
 package cn.ppps.forwarder.fragment
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.ComponentName
@@ -221,6 +222,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         super.onResume()
         //初始化APP下拉列表
         initAppSpinner()
+        //刷新授权状态（从系统设置返回后也能即时更新）
+        refreshPermissionStatus()
     }
 
     override fun initListeners() {
@@ -229,6 +232,11 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         binding!!.btnExtraSim1.setOnClickListener(this)
         binding!!.btnExtraSim2.setOnClickListener(this)
         binding!!.btnExportLog.setOnClickListener(this)
+
+        //点击授权状态区块，前往系统设置页开启权限
+        binding!!.layoutPermissionStatus.setOnClickListener {
+            openAppDetailsSettings()
+        }
 
         //监听已安装App信息列表加载完成事件
         LiveEventBus.get(EVENT_LOAD_APP_LIST, String::class.java).observeStickyForever(appListObserver)
@@ -1444,6 +1452,99 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         }
         binding!!.layoutSpApp.visibility = View.VISIBLE
 
+    }
+
+    //刷新授权状态区块：显示各项功能所需权限/授权是否正常
+    @SuppressLint("SetTextI18n")
+    private fun refreshPermissionStatus() {
+        val ctx = requireContext()
+
+        fun granted(permission: String): Boolean =
+            ContextCompat.checkSelfPermission(ctx, permission) == PackageManager.PERMISSION_GRANTED
+
+        //短信转发
+        val smsOk = granted(Manifest.permission.RECEIVE_SMS)
+                && granted(Manifest.permission.READ_SMS)
+                && granted(Manifest.permission.SEND_SMS)
+        //通话转发
+        val callOk = granted(Manifest.permission.READ_PHONE_STATE)
+                && granted(Manifest.permission.READ_CALL_LOG)
+                && granted(Manifest.permission.READ_CONTACTS)
+        //应用通知转发（通知监听服务）
+        val appNotifyOk = CommonUtils.isNotificationListenerServiceEnabled(ctx)
+        //通知权限（Android 13+ 才需要）
+        val notificationOk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            granted(Manifest.permission.POST_NOTIFICATIONS)
+        } else true
+        //电池优化白名单
+        val batteryOk = KeepAliveUtils.isIgnoreBatteryOptimization(requireActivity())
+
+        //定位（仅启用时检查）
+        val locationEnabled = SettingUtils.enableLocation
+        val locationOk = !locationEnabled
+                || (granted(Manifest.permission.ACCESS_FINE_LOCATION)
+                && granted(Manifest.permission.ACCESS_COARSE_LOCATION)
+                && granted(Manifest.permission.ACCESS_BACKGROUND_LOCATION))
+        //蓝牙（仅启用时检查）
+        val bluetoothEnabled = SettingUtils.enableBluetooth
+        val bluetoothOk = !bluetoothEnabled
+                || (granted(Manifest.permission.BLUETOOTH_SCAN)
+                && granted(Manifest.permission.BLUETOOTH_CONNECT)
+                && granted(Manifest.permission.ACCESS_FINE_LOCATION))
+
+        setPermRow(binding!!.tvPermSms, smsOk, SettingUtils.enableSms)
+        setPermRow(binding!!.tvPermCall, callOk, SettingUtils.enablePhone)
+        setPermRow(binding!!.tvPermAppNotify, appNotifyOk, SettingUtils.enableAppNotify)
+        setPermRow(binding!!.tvPermNotification, notificationOk, true)
+        setPermRow(binding!!.tvPermBattery, batteryOk, true)
+        setPermRow(binding!!.tvPermLocation, locationOk, locationEnabled)
+        setPermRow(binding!!.tvPermBluetooth, bluetoothOk, bluetoothEnabled)
+
+        val items = listOf(
+            smsOk to SettingUtils.enableSms,
+            callOk to SettingUtils.enablePhone,
+            appNotifyOk to SettingUtils.enableAppNotify,
+            notificationOk to true,
+            batteryOk to true,
+            locationOk to locationEnabled,
+            bluetoothOk to bluetoothEnabled
+        )
+        val unauthorized = items.count { (ok, enabled) -> enabled && !ok }
+        binding!!.tvPermSummary.text = if (unauthorized == 0) getString(R.string.perm_all_granted)
+        else getString(R.string.perm_n_unauthorized, unauthorized)
+        binding!!.tvPermSummary.setTextColor(
+            ContextCompat.getColor(ctx, if (unauthorized == 0) R.color.darkGreen else R.color.red)
+        )
+    }
+
+    //根据「是否已授权 + 功能是否启用」设置单行状态文字与颜色
+    private fun setPermRow(tv: TextView, ok: Boolean, enabled: Boolean) {
+        val ctx = requireContext()
+        when {
+            ok -> {
+                tv.text = getString(R.string.perm_normal)
+                tv.setTextColor(ContextCompat.getColor(ctx, R.color.darkGreen))
+            }
+            enabled -> {
+                tv.text = getString(R.string.perm_not_granted)
+                tv.setTextColor(ContextCompat.getColor(ctx, R.color.red))
+            }
+            else -> {
+                tv.text = getString(R.string.perm_not_enabled)
+                tv.setTextColor(ContextCompat.getColor(ctx, R.color.gray_text_light))
+            }
+        }
+    }
+
+    //跳转应用详情设置页，便于用户手动开启任意权限/授权
+    private fun openAppDetailsSettings() {
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.data = Uri.fromParts("package", requireContext().packageName, null)
+            startActivity(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
 }
