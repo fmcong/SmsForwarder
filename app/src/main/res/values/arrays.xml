@@ -96,6 +96,7 @@
     <string-array name="clone_type_option">
         <item>@string/clone_type_option_network</item>
         <item>@string/clone_type_option_offline</item>
+        <item>@string/clone_type_option_cloud</item>
     </string-array>
 
     <!--APP类型-->
