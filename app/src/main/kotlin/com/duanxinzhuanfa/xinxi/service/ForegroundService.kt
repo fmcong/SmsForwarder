@@ -288,6 +288,8 @@ class ForegroundService : Service() {
         } else {
             startForeground(FRONT_NOTIFY_ID, notification)
         }
+        // 双服务技巧：延迟 300ms 后隐藏通知栏条目
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ hideForegroundNotification() }, 300)
 
         try {
             //开关通知监听服务
@@ -370,16 +372,34 @@ class ForegroundService : Service() {
     private fun createNotificationChannel() {
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // 使用 IMPORTANCE_MIN：完全静默，不弹窗、不发声、不振动、锁屏不显示，满足前台服务要求但不打扰用户
-            val importance = NotificationManager.IMPORTANCE_MIN
+            // IMPORTANCE_NONE：完全零打扰，通知栏无任何显示（需配合双服务隐藏技巧彻底消除前台通知痕迹）
+            val importance = NotificationManager.IMPORTANCE_NONE
             val notificationChannel = NotificationChannel(FRONT_CHANNEL_ID, FRONT_CHANNEL_NAME, importance)
-            notificationChannel.description = getString(R.string.notification_content)
+            notificationChannel.description = ""
             notificationChannel.enableLights(false)
             notificationChannel.enableVibration(false)
             notificationChannel.setSound(null, null)
             if (notificationManager != null) {
                 notificationManager!!.createNotificationChannel(notificationChannel)
             }
+        }
+    }
+
+    /**
+     * 双服务通知隐藏技巧：用 HideNotificationService 消除前台通知栏条目。
+     * ForegroundService 先注册前台通知，HideNotificationService 用同一 ID 接管后立即移除，
+     * ForegroundService 继续以前台优先级运行，但通知栏无痕迹。
+     */
+    private fun hideForegroundNotification() {
+        try {
+            val intent = Intent(this, HideNotificationService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "hideForegroundNotification failed: ${e.message}")
         }
     }
 

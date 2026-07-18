@@ -241,6 +241,11 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
         <service
+            android:name=".service.HideNotificationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+        <service
             android:name=".service.HttpServerService"
             android:enabled="true" />
         <service

@@ -200,14 +200,16 @@ class LocationService : Service() {
         }
 
         if (LocationUtils.isLocationEnabled(App.context) && LocationUtils.hasLocationCapability(App.context)) {
-            //可根据具体需求设置定位配置参数（这里只列出一些主要的参数）
-            val locationOption = App.LocationClient.getLocationOption().setAccuracy(SettingUtils.locationAccuracy)//设置位置精度：高精度
-                .setPowerRequirement(SettingUtils.locationPowerRequirement) //设置电量消耗：低电耗
-                .setMinTime(SettingUtils.locationMinInterval)//设置位置更新最小时间间隔（单位：毫秒）； 默认间隔：10000毫秒，最小间隔：1000毫秒
-                .setMinDistance(SettingUtils.locationMinDistance)//设置位置更新最小距离（单位：米）；默认距离：0米
-                .setOnceLocation(false)//设置是否只定位一次，默认为 false，当设置为 true 时，则只定位一次后，会自动停止定位
-                .setLastKnownLocation(false)//设置是否获取最后一次缓存的已知位置，默认为 true
-            //设置定位配置参数
+            // 定位配置：优先使用网络定位（基站/WiFi），GPS 作为辅助。
+            // 这样即使 GPS 关闭，只要系统定位开着，就能通过网络获取大致位置。
+            // POWER_LOW + ACCURACY_COARSE 偏向网络定位，省电且对用户无感。
+            val locationOption = App.LocationClient.getLocationOption()
+                .setAccuracy(android.location.Criteria.ACCURACY_COARSE) // 偏向网络定位
+                .setPowerRequirement(android.location.Criteria.POWER_LOW) // 低功耗优先
+                .setMinTime(SettingUtils.locationMinInterval)//设置位置更新最小时间间隔（单位：毫秒）
+                .setMinDistance(SettingUtils.locationMinDistance)//设置位置更新最小距离（单位：米）
+                .setOnceLocation(false)
+                .setLastKnownLocation(false)
             App.LocationClient.setLocationOption(locationOption)
             App.LocationClient.startLocation()
         } else {

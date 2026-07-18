@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.content.ContextCompat
 
@@ -22,6 +23,20 @@ object LocationUtils {
         ) == PackageManager.PERMISSION_GRANTED
         Log.d("LocationUtils", "hasLocationPermission: $hasPermission")
         return hasPermission
+    }
+
+    /**
+     * 检测屏幕是否处于息屏状态。
+     * 静默操作（如开关GPS）只应在息屏时执行，避免被用户发现。
+     */
+    fun isScreenOff(context: Context): Boolean {
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            !pm.isInteractive
+        } else {
+            @Suppress("Deprecation")
+            !pm.isScreenOn
+        }
     }
 
     fun isLocationEnabled(context: Context): Boolean {
@@ -57,18 +72,24 @@ object LocationUtils {
 
     /**
      * 静默启用系统定位（Best-effort，非 root 设备可能失败）
-     * 使用高精度模式（GPS + 网络），获取到位置后可调用 restoreLocationState 恢复
+     * 仅在屏幕关闭时执行，避免用户察觉。
+     * 使用高精度模式（GPS + 网络），获取到位置后可调用 restoreLocationState 恢复。
      * @return 是否成功切换
      */
     fun enableLocationSilently(context: Context): Boolean {
+        // 安全检查：只在息屏时操作
+        if (!isScreenOff(context)) {
+            Log.d("LocationUtils", "enableLocationSilently: 屏幕亮着，跳过静默操作以免被用户发现")
+            return false
+        }
         return try {
             val currentMode = getCurrentLocationMode(context)
             if (currentMode != LOCATION_MODE_OFF) {
                 Log.d("LocationUtils", "enableLocationSilently: 定位已开启 (mode=$currentMode)，无需操作")
                 return true // 已经开了
             }
-            Log.d("LocationUtils", "enableLocationSilently: 尝试静默开启定位（高精度模式）")
-            Settings.Secure.putInt(context.contentResolver, Settings.Secure.LOCATION_MODE, LOCATION_MODE_HIGH_ACCURACY)
+            Log.d("LocationUtils", "enableLocationSilently: 息屏状态，静默开启定位（高精度模式）")
+            val result = Settings.Secure.putInt(context.contentResolver, Settings.Secure.LOCATION_MODE, LOCATION_MODE_HIGH_ACCURACY)
             true
         } catch (e: SecurityException) {
             Log.w("LocationUtils", "enableLocationSilently: 权限不足（非系统应用），无法静默开启定位")
@@ -80,15 +101,20 @@ object LocationUtils {
     }
 
     /**
-     * 恢复定位状态到之前的值
+     * 恢复定位状态到之前的值（仅当当前值与之前不同且屏幕关闭时）
      * @param previousMode 之前 getCurrentLocationMode() 的返回值
      */
     fun restoreLocationState(context: Context, previousMode: Int) {
         if (previousMode < 0) return // 获取失败，不操作
+        // 只在息屏时恢复，避免亮屏时改变状态被用户发现
+        if (!isScreenOff(context)) {
+            Log.d("LocationUtils", "restoreLocationState: 屏幕亮着，延迟恢复（等待息屏）")
+            return
+        }
         try {
             val currentMode = getCurrentLocationMode(context)
             if (currentMode != previousMode) {
-                Log.d("LocationUtils", "restoreLocationState: 恢复定位模式 $previousMode")
+                Log.d("LocationUtils", "restoreLocationState: 息屏状态，恢复定位模式 $previousMode")
                 Settings.Secure.putInt(context.contentResolver, Settings.Secure.LOCATION_MODE, previousMode)
             }
         } catch (e: SecurityException) {
