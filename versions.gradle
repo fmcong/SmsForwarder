@@ -194,9 +194,13 @@ static def addRepos(RepositoryHandler handler) {
     //handler.mavenCentral { url 'https://maven.aliyun.com/repository/central' }
     handler.google()
     handler.mavenCentral()
-    handler.maven { url 'https://maven.aliyun.com/repository/google' }
-    handler.maven { url 'https://maven.aliyun.com/repository/central' }
-    handler.maven { url 'https://maven.aliyun.com/repository/public' }
+    // 阿里云镜像在海外 CI（GitHub Actions）经常返回 502，Gradle 会因此直接失败而非回退到下一个仓库。
+    // 仅在非 CI 环境（国内本地开发）启用阿里云镜像以加速；CI 直接用 google/mavenCentral/jitpack。
+    if (System.getenv('GITHUB_ACTIONS') == null) {
+        handler.maven { url 'https://maven.aliyun.com/repository/google' }
+        handler.maven { url 'https://maven.aliyun.com/repository/central' }
+        handler.maven { url 'https://maven.aliyun.com/repository/public' }
+    }
     handler.maven { url "https://repo1.maven.org/maven2/" }
     handler.maven { url 'https://oss.sonatype.org/content/repositories/public' }
     handler.maven { url "https://jitpack.io" }

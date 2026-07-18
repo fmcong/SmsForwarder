@@ -25,9 +25,13 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/central' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
+        // 阿里云镜像在海外 CI（GitHub Actions）经常返回 502，导致 Gradle 直接失败；
+        // 仅在非 CI 环境（国内本地开发）启用，CI 直接用 google/mavenCentral/jitpack。
+        if (System.getenv('GITHUB_ACTIONS') == null) {
+            maven { url 'https://maven.aliyun.com/repository/google' }
+            maven { url 'https://maven.aliyun.com/repository/central' }
+            maven { url 'https://maven.aliyun.com/repository/public' }
+        }
         maven { url 'https://repo1.maven.org/maven2/' }
         maven { url 'https://oss.sonatype.org/content/repositories/public' }
         maven { url "https://jitpack.io" }
