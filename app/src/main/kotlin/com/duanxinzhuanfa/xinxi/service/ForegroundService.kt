@@ -288,7 +288,8 @@ class ForegroundService : Service() {
         isRunning = true
 
         val notification = createNotification(SettingUtils.notifyContent)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        // UPSIDE_DOWN_CAKE = API 34，但项目 targetSdk=33，用数字代替
+        if (Build.VERSION.SDK_INT >= 34) {
             startForeground(FRONT_NOTIFY_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         } else {
             startForeground(FRONT_NOTIFY_ID, notification)

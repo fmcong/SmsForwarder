@@ -168,11 +168,15 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
                     // 返回默认值并清除旧数据，避免反复报错
                     Log.w("SharedPreference", "Failed to deserialize key '$name', clearing old data: ${e.message}")
                     preference.edit().remove(name).apply()
-                    default
+                    @Suppress("UNCHECKED_CAST")
+                    val result = default as T
+                    result
                 }
             }
         }
-        return res as T
+        @Suppress("UNCHECKED_CAST")
+        val result = res as T
+        result
     }
 
     private fun putPreference(name: String, value: T) = with(preference.edit()) {

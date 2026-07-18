@@ -148,10 +148,11 @@ class ClipboardService : Service() {
             // 构建消息并通过 SendWorker 转发
             val msgInfo = MsgInfo(
                 type = "clipboard",
-                title = packageName,
+                from = packageName,
                 content = clipText,
-                time = Date(now),
-                description = "剪切板: ${clipText.take(30)}${if (clipText.length > 30) "..." else ""}"
+                date = Date(now),
+                simInfo = "",
+                simSlot = -1
             )
 
             serviceScope.launch {

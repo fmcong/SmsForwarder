@@ -79,11 +79,13 @@ object WebDavUtils {
 
         return try {
             val response = client.newCall(request).execute()
-            if (!response.isSuccessful) {
-                Log.w(TAG, "PROPFIND failed: ${response.code} ${response.message}")
+            @Suppress("DEPRECATION")
+            if (!response.isSuccessful()) {
+                Log.w(TAG, "PROPFIND failed: ${response.code()} ${response.message()}")
                 return emptyList()
             }
-            val body = response.body?.string() ?: return emptyList()
+            @Suppress("DEPRECATION")
+            val body = response.body()?.string() ?: return emptyList()
             response.close()
             parsePropfindResponse(body)
         } catch (e: Exception) {
@@ -151,11 +153,13 @@ object WebDavUtils {
 
         return try {
             val response = client.newCall(request).execute()
-            if (!response.isSuccessful) {
-                Log.w(TAG, "GET failed: ${response.code}")
+            @Suppress("DEPRECATION")
+            if (!response.isSuccessful()) {
+                Log.w(TAG, "GET failed: ${response.code()}")
                 return null
             }
-            val body = response.body?.string()
+            @Suppress("DEPRECATION")
+            val body = response.body()?.string()
             response.close()
             body
         } catch (e: Exception) {
@@ -184,9 +188,10 @@ object WebDavUtils {
 
         return try {
             val response = client.newCall(request).execute()
-            val success = response.isSuccessful
+            @Suppress("DEPRECATION")
+            val success = response.isSuccessful()
             if (!success) {
-                Log.w(TAG, "PUT failed: ${response.code} ${response.message}")
+                Log.w(TAG, "PUT failed: ${response.code()} ${response.message()}")
             }
             response.close()
             success

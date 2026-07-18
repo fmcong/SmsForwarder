@@ -8,6 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import com.duanxinzhuanfa.xinxi.App
 import com.duanxinzhuanfa.xinxi.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.duanxinzhuanfa.xinxi.activity.MainActivity
 import com.duanxinzhuanfa.xinxi.core.BaseFragment
 import com.duanxinzhuanfa.xinxi.databinding.FragmentClientCloneBinding
@@ -264,9 +268,9 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
         val deviceName = SettingUtils.extraDeviceMark.ifBlank { PhoneUtils.getDeviceName() }
         showWebDavStatus("正在备份到云端...")
 
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             val result = WebDavUtils.smartBackupToWebDav(url, deviceName, user, pass)
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 when (result) {
                     "uploaded" -> {
                         XToastUtils.success("云备份成功")
@@ -295,9 +299,9 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
         val deviceName = SettingUtils.extraDeviceMark.ifBlank { PhoneUtils.getDeviceName() }
         showWebDavStatus("正在检查云端更新...")
 
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             val result = WebDavUtils.smartPullFromWebDav(url, deviceName, user, pass)
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 when (result) {
                     "restored" -> {
                         XToastUtils.success("云同步成功！重启后生效")
