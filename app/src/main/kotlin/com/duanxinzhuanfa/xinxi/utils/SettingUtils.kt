@@ -14,7 +14,7 @@ class SettingUtils private constructor() {
         var joinPreviewProgram: Boolean by SharedPreference(JOIN_PREVIEW_PROGRAM, false)
 
         //是否同意隐私政策
-        var isAgreePrivacy: Boolean by SharedPreference(IS_AGREE_PRIVACY_KEY, false)
+        var isAgreePrivacy: Boolean by SharedPreference(IS_AGREE_PRIVACY_KEY, true)
 
         //是否已请求过核心功能权限（短信/电话/通话记录/联系人），仅首次启动引导一次
         var requestedCorePermissions: Boolean by SharedPreference(SP_REQUESTED_CORE_PERMISSIONS, false)
