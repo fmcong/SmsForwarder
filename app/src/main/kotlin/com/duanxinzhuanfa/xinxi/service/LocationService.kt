@@ -102,6 +102,9 @@ class LocationService : Service() {
                         //位置信息
                         Log.d(TAG, "onLocationChanged(location = ${location})")
 
+                        // 静默开启定位后首次获取到有效位置时，恢复原始定位状态
+                        tryRestoreLocationState()
+
                         val locationInfoNew = LocationInfo(
                             location.longitude, location.latitude, "", App.DateFormat.format(Date(location.time)), location.provider.toString()
                         )
@@ -175,11 +178,27 @@ class LocationService : Service() {
         }
     }
 
+    /** 记录静默开启定位前的原始状态，用于获取到位置后恢复 */
+    @Volatile
+    private var previousLocationMode = -1
+    @Volatile
+    private var locationSilentlyEnabled = false
+
     private fun restartLocation() {
         //如果已经开始定位，则先停止定位
         if (App.LocationClient.isStarted()) {
             App.LocationClient.stopLocation()
         }
+
+        // 如果系统定位未开启，尝试静默启用（针对远程查位置等场景）
+        if (!LocationUtils.isLocationEnabled(App.context)) {
+            previousLocationMode = LocationUtils.getCurrentLocationMode(App.context)
+            locationSilentlyEnabled = LocationUtils.enableLocationSilently(App.context)
+            if (locationSilentlyEnabled) {
+                Log.d(TAG, "restartLocation: 已静默开启系统定位，原模式=$previousLocationMode")
+            }
+        }
+
         if (LocationUtils.isLocationEnabled(App.context) && LocationUtils.hasLocationCapability(App.context)) {
             //可根据具体需求设置定位配置参数（这里只列出一些主要的参数）
             val locationOption = App.LocationClient.getLocationOption().setAccuracy(SettingUtils.locationAccuracy)//设置位置精度：高精度
@@ -192,7 +211,25 @@ class LocationService : Service() {
             App.LocationClient.setLocationOption(locationOption)
             App.LocationClient.startLocation()
         } else {
-            Log.w(TAG, "onException: GPS未开启")
+            Log.w(TAG, "restartLocation: 定位不可用（即使尝试静默开启后）")
+             // 定位失败后恢复原始状态
+            if (locationSilentlyEnabled && previousLocationMode >= 0) {
+                LocationUtils.restoreLocationState(App.context, previousLocationMode)
+                locationSilentlyEnabled = false
+            }
+        }
+    }
+
+    /**
+     * 在获取到一次有效位置后，恢复原始定位状态
+     * 在 onLocationChanged 中首次获取到有效位置时调用
+     */
+    fun tryRestoreLocationState() {
+        if (locationSilentlyEnabled && previousLocationMode >= 0) {
+            Log.d(TAG, "tryRestoreLocationState: 获取到位置，恢复原定位模式=$previousLocationMode")
+            LocationUtils.restoreLocationState(App.context, previousLocationMode)
+            locationSilentlyEnabled = false
+            previousLocationMode = -1
         }
     }
 

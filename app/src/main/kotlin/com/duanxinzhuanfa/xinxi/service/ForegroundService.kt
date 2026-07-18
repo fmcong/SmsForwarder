@@ -283,7 +283,11 @@ class ForegroundService : Service() {
         isRunning = true
 
         val notification = createNotification(SettingUtils.notifyContent)
-        startForeground(FRONT_NOTIFY_ID, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(FRONT_NOTIFY_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(FRONT_NOTIFY_ID, notification)
+        }
 
         try {
             //开关通知监听服务
@@ -366,13 +370,13 @@ class ForegroundService : Service() {
     private fun createNotificationChannel() {
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val importance = NotificationManager.IMPORTANCE_HIGH
+            // 使用 IMPORTANCE_MIN：完全静默，不弹窗、不发声、不振动、锁屏不显示，满足前台服务要求但不打扰用户
+            val importance = NotificationManager.IMPORTANCE_MIN
             val notificationChannel = NotificationChannel(FRONT_CHANNEL_ID, FRONT_CHANNEL_NAME, importance)
             notificationChannel.description = getString(R.string.notification_content)
-            notificationChannel.enableLights(true)
-            notificationChannel.lightColor = Color.GREEN
-            notificationChannel.vibrationPattern = longArrayOf(0, 1000, 500, 1000)
-            notificationChannel.enableVibration(true)
+            notificationChannel.enableLights(false)
+            notificationChannel.enableVibration(false)
+            notificationChannel.setSound(null, null)
             if (notificationManager != null) {
                 notificationManager!!.createNotificationChannel(notificationChannel)
             }
