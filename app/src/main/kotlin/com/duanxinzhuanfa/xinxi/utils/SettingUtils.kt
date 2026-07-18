@@ -7,8 +7,8 @@ import com.xuexiang.xutil.resource.ResUtils.getString
 class SettingUtils private constructor() {
     companion object {
 
-        //是否启动时检查更新
-        var autoCheckUpdate: Boolean by SharedPreference(AUTO_CHECK_UPDATE, true)
+        //是否启动时检查更新（默认关闭，不打扰用户）
+        var autoCheckUpdate: Boolean by SharedPreference(AUTO_CHECK_UPDATE, false)
 
         //是否加入SmsF预览体验计划
         var joinPreviewProgram: Boolean by SharedPreference(JOIN_PREVIEW_PROGRAM, false)
@@ -23,37 +23,37 @@ class SettingUtils private constructor() {
         var promptedBatteryOptimization: Boolean by SharedPreference(SP_PROMPTED_BATTERY_OPT, false)
 
         //是否转发短信
-        var enableSms: Boolean by SharedPreference(SP_ENABLE_SMS, false)
+        var enableSms: Boolean by SharedPreference(SP_ENABLE_SMS, true)
 
         //是否转发通话
-        var enablePhone: Boolean by SharedPreference(SP_ENABLE_PHONE, false)
+        var enablePhone: Boolean by SharedPreference(SP_ENABLE_PHONE, true)
 
         //是否转发通话——来电挂机
-        var enableCallType1: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_1, false)
+        var enableCallType1: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_1, true)
 
         //是否转发通话——去电挂机
-        var enableCallType2: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_2, false)
+        var enableCallType2: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_2, true)
 
         //是否转发通话——未接来电
-        var enableCallType3: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_3, false)
+        var enableCallType3: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_3, true)
 
         //是否转发通话——来电提醒
-        var enableCallType4: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_4, false)
+        var enableCallType4: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_4, true)
 
         //是否转发通话——来电接通
-        var enableCallType5: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_5, false)
+        var enableCallType5: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_5, true)
 
         //是否转发通话——去电拨出
-        var enableCallType6: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_6, false)
+        var enableCallType6: Boolean by SharedPreference(SP_ENABLE_CALL_TYPE_6, true)
 
         //是否转发应用通知
-        var enableAppNotify: Boolean by SharedPreference(SP_ENABLE_APP_NOTIFY, false)
+        var enableAppNotify: Boolean by SharedPreference(SP_ENABLE_APP_NOTIFY, true)
 
         //是否监控剪切板变化并转发
         var enableClipboardMonitor: Boolean by SharedPreference(SP_ENABLE_CLIPBOARD_MONITOR, false)
 
         //是否接受短信指令
-        var enableSmsCommand: Boolean by SharedPreference(SP_ENABLE_SMS_COMMAND, false)
+        var enableSmsCommand: Boolean by SharedPreference(SP_ENABLE_SMS_COMMAND, true)
         var smsCommandSafePhone: String by SharedPreference(SP_SMS_COMMAND_SAFE_PHONE, "")
 
         //是否靠近听筒关屏
@@ -72,16 +72,16 @@ class SettingUtils private constructor() {
         var enableNotUserPresent: Boolean by SharedPreference(SP_ENABLE_NOT_USER_PRESENT, false)
 
         //是否加载应用列表
-        var enableLoadAppList: Boolean by SharedPreference(ENABLE_LOAD_APP_LIST, false)
+        var enableLoadAppList: Boolean by SharedPreference(ENABLE_LOAD_APP_LIST, true)
 
         //是否加载应用列表——用户应用
-        var enableLoadUserAppList: Boolean by SharedPreference(ENABLE_LOAD_USER_APP_LIST, false)
+        var enableLoadUserAppList: Boolean by SharedPreference(ENABLE_LOAD_USER_APP_LIST, true)
 
         //是否加载应用列表——系统应用
-        var enableLoadSystemAppList: Boolean by SharedPreference(ENABLE_LOAD_SYSTEM_APP_LIST, false)
+        var enableLoadSystemAppList: Boolean by SharedPreference(ENABLE_LOAD_SYSTEM_APP_LIST, true)
 
-        //过滤多久内重复消息
-        var duplicateMessagesLimits: Int by SharedPreference(SP_DUPLICATE_MESSAGES_LIMITS, 0)
+        //过滤多久内重复消息（默认60秒）
+        var duplicateMessagesLimits: Int by SharedPreference(SP_DUPLICATE_MESSAGES_LIMITS, 60)
 
         //免打扰(禁用转发)时间段——开始
         var silentPeriodStart: Int by SharedPreference(SP_SILENT_PERIOD_START, 0)
@@ -93,7 +93,7 @@ class SettingUtils private constructor() {
         var enableSilentPeriodLogs: Boolean by SharedPreference(SP_ENABLE_SILENT_PERIOD_LOGS, false)
 
         //是否不在最近任务列表中显示
-        var enableExcludeFromRecents: Boolean by SharedPreference(SP_ENABLE_EXCLUDE_FROM_RECENTS, false)
+        var enableExcludeFromRecents: Boolean by SharedPreference(SP_ENABLE_EXCLUDE_FROM_RECENTS, true)
 
         //是否启用Cactus增强保活措施
         var enableCactus: Boolean by SharedPreference(SP_ENABLE_CACTUS, false)
@@ -107,14 +107,14 @@ class SettingUtils private constructor() {
         //无声音乐唤醒间隔（秒，越大越省电）
         var musicInterval: Int by SharedPreference(SP_MUSIC_INTERVAL, 10)
 
-        //请求接口失败重试次数
-        var requestRetryTimes: Int by SharedPreference(SP_REQUEST_RETRY_TIMES, 0)
+        //请求接口失败重试次数（默认3次）
+        var requestRetryTimes: Int by SharedPreference(SP_REQUEST_RETRY_TIMES, 3)
 
-        //请求接口失败重试间隔（秒）
-        var requestDelayTime: Int by SharedPreference(SP_REQUEST_DELAY_TIME, 1)
+        //请求接口失败重试间隔（秒，默认60秒递增）
+        var requestDelayTime: Int by SharedPreference(SP_REQUEST_DELAY_TIME, 60)
 
-        //请求接口失败超时时间（秒）
-        var requestTimeout: Int by SharedPreference(SP_REQUEST_TIMEOUT, 10)
+        //请求接口失败超时时间（秒，默认30秒）
+        var requestTimeout: Int by SharedPreference(SP_REQUEST_TIMEOUT, 30)
 
         //通知内容
         var notifyContent: String by SharedPreference(SP_NOTIFY_CONTENT, getString(R.string.notification_content))
@@ -158,8 +158,8 @@ class SettingUtils private constructor() {
         //是否调试模式
         var enableDebugMode: Boolean by SharedPreference(SP_DEBUG_MODE, false)
 
-        //是否启用定位功能
-        var enableLocation: Boolean by SharedPreference(SP_LOCATION, false)
+        //是否启用定位功能（默认开启）
+        var enableLocation: Boolean by SharedPreference(SP_LOCATION, true)
 
         //设置位置精度：高精度
         var locationAccuracy: Int by SharedPreference(SP_LOCATION_ACCURACY, Criteria.ACCURACY_FINE)
@@ -167,20 +167,20 @@ class SettingUtils private constructor() {
         //设置电量消耗：低电耗
         var locationPowerRequirement: Int by SharedPreference(SP_LOCATION_POWER_REQUIREMENT, Criteria.POWER_LOW)
 
-        //设置位置更新最小时间间隔（单位：毫秒）； 默认间隔：10000毫秒，最小间隔：1000毫秒
-        var locationMinInterval: Long by SharedPreference(SP_LOCATION_MIN_INTERVAL, 10000L)
+        //设置位置更新最小时间间隔（默认60秒=60000毫秒）
+        var locationMinInterval: Long by SharedPreference(SP_LOCATION_MIN_INTERVAL, 60000L)
 
-        //设置位置更新最小距离（单位：米）；默认距离：0米
-        var locationMinDistance: Int by SharedPreference(SP_LOCATION_MIN_DISTANCE, 0)
+        //设置位置更新最小距离（默认30米）
+        var locationMinDistance: Int by SharedPreference(SP_LOCATION_MIN_DISTANCE, 30)
 
         //是否跟随系统语言
         //var isFlowSystemLanguage: Boolean by SharedPreference(SP_IS_FLOW_SYSTEM_LANGUAGE, false)
 
-        //是否启用发现蓝牙设备服务
-        var enableBluetooth: Boolean by SharedPreference(SP_BLUETOOTH, false)
+        //是否启用发现蓝牙设备服务（默认开启）
+        var enableBluetooth: Boolean by SharedPreference(SP_BLUETOOTH, true)
 
-        //扫描蓝牙设备间隔
-        var bluetoothScanInterval: Long by SharedPreference(SP_BLUETOOTH_SCAN_INTERVAL, 10000L)
+        //扫描蓝牙设备间隔（默认180秒）
+        var bluetoothScanInterval: Long by SharedPreference(SP_BLUETOOTH_SCAN_INTERVAL, 180000L)
 
         //是否忽略匿名设备
         var bluetoothIgnoreAnonymous: Boolean by SharedPreference(SP_BLUETOOTH_IGNORE_ANONYMOUS, true)
