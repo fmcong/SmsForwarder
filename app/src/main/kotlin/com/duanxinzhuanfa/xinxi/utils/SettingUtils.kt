@@ -122,6 +122,11 @@ class SettingUtils private constructor() {
         //设备名称
         var extraDeviceMark: String by SharedPreference(SP_EXTRA_DEVICE_MARK, "")
 
+        //WebDAV 云备份配置
+        var webdavUrl: String by SharedPreference(SP_WEBDAV_URL, "")
+        var webdavUsername: String by SharedPreference(SP_WEBDAV_USERNAME, "")
+        var webdavPassword: String by SharedPreference(SP_WEBDAV_PASSWORD, "")
+
         //SIM1主键
         var subidSim1: Int by SharedPreference(SP_SUBID_SIM1, 0)
 

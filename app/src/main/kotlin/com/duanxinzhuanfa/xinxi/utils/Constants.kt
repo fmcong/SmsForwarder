@@ -94,6 +94,11 @@ const val SP_PURE_CLIENT_MODE = "enable_pure_client_mode"
 const val SP_PURE_TASK_MODE = "enable_pure_task_mode"
 const val SP_DEBUG_MODE = "enable_debug_mode"
 
+// WebDAV 云备份
+const val SP_WEBDAV_URL = "webdav_url"
+const val SP_WEBDAV_USERNAME = "webdav_username"
+const val SP_WEBDAV_PASSWORD = "webdav_password"
+
 //const val SP_IS_FLOW_SYSTEM_LANGUAGE = "is_flow_system_language"
 const val SP_LOCATION = "enable_location"
 const val SP_LOCATION_ACCURACY = "location_accuracy"

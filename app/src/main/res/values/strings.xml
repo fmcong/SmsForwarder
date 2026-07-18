@@ -875,6 +875,17 @@
     <string name="import_succeeded">导入配置成功！\n需要重启APP以便生效！\n重启后请再次核对所有配置项！</string>
     <string name="import_failed_tips">导入失败: %s</string>
     <string name="restore_failed">还原失败</string>
+    <!-- WebDAV 云备份 -->
+    <string name="webdav_config_title">WebDAV 云备份（需自行部署飞牛NAS等）</string>
+    <string name="webdav_url_hint">WebDAV 地址，如 https://dav.xxx.fnos.net:443/文件夹名</string>
+    <string name="webdav_user_hint">用户名（可选）</string>
+    <string name="webdav_pass_hint">密码（可选）</string>
+    <string name="webdav_backup">备份到云端</string>
+    <string name="webdav_pull">从云端同步</string>
+    <string name="webdav_backup_success">云备份成功: %s</string>
+    <string name="webdav_backup_failed">云备份失败，请检查地址和网络</string>
+    <string name="webdav_pull_success">云同步成功: %s\n已恢复配置，重启后生效</string>
+    <string name="webdav_pull_failed">云同步失败，未找到配置文件</string>
     <string name="below_level_min">【电量预警】已低于电量预警下限，请及时充电！%s</string>
     <string name="over_level_max">【电量预警】已高于电量预警上限，请拔掉充电器！%s</string>
     <string name="reach_level_min">【电量预警】已达到电量预警下限，请及时充电！%s</string>

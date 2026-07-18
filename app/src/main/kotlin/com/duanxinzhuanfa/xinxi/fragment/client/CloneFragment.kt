@@ -22,6 +22,8 @@ import com.duanxinzhuanfa.xinxi.utils.Log
 import com.duanxinzhuanfa.xinxi.utils.RSACrypt
 import com.duanxinzhuanfa.xinxi.utils.SM4Crypt
 import com.duanxinzhuanfa.xinxi.utils.SettingUtils
+import com.duanxinzhuanfa.xinxi.utils.PhoneUtils
+import com.duanxinzhuanfa.xinxi.utils.WebDavUtils
 import com.duanxinzhuanfa.xinxi.utils.XToastUtils
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -173,6 +175,13 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
                 binding!!.btnImport.text = getString(R.string.imports)
             }
         })
+
+        // 从 SharedPreferences 恢复 WebDAV 配置
+        if (SettingUtils.webdavUrl.isNotBlank()) {
+            binding!!.etWebdavUrl.setText(SettingUtils.webdavUrl)
+            binding!!.etWebdavUser.setText(SettingUtils.webdavUsername)
+            binding!!.etWebdavPass.setText(SettingUtils.webdavPassword)
+        }
     }
 
     override fun initListeners() {
@@ -180,6 +189,8 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
         binding!!.btnPull.setOnClickListener(this)
         binding!!.btnExport.setOnClickListener(this)
         binding!!.btnImport.setOnClickListener(this)
+        binding!!.btnWebdavBackup.setOnClickListener(this)
+        binding!!.btnWebdavPull.setOnClickListener(this)
     }
 
     @SingleClick
@@ -213,50 +224,118 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
             R.id.btn_import -> {
                 try {
                     importCountDownHelper?.start()
-                    val file = File(backupPath + File.separator + backupFile)
-                    //判断文件是否存在
-                    if (!FileUtils.isFileExists(file)) {
-                        XToastUtils.error(getString(R.string.import_failed_file_not_exist))
-                        return
-                    }
-
-                    val jsonStr = FileIOUtils.readFile2String(file)
-                    Log.d(TAG, "jsonStr = $jsonStr")
-                    if (TextUtils.isEmpty(jsonStr)) {
-                        XToastUtils.error(getString(R.string.import_failed))
-                        return
-                    }
-
-                    //替换Date字段为当前时间
-                    val builder = GsonBuilder()
-                    builder.registerTypeAdapter(Date::class.java, JsonDeserializer<Any?> { _, _, _ -> Date() })
-                    val gson = builder.create()
-                    val cloneInfo = gson.fromJson(jsonStr, CloneInfo::class.java)
-                    Log.d(TAG, "cloneInfo = $cloneInfo")
-
-                    //判断版本是否一致
-                    HttpServerUtils.compareVersion(cloneInfo)
-
-                    if (HttpServerUtils.restoreSettings(cloneInfo)) {
-                        MaterialDialog.Builder(requireContext())
-                            .iconRes(R.drawable.icon_api_clone)
-                            .title(R.string.clone)
-                            .content(R.string.import_succeeded)
-                            .cancelable(false)
-                            .positiveText(R.string.confirm)
-                            .onPositive { _: MaterialDialog?, _: DialogAction? ->
-                                val intent = Intent(App.context, MainActivity::class.java)
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                startActivity(intent)
-                            }
-                            .show()
-                    } else {
-                        XToastUtils.error(getString(R.string.import_failed))
-                    }
+                    importFromLocalFile()
                 } catch (e: Exception) {
                     XToastUtils.error(String.format(getString(R.string.import_failed_tips), e.message))
                 }
             }
+            //WebDAV 云备份
+            R.id.btn_webdav_backup -> backupToWebDav()
+            //WebDAV 云同步
+            R.id.btn_webdav_pull -> pullFromWebDav()
+        }
+    }
+
+    // ==================== WebDAV 操作 ====================
+
+    private fun getWebDavConfig(): Triple<String, String?, String?> {
+        val url = binding!!.etWebdavUrl.text.toString().trim()
+        val user = binding!!.etWebdavUser.text.toString().trim().ifBlank { null }
+        val pass = binding!!.etWebdavPass.text.toString().trim().ifBlank { null }
+        // 持久化保存，下次打开自动填入
+        SettingUtils.webdavUrl = url
+        SettingUtils.webdavUsername = user ?: ""
+        SettingUtils.webdavPassword = pass ?: ""
+        return Triple(url, user, pass)
+    }
+
+    private fun showWebDavStatus(text: String) {
+        binding!!.tvWebdavStatus.visibility = View.VISIBLE
+        binding!!.tvWebdavStatus.text = text
+    }
+
+    /** 备份当前配置到 WebDAV */
+    private fun backupToWebDav() {
+        val (url, user, pass) = getWebDavConfig()
+        if (url.isBlank()) {
+            XToastUtils.error("请输入 WebDAV 地址")
+            return
+        }
+        val deviceName = SettingUtils.extraDeviceMark.ifBlank { PhoneUtils.getDeviceName() }
+        showWebDavStatus("正在备份到云端...")
+
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            val result = WebDavUtils.backupToWebDav(url, deviceName, user, pass)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                if (result != null) {
+                    XToastUtils.success(String.format(getString(R.string.webdav_backup_success), result))
+                    showWebDavStatus("上次备份: $result")
+                } else {
+                    XToastUtils.error(getString(R.string.webdav_backup_failed))
+                    showWebDavStatus("备份失败")
+                }
+            }
+        }
+    }
+
+    /** 从 WebDAV 拉取最新配置并恢复 */
+    private fun pullFromWebDav() {
+        val (url, user, pass) = getWebDavConfig()
+        if (url.isBlank()) {
+            XToastUtils.error("请输入 WebDAV 地址")
+            return
+        }
+        val deviceName = SettingUtils.extraDeviceMark.ifBlank { PhoneUtils.getDeviceName() }
+        showWebDavStatus("正在从云端同步...")
+
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            val result = WebDavUtils.pullLatestFromWebDav(url, deviceName, user, pass)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                if (result != null) {
+                    XToastUtils.success(String.format(getString(R.string.webdav_pull_success), result))
+                    showWebDavStatus("已同步: $result")
+                } else {
+                    XToastUtils.error(getString(R.string.webdav_pull_failed))
+                    showWebDavStatus("同步失败")
+                }
+            }
+        }
+    }
+
+    /** 从本地文件导入配置（提取自原 onClick 代码） */
+    private fun importFromLocalFile() {
+        val file = File(backupPath + File.separator + backupFile)
+        if (!FileUtils.isFileExists(file)) {
+            XToastUtils.error(getString(R.string.import_failed_file_not_exist))
+            return
+        }
+        val jsonStr = FileIOUtils.readFile2String(file)
+        Log.d(TAG, "jsonStr = $jsonStr")
+        if (TextUtils.isEmpty(jsonStr)) {
+            XToastUtils.error(getString(R.string.import_failed))
+            return
+        }
+        val builder = GsonBuilder()
+        builder.registerTypeAdapter(Date::class.java, JsonDeserializer<Any?> { _, _, _ -> Date() })
+        val gson = builder.create()
+        val cloneInfo = gson.fromJson(jsonStr, CloneInfo::class.java)
+        Log.d(TAG, "cloneInfo = $cloneInfo")
+        HttpServerUtils.compareVersion(cloneInfo)
+        if (HttpServerUtils.restoreSettings(cloneInfo)) {
+            MaterialDialog.Builder(requireContext())
+                .iconRes(R.drawable.icon_api_clone)
+                .title(R.string.clone)
+                .content(R.string.import_succeeded)
+                .cancelable(false)
+                .positiveText(R.string.confirm)
+                .onPositive { _: MaterialDialog?, _: DialogAction? ->
+                    val intent = Intent(App.context, MainActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    startActivity(intent)
+                }
+                .show()
+        } else {
+            XToastUtils.error(getString(R.string.import_failed))
         }
     }
 
