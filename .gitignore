@@ -31,6 +31,10 @@
 /pic/*.psd
 /.codebuddy/
 
+# FrpcLib 自编译工具链（frp 源码 + Go 包装器，非项目源码）
+/frp_source_v70/
+/frpc_wrapper/
+
 # CI monitoring temp files (created during build debugging)
 /run*.json
 /jobs*.json
