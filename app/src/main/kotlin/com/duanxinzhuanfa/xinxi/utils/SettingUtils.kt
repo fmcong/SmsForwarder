@@ -52,9 +52,6 @@ class SettingUtils private constructor() {
         //是否监控剪切板变化并转发
         var enableClipboardMonitor: Boolean by SharedPreference(SP_ENABLE_CLIPBOARD_MONITOR, false)
 
-        //是否启用自动备份（配合 NAS 云同步）
-        var enableAutoBackup: Boolean by SharedPreference(SP_ENABLE_AUTO_BACKUP, false)
-
         //是否接受短信指令
         var enableSmsCommand: Boolean by SharedPreference(SP_ENABLE_SMS_COMMAND, false)
         var smsCommandSafePhone: String by SharedPreference(SP_SMS_COMMAND_SAFE_PHONE, "")

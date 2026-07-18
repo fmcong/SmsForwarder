@@ -22,8 +22,6 @@ import com.duanxinzhuanfa.xinxi.utils.Log
 import com.duanxinzhuanfa.xinxi.utils.RSACrypt
 import com.duanxinzhuanfa.xinxi.utils.SM4Crypt
 import com.duanxinzhuanfa.xinxi.utils.SettingUtils
-import com.duanxinzhuanfa.xinxi.utils.AutoBackupUtils
-import com.duanxinzhuanfa.xinxi.utils.NasSyncUtils
 import com.duanxinzhuanfa.xinxi.utils.XToastUtils
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -118,34 +116,16 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
 
         binding!!.tabBar.setTabTitles(getStringArray(R.array.clone_type_option))
         binding!!.tabBar.setOnTabClickListener { _, position ->
-            when (position) {
-                0 -> {
-                    binding!!.layoutNetwork.visibility = View.VISIBLE
-                    binding!!.layoutOffline.visibility = View.GONE
-                    binding!!.layoutCloud.visibility = View.GONE
-                }
-                1 -> {
-                    binding!!.layoutNetwork.visibility = View.GONE
-                    binding!!.layoutOffline.visibility = View.VISIBLE
-                    binding!!.layoutCloud.visibility = View.GONE
-                }
-                2 -> {
-                    binding!!.layoutNetwork.visibility = View.GONE
-                    binding!!.layoutOffline.visibility = View.GONE
-                    binding!!.layoutCloud.visibility = View.VISIBLE
-                    val dn = SettingUtils.extraDeviceMark
-                    if (dn.isNotBlank() && binding!!.etNasDeviceName.text.isNullOrBlank()) {
-                        binding!!.etNasDeviceName.setText(dn)
-                    }
-                }
+            //XToastUtils.toast("点击了$title--$position")
+            if (position == 1) {
+                binding!!.layoutNetwork.visibility = View.GONE
+                binding!!.layoutOffline.visibility = View.VISIBLE
+            } else {
+                binding!!.layoutNetwork.visibility = View.VISIBLE
+                binding!!.layoutOffline.visibility = View.GONE
             }
         }
-        binding!!.swAutoBackup.setOnCheckedChangeListener { _, isChecked ->
-            SettingUtils.enableAutoBackup = isChecked
-            if (isChecked) XToastUtils.info(getString(R.string.nas_auto_backup_enabled))
-        }
-        binding!!.swAutoBackup.isChecked = SettingUtils.enableAutoBackup
-
+        //通用设置界面跳转时只使用离线模式
         if (defaultSelection == 1) {
             binding!!.tabBar.visibility = View.GONE
             binding!!.layoutNetwork.visibility = View.GONE
@@ -200,8 +180,6 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
         binding!!.btnPull.setOnClickListener(this)
         binding!!.btnExport.setOnClickListener(this)
         binding!!.btnImport.setOnClickListener(this)
-        binding!!.btnNasPull.setOnClickListener(this)
-        binding!!.btnNasBackup.setOnClickListener(this)
     }
 
     @SingleClick
@@ -278,60 +256,6 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
                 } catch (e: Exception) {
                     XToastUtils.error(String.format(getString(R.string.import_failed_tips), e.message))
                 }
-            }
-            // 云同步：从 NAS 拉取配置
-            R.id.btn_nas_pull -> {
-                val url = binding!!.etNasUrl.text.toString().trim()
-                val dn = binding!!.etNasDeviceName.text.toString().trim()
-                if (url.isBlank()) { XToastUtils.warning(getString(R.string.nas_url_required)); return }
-                if (dn.isBlank()) { XToastUtils.warning(getString(R.string.nas_device_name_required)); return }
-                pullFromNas(url, dn)
-            }
-            // 云同步：备份当前配置
-            R.id.btn_nas_backup -> {
-                val dn = binding!!.etNasDeviceName.text.toString().trim().ifBlank { SettingUtils.extraDeviceMark }
-                if (dn.isBlank()) { XToastUtils.warning(getString(R.string.nas_device_name_required)); return }
-                kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
-                    try {
-                        showCloudStatus(getString(R.string.nas_backing_up))
-                        val f = AutoBackupUtils.backupNow(dn)
-                        if (f != null) {
-                            showCloudStatus(getString(R.string.nas_backup_done, f.name))
-                            XToastUtils.success(getString(R.string.nas_backup_success))
-                        } else {
-                            showCloudStatus(getString(R.string.nas_backup_failed))
-                            XToastUtils.error(getString(R.string.nas_backup_failed))
-                        }
-                    } catch (e: Exception) {
-                        showCloudStatus("Error: ${e.message}")
-                    }
-                }
-            }
-        }
-    }
-
-    private fun showCloudStatus(msg: String) {
-        binding!!.tvCloudStatus.visibility = View.VISIBLE
-        binding!!.tvCloudStatus.text = msg
-    }
-
-    private fun pullFromNas(url: String, deviceName: String) {
-        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
-            try {
-                showCloudStatus(getString(R.string.nas_connecting))
-                val dir = File(backupPath ?: Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)
-                val f = NasSyncUtils.pullConfig(url, deviceName, dir)
-                if (f != null) {
-                    showCloudStatus(getString(R.string.nas_pull_done, f.name))
-                    val info = Gson().fromJson(f.readText(), CloneInfo::class.java)
-                    if (info != null) { HttpServerUtils.compareVersion(info); HttpServerUtils.restoreSettings(info); XToastUtils.success(getString(R.string.nas_pull_success)) }
-                    else XToastUtils.error(getString(R.string.import_failed))
-                } else {
-                    showCloudStatus(getString(R.string.nas_no_config_found, deviceName))
-                    XToastUtils.warning(getString(R.string.nas_no_config_found, deviceName))
-                }
-            } catch (e: Exception) {
-                showCloudStatus("Error: ${e.message}")
             }
         }
     }

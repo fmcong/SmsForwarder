@@ -73,25 +73,6 @@
     <string name="call_type_option_received">已接来电</string>
     <string name="clone_type_option_network">网络模式</string>
     <string name="clone_type_option_offline">离线模式</string>
-    <string name="clone_type_option_cloud">云同步</string>
-    <!-- NAS 云同步 -->
-    <string name="nas_share_url_hint">飞牛NAS分享链接 (例: https://share.fnnas.net/s/xxx)</string>
-    <string name="nas_device_name_hint">设备名称 (用于匹配配置文件)</string>
-    <string name="nas_pull_config">拉取配置</string>
-    <string name="nas_backup_now">立即备份</string>
-    <string name="nas_auto_backup">自动备份 (每次启动时备份)</string>
-    <string name="nas_auto_backup_enabled">自动备份已启用</string>
-    <string name="nas_url_required">请先输入 NAS 分享链接</string>
-    <string name="nas_device_name_required">请先输入设备名称</string>
-    <string name="nas_connecting">正在连接 NAS…</string>
-    <string name="nas_backing_up">正在备份…</string>
-    <string name="nas_backup_done">备份完成: %s</string>
-    <string name="nas_backup_success">备份成功</string>
-    <string name="nas_backup_failed">备份失败</string>
-    <string name="nas_pull_done">已下载: %s</string>
-    <string name="nas_pull_success">配置拉取成功</string>
-    <string name="nas_pull_failed">拉取失败: %s</string>
-    <string name="nas_no_config_found">未找到设备 \"%s\" 的配置文件</string>
     <string name="app_type_option_user">用户应用</string>
     <string name="app_type_option_system">系统应用</string>
     <string name="task_type_option_mine">我的任务</string>
