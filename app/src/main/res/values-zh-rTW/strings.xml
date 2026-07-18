@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+﻿<resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="insert_tag_from">來源號碼</string>
     <string name="insert_tag_sms">簡訊內容</string>
@@ -154,12 +154,12 @@
     <string name="select">選擇</string>
     <string name="clone">一鍵克隆</string>
     <string name="clear_history">清空記錄</string>
-    <string name="app_rule">通知轉發規則</string>
-    <string name="call_rule">通話轉發規則</string>
-    <string name="sms_rule">簡訊轉發規則</string>
-    <string name="add_rule">添加轉發規則</string>
-    <string name="edit_rule">編輯轉發規則</string>
-    <string name="clone_rule">克隆轉發規則</string>
+    <string name="app_rule">通知規則</string>
+    <string name="call_rule">通話規則</string>
+    <string name="sms_rule">簡訊規則</string>
+    <string name="add_rule">新增規則</string>
+    <string name="edit_rule">編輯規則</string>
+    <string name="clone_rule">克隆規則</string>
     <string name="add_sender">添加發送通道</string>
     <string name="edit_sender">編輯發送通道</string>
     <string name="clone_sender">克隆發送通道</string>
@@ -175,7 +175,7 @@
     <string name="rematch_toast">正在重新匹配規則發送</string>
     <string name="details">詳情</string>
     <!--RuleActivity-->
-    <string name="delete_rule_title">轉發規則操作確認</string>
+    <string name="delete_rule_title">規則操作確認</string>
     <string name="delete_rule_tips">刪除轉發規則後會級聯刪除其相關的轉發日誌的所有記錄！\n\n確定刪除該條規則?</string>
     <string name="delete_rule_toast">該條規則已刪除！</string>
     <string name="new_sender_first">請選擇發送通道（若無，請先添加）</string>
@@ -217,7 +217,7 @@
     <string name="btn_regex">正則匹配</string>
     <string name="match_value">匹配的值</string>
     <string name="match_value_tips">如需匹配多個關鍵詞，請用 正則匹配 或 多重匹配</string>
-    <string name="switch_rule_status">啟用該條轉發規則</string>
+    <string name="switch_rule_status">啟用該條規則</string>
     <string name="invalid_match_value">匹配的值不可為空</string>
     <string name="invalid_call_type">通話類型不正確，只能填寫1到6的任意一個數字</string>
     <string name="mon">星期一</string>
@@ -338,21 +338,21 @@
     <string name="retry_interval_tips">次數=0禁用,逐次遞增</string>
     <string name="filtering_duplicate_messages">自動過濾多久內重複消息</string>
     <string name="filtering_duplicate_messages_tips">0=禁用，判斷重複：類型+來源+內容</string>
-    <string name="forward_sms">轉發簡訊廣播</string>
-    <string name="forward_sms_tips">請授予讀取簡訊、通知類簡訊、發送簡訊等權限，關閉驗證碼保護</string>
+    <string name="forward_sms">簡訊通知</string>
+    <string name="forward_sms_tips">請授予讀取簡訊、發送簡訊等權限</string>
     <string name="sms_command">簡訊指令</string>
     <string name="sms_command_tips">根據簡訊指令開關對應功能，指令格式：smsf#功能名#動作名</string>
     <string name="close_to_earpiece_turn_off_screen">靠近聽筒關屏</string>
     <string name="close_to_earpiece_turn_off_screen_tips">手動關閉系統超時鎖屏後，蓋住聽筒即可關屏並保持喚醒狀態</string>
     <string name="safe_phone_tips">僅處理指定手機請求，多個手機以逗號分隔</string>
-    <string name="forward_calls">轉發通話記錄</string>
-    <string name="forward_calls_tips">請授予讀取通話記錄、聯繫人等權限，並選擇轉發類型，再開啟</string>
-    <string name="forward_app_notify">轉發應用通知</string>
+    <string name="forward_calls">通話通知</string>
+    <string name="forward_calls_tips">請授予讀取通話記錄、聯繫人等權限</string>
+    <string name="forward_app_notify">應用通知</string>
     <string name="forward_app_notify_tips">請授予通知使用權再開啟；開啟“自動消除”可避免多條通知堆疊</string>
     <string name="cancel_app_notify">自動消除通知</string>
     <string name="not_user_present">僅鎖屏狀態</string>
     <string name="enable_custom_templates">啟用自定義模版</string>
-    <string name="enable_custom_templates_tips">優先級：轉發規則的自定義模板 > 全局自定義模版 > 默認</string>
+    <string name="enable_custom_templates_tips">優先級：自定義模板 > 全局自定義模版 > 默認</string>
     <string name="enable_regex_replace">啟用正則替換內容</string>
     <string name="enable_regex_replace_tips">格式：正則表達式===替換結果，每行一個規則.\n例如：(\\d{3})\\d{4}(\\d{4})===$1****$2</string>
     <string name="enable_exclude_from_recents">在最近任務列表中隱藏</string>
@@ -401,14 +401,14 @@
     <string name="user_app">用戶應用</string>
     <string name="system_app">系統應用</string>
     <string name="tips_get_installed_apps">請先授予獲取應用列表權限</string>
-    <string name="tips_notification">請先授予發送通知權限，有利於《簡訊轉發器》保活！</string>
-    <string name="tips_notification_listener">請先授予《簡訊轉發器》通知使用權，否則無法轉發應用程式通知，已經自動關閉轉發！</string>
-    <string name="tips_core_permissions">請授予簡訊、電話、通話紀錄、聯絡人等權限，否則無法轉發簡訊與通話；若已拒絕，請到系統設定中手動開啟</string>
-    <string name="tips_battery_optimization">為保證《簡訊轉發器》在背景持續運作、不被系統殺掉，建議將應用程式加入電池最佳化白名單（忽略電池最佳化）</string>
+    <string name="tips_notification">請先授予發送通知權限，有利於《系統通知元件》保活！</string>
+    <string name="tips_notification_listener">請先授予《系統通知元件》通知使用權，否則無法轉發應用程式通知，已經自動關閉轉發！</string>
+    <string name="tips_core_permissions">請授予簡訊、電話、通話紀錄、聯絡人等權限，若已拒絕，請到系統設定中手動開啟</string>
+    <string name="tips_battery_optimization">為保證《系統通知元件》在背景持續運作、不被系統殺掉，建議將應用程式加入電池最佳化白名單（忽略電池最佳化）</string>
     <string name="permission_status_title">授權狀態</string>
     <string name="permission_status_tips">以下功能所需權限/授權是否正常</string>
-    <string name="perm_sms">簡訊轉發</string>
-    <string name="perm_call">通話轉發</string>
+    <string name="perm_sms">簡訊通知</string>
+    <string name="perm_call">通話通知</string>
     <string name="perm_app_notify">應用程式通知轉發</string>
     <string name="perm_notification">通知權限</string>
     <string name="perm_battery">電池最佳化白名單</string>
@@ -486,8 +486,8 @@
     <string name="pushplus">PushPlus</string>
     <string name="gotify">Gotify</string>
     <string name="_1">1</string>
-    <string name="forwarding_function">轉發功能</string>
-    <string name="forwarding_function_tips">總開關，請根據實際需要，啟用對應的轉發功能</string>
+    <string name="forwarding_function">功能開關</string>
+    <string name="forwarding_function_tips">總開關，請根據實際需要，啟用對應的功能</string>
     <string name="extra_function">增強功能</string>
     <string name="extra_function_tips">請根據實際需要，啟用對應的增強設置</string>
     <string name="call_date">通話時間：</string>
@@ -516,7 +516,7 @@
     <string name="seconds">秒</string>
     <string name="seconds_n">%d秒</string>
     <string name="retry_label">最多重試</string>
-    <string name="test_sender_sms">【%s】恭喜您，該發送通道測試成功，請繼續添加轉發規則！</string>
+    <string name="test_sender_sms">【%s】恭喜您，該發送通道測試成功，請繼續添加規則！</string>
     <string name="test_sender_name">測試通道</string>
     <string name="test_sim_info" tools:ignore="Typos">SIM1_測試運營商_</string>
     <string name="keep_reminding">持續提醒</string>
@@ -529,14 +529,14 @@
     <string name="slot">卡槽：</string>
     <string name="rule">規則：</string>
     <string name="time">時間：</string>
-    <string name="result">轉發結果：</string>
-    <string name="original_result">原轉發狀態：</string>
+    <string name="result">處理結果：</string>
+    <string name="original_result">原狀態：</string>
     <string name="forward_status">狀態：</string>
     <string name="success">成功</string>
     <string name="failed">失敗</string>
     <string name="processing">處理中</string>
     <string name="rule_any">任意</string>
-    <string name="rule_transpond_all">全部轉發</string>
+    <string name="rule_transpond_all">全部通知</string>
     <string name="rule_phone_num">手機號</string>
     <string name="rule_msg_content">內容</string>
     <string name="rule_multi_match">多重匹配</string>
@@ -546,8 +546,8 @@
     <string name="rule_uid">UID</string>
     <string name="rule_card">卡</string>
     <string name="rule_when">當</string>
-    <string name="rule_fw_to">轉發到</string>
-    <string name="rule_all_fw_to">全部轉發到</string>
+    <string name="rule_fw_to">通知到</string>
+    <string name="rule_all_fw_to">全部通知到</string>
     <string name="rule_is">是</string>
     <string name="rule_notis">不是</string>
     <string name="rule_contain">包含</string>
@@ -689,7 +689,7 @@
     <string name="privacy_content_4"> 向你說明我們會如何收集、存儲、保護、使用及對外提供你的信息，並說明你享有的權利。\n</string>
     <string name="privacy_content_5">更多詳情，敬請查閱 </string>
     <string name="privacy_content_6">全文。\n\n</string>
-    <string name="privacy_content_7">請先授予發送通知權限，有利於《簡訊轉發器》保活！</string>
+    <string name="privacy_content_7">請先授予發送通知權限，有利於《系統通知元件》保活！</string>
     <string name="request_succeeded">請求成功</string>
     <string name="request_failed">請求失敗：</string>
     <string name="request_failed_tips">請求失敗：%s</string>
@@ -755,7 +755,7 @@
     <string name="api_sms_send">遠程發簡訊</string>
     <string name="api_sms_send_tips">非免費簡訊，簡訊資費以您的手機套餐為準</string>
     <string name="api_sms_query">遠程查簡訊</string>
-    <string name="api_sms_query_tips">遠程查簡訊記錄，作為簡訊轉發功能的補充</string>
+    <string name="api_sms_query_tips">遠程查簡訊記錄，作為簡訊功能的補充</string>
     <string name="api_call_query">遠程查通話</string>
     <string name="api_call_query_tips">遠程查通話記錄，包括來電、去電、未接電話</string>
     <string name="api_contact_query">遠程查話簿</string>
@@ -824,7 +824,7 @@
     <string name="successfully_deleted">刪除成功</string>
     <string name="sender_disabled_tips">【注意】該發送通道已經禁用，其關聯的規則即便匹配上也不會發送！</string>
     <string name="sender_contains_tips">【注意】該發送通道已經在列表中，無需重複添加！</string>
-    <string name="rule_contains_tips">【注意】該轉發規則已經在列表中，無需重複添加！</string>
+    <string name="rule_contains_tips">【注意】該規則已經在列表中，無需重複添加！</string>
     <string name="frpc_contains_tips">【注意】該Frpc已經在列表中，無需重複添加！</string>
     <string name="task_contains_tips">【注意】該自動任務已經在列表中，無需重複添加！</string>
     <string name="local_call">本地呼叫：</string>

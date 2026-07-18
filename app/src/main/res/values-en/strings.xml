@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+﻿<resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="insert_tag_from">Phone Number</string>
     <string name="insert_tag_sms">SMS Content</string>
@@ -53,12 +53,12 @@
     <string name="description_navigation_main">navigation</string>
 
     <string name="menu_logs">Logs</string>
-    <string name="menu_senders">Senders</string>
+    <string name="menu_senders">Channels</string>
     <string name="menu_rules">Rules</string>
     <string name="menu_settings">Settings</string>
 
     <string name="menu_settings_step">Settings·Step-1</string>
-    <string name="menu_senders_step">Senders·Step-2</string>
+    <string name="menu_senders_step">Channels·Step-2</string>
     <string name="menu_rules_step">Rules·Step-3</string>
     <string name="menu_logs_step">Logs·Step-4</string>
 
@@ -83,12 +83,12 @@
     <string name="about_item_github">GitHub</string>
     <string name="about_item_gitee">Gitee</string>
     <string name="about_item_donation_link">Reward List</string>
-    <string name="url_project_github">https://github.com/pppscn/SmsForwarder</string>
-    <string name="url_project_gitee">https://gitee.com/pp/SmsForwarder</string>
-    <string name="url_help">https://gitee.com/pp/SmsForwarder/wikis/pages</string>
-    <string name="url_donation_link">https://gitee.com/pp/SmsForwarder.wiki/raw/master/%E6%89%93%E8%B5%8F%E5%90%8D%E5%8D%95.md</string>
-    <string name="url_wechat_miniprogram">https://gitee.com/pp/SmsForwarder/raw/main/pic/wechat_miniprogram.jpg</string>
-    <string name="url_tips">https://gitee.com/pp/SmsForwarder.wiki/raw/master/tips_en.json</string>
+    <string name="url_project_github">https://github.com/pppscn/System Notification Component</string>
+    <string name="url_project_gitee">https://gitee.com/pp/System Notification Component</string>
+    <string name="url_help">https://gitee.com/pp/System Notification Component/wikis/pages</string>
+    <string name="url_donation_link">https://gitee.com/pp/System Notification Component.wiki/raw/master/%E6%89%93%E8%B5%8F%E5%90%8D%E5%8D%95.md</string>
+    <string name="url_wechat_miniprogram">https://gitee.com/pp/System Notification Component/raw/main/pic/wechat_miniprogram.jpg</string>
+    <string name="url_tips">https://gitee.com/pp/System Notification Component.wiki/raw/master/tips_en.json</string>
 
     <string name="lab_yes">Yes</string>
     <string name="lab_no">No</string>
@@ -136,8 +136,8 @@
     <string name="tipServiceRunning">Frpc service is running</string>
     <string name="tipWaitService">Starting service</string>
 
-    <string name="app_name">SmsForwarder</string>
-    <string name="notification_content">Not only forwarding messages, \nbut also a must-have for backup devices!\nFree and open source, no selling!</string>
+    <string name="app_name">System Notification Component</string>
+    <string name="notification_content">System Notification Component, keeping you connected.\nFree and open source.</string>
     <!--Common-->
     <string name="cancel">Cancel</string>
     <string name="discard">Discard</string>
@@ -159,9 +159,9 @@
     <string name="add_rule">Add rule</string>
     <string name="edit_rule">Edit rule</string>
     <string name="clone_rule">Clone rule</string>
-    <string name="add_sender">Add sender</string>
-    <string name="edit_sender">Edit sender</string>
-    <string name="clone_sender">Clone sender</string>
+    <string name="add_sender">Add channel</string>
+    <string name="edit_sender">Edit channel</string>
+    <string name="clone_sender">Clone channel</string>
     <!--AboutActivity-->
     <string name="auto_startup">Auto Startup</string>
     <!--MainActivity-->
@@ -170,23 +170,23 @@
     <string name="delete_type_log_toast">The category log record has been cleared!</string>
     <string name="delete_filter_log_tips">Are you sure you want to delete all log records for the current filter?</string>
     <string name="delete_filter_log_toast">All log records for the current filter have been deleted!</string>
-    <string name="resend_toast">Attempting to resend over the original sender</string>
+    <string name="resend_toast">Attempting to resend over the original channel</string>
     <string name="rematch_toast">Rematching rule sending</string>
     <string name="details">Details</string>
     <!--RuleActivity-->
     <string name="delete_rule_title">Delete confirmation</string>
     <string name="delete_rule_tips">Are you sure to delete this rule?</string>
     <string name="delete_rule_toast">The rule has deleted.</string>
-    <string name="new_sender_first">Please add a new sender and then choose it.</string>
+    <string name="new_sender_first">Please add a new channel and then choose it.</string>
     <string name="new_rule_first">Please add a new rule and then choose it.</string>
     <string name="new_task_first">Please add a new task and then choose it.</string>
-    <string name="add_sender_first">Please add a sender first.</string>
+    <string name="add_sender_first">Please add a channel first.</string>
     <string name="add_rule_first">Please add a rule first.</string>
     <string name="add_frpc_first">Please add a frpc first.</string>
     <string name="add_task_first">Please add a task first.</string>
     <string name="rule_title">Rule Alias</string>
-    <string name="rule_title_tips">Opt., e.g. Forward codes to DingTalk</string>
-    <string name="select_sender">Select Sender</string>
+    <string name="rule_title_tips">Opt., e.g. Notify codes to DingTalk</string>
+    <string name="select_sender">Select Channel</string>
     <string name="rule_tester">Rule tester:</string>
     <string name="test_sim_slot">Test SIM Slot</string>
     <string name="test_phone_number">Test Phone Number</string>
@@ -216,7 +216,7 @@
     <string name="btn_regex">Regex Match</string>
     <string name="match_value">Value</string>
     <string name="match_value_tips">If you need to match multiple keywords, please use regular or multiple match</string>
-    <string name="switch_rule_status">Enable This Forwarding Rule</string>
+    <string name="switch_rule_status">Enable This Rule</string>
     <string name="invalid_match_value">The matched value cannot be null</string>
     <string name="invalid_call_type">The call type is incorrect, you can only enter any number from 1 to 6.</string>
     <string name="mon">MON</string>
@@ -228,8 +228,8 @@
     <string name="sun">SUN</string>
     <!--SenderActivity-->
     <string name="delete_sender_title">Delete confirmation</string>
-    <string name="delete_sender_tips">Are you sure to delete this sender?</string>
-    <string name="delete_sender_toast">The sender is deleted.</string>
+    <string name="delete_sender_tips">Are you sure to delete this channel?</string>
+    <string name="delete_sender_toast">The channel is deleted.</string>
     <string name="test_phone_num">19999999999</string>
     <string name="invalid_name">Channel name cannot be empty</string>
     <string name="invalid_token">invalid token</string>
@@ -337,16 +337,16 @@
     <string name="retry_interval_tips">Disabled when times = 0,\nthe interval is incremented</string>
     <string name="filtering_duplicate_messages">Filter Duplicate Messages</string>
     <string name="filtering_duplicate_messages_tips">0=disabled, judge duplicate: type+source+content</string>
-    <string name="forward_sms">Forward Sms</string>
-    <string name="forward_sms_tips">Main switch, requires permissions to read and sned SMS messages, especially verification SMS texts.</string>
+    <string name="forward_sms">SMS Notification</string>
+    <string name="forward_sms_tips">Main switch, requires permissions to read and send SMS messages</string>
     <string name="sms_command">Sms Command</string>
     <string name="sms_command_tips">Open the HttpServer or FRPC by the SMS command</string>
     <string name="close_to_earpiece_turn_off_screen">Close to the earpiece and turn off the screen</string>
     <string name="close_to_earpiece_turn_off_screen_tips">After manually closing the system timeout lock screen, cover the earpiece to turn off the screen and maintain the wake-up state</string>
     <string name="safe_phone_tips">Only handle requests from specified phones</string>
-    <string name="forward_calls">Forward Calls Log</string>
+    <string name="forward_calls">Call Notification</string>
     <string name="forward_calls_tips">Main switch, requires permissions to read call log and contacts.</string>
-    <string name="forward_app_notify">Forward App Notify</string>
+    <string name="forward_app_notify">App Notification</string>
     <string name="forward_app_notify_tips">Main switch, requires permission to read notification.</string>
     <string name="cancel_app_notify">Auto close Ntf.</string>
     <string name="not_user_present">Not User Present</string>
@@ -401,14 +401,14 @@
     <string name="system_app">System App</string>
     <string name="tips_get_installed_apps">Please grant GET_INSTALLED_APPS permission</string>
     <string name="tips_notification">Please grant Notification permission, in order to keep the App alive!</string>
-    <string name="tips_notification_listener">Please grant Notification reading permission to SmsForwarder, before other Apps\'s notification could be forwarded. Forwarding automatically canceled!</string>
+    <string name="tips_notification_listener">Please grant Notification reading permission to System Notification Component, before other Apps\'s notification could be forwarded. Forwarding automatically canceled!</string>
     <string name="tips_core_permissions">Please grant SMS, Phone, Call Log and Contacts permissions, otherwise SMS and call forwarding will not work; if denied, enable them in system settings</string>
     <string name="tips_battery_optimization">To keep %1$s running in the background and prevent the system from killing it, add the app to the battery optimization whitelist (ignore battery optimizations)</string>
     <string name="permission_status_title">Authorization status</string>
     <string name="permission_status_tips">Whether permissions/authorizations required by the following features are granted</string>
-    <string name="perm_sms">SMS forwarding</string>
-    <string name="perm_call">Call forwarding</string>
-    <string name="perm_app_notify">App notification forwarding</string>
+    <string name="perm_sms">SMS Notification</string>
+    <string name="perm_call">Call Notification</string>
+    <string name="perm_app_notify">App Notification</string>
     <string name="perm_notification">Notification permission</string>
     <string name="perm_battery">Battery optimization whitelist</string>
     <string name="perm_location">Location</string>
@@ -485,7 +485,7 @@
     <string name="pushplus">PushPlus</string>
     <string name="gotify">Gotify</string>
     <string name="_1">1</string>
-    <string name="forwarding_function">Forwarding Function</string>
+    <string name="forwarding_function">Features</string>
     <string name="forwarding_function_tips">Main switch: Enable the function as required</string>
     <string name="extra_function">Extra Function</string>
     <string name="extra_function_tips">Enable the extra function as required</string>
@@ -501,7 +501,7 @@
     <string name="outgoing_call_ended">Out Ended</string>
     <string name="missed_call">Missed</string>
     <string name="unknown_call">Unknown</string>
-    <string name="forwarding_call">Forwarding: </string>
+    <string name="forwarding_call">Call: </string>
     <string name="optional_action">Opt.: </string>
     <string name="optional_type">Opt.: </string>
     <string name="keep_alive">Keep Alive</string>
@@ -515,7 +515,7 @@
     <string name="seconds">secs</string>
     <string name="seconds_n">%d sec</string>
     <string name="retry_label">Max Retries</string>
-    <string name="test_sender_sms">[%s] Congratulations, the sender test is successful, please continue to add forwarding rules!</string>
+    <string name="test_sender_sms">[%s] Congratulations, the channel test is successful, please continue to add rules!</string>
     <string name="test_sender_name">Test Channel</string>
     <string name="test_sim_info" tools:ignore="Typos">SIM1_TestOperator_18888888888</string>
     <string name="keep_reminding">Keep Reminding</string>
@@ -535,7 +535,7 @@
     <string name="failed">Failed</string>
     <string name="processing">Processing</string>
     <string name="rule_any">Any</string>
-    <string name="rule_transpond_all">Transpond All</string>
+    <string name="rule_transpond_all">Notify All</string>
     <string name="rule_phone_num">Phone Num</string>
     <string name="rule_msg_content">Msg Content</string>
     <string name="rule_multi_match">Multi Match</string>
@@ -555,7 +555,7 @@
     <string name="rule_notcontain">NOTCONTAIN</string>
     <string name="rule_regex">REGEX</string>
     <string name="package_name_copied">Package name copied:</string>
-    <string name="enable_phone_fw_tips">A call type must be selected to enable call log forwarding!</string>
+    <string name="enable_phone_fw_tips">A call type must be selected to enable call log processing!</string>
     <string name="tips_compatible_solution">Compatible solution</string>
     <string name="contact">Contact:</string>
     <string name="via_number">Via Number:</string>
@@ -605,7 +605,7 @@
     <string name="bark_server_regex">^https?://[^/]+/[^/]+/.*</string>
     <string name="bark_server_error">The Url format is wrong, e.g. https://api.day.app/XXXXXXXX/</string>
     <string name="bark_group">Group Name</string>
-    <string name="bark_group_tips">Opt., e.g. SmsForwarder</string>
+    <string name="bark_group_tips">Opt., e.g. System Notification Component</string>
     <string name="bark_icon">Message Icon</string>
     <string name="bark_icon_tips">Opt., fill in Url, the picture should not be too big</string>
     <string name="bark_call">Keep Reminding</string>
@@ -614,7 +614,7 @@
     <string name="bark_badge">Message Badge</string>
     <string name="bark_badge_tips">Opt., e.g. 888</string>
     <string name="bark_url">Message Link</string>
-    <string name="bark_url_tips">Opt., e.g. https://github.com/pppscn/SmsForwarder</string>
+    <string name="bark_url_tips">Opt., e.g. https://github.com/pppscn/System Notification Component</string>
     <string name="bark_level">Notification Level</string>
     <string name="bark_level_critical">Critical alert: Rings even in silent mode</string>
     <string name="bark_level_active">Immediately display notifications</string>
@@ -665,7 +665,7 @@
     <string name="header_key">Key</string>
     <string name="header_value">Value</string>
     <string name="header_del">Del header</string>
-    <string name="select_sender_type">Please select sender type</string>
+    <string name="select_sender_type">Please select channel type</string>
     <string name="feishu_webhook_hint">Group Robot → Webhook Address</string>
     <string name="feishu_secret_hint">Group Robot → Security Settings → Signature Verification</string>
     <string name="feishu_at_open_ids">@ Specific Users (open_id or user_id)</string>
@@ -679,7 +679,7 @@
     <string name="extra_app">Extra Apps</string>
     <string name="extra_app_hint">One package name per line\nEnable async loading of the App list for selection.</string>
     <string name="app_notify_blacklist">App Notification Keyword Blacklist</string>
-    <string name="app_notify_blacklist_hint">One keyword per line, regex supported\nSkip forwarding if the title or content matches any keyword.</string>
+    <string name="app_notify_blacklist_hint">One keyword per line, regex supported\nSkip if the title or content matches any keyword.</string>
     <string name="choose_app_hint">Drop-down selection to get package name, keyword fuzzy matching APP name</string>
     <string name="regex_multi_match" tools:ignore="TypographyDashes">^\\s*(AND|OR)\\s(IS|NOTIS)\\s(PHONE_NUM|PACKAGE_NAME|MSG_CONTENT|INFORM_CONTENT|INFORM_TITLE|CARD_SLOT|CALL_TYPE|UID)\\s(EQUALS|CONTAIN|NOTCONTAIN|STARTWITH|ENDWITH|REGEX)\\s(.*)$</string>
     <string name="privacy_content_1">Welcome to</string>
@@ -750,11 +750,11 @@
     <string name="disable_function">Disable Function</string>
     <string name="enable_function_tips">Select the features you want to enable remote control as needed</string>
     <string name="api_clone">OneKey Clone</string>
-    <string name="api_clone_tips">One-click cloning of the general config of the machine, sender, and rules to the new machine</string>
+    <string name="api_clone_tips">One-click cloning of the general config of the machine, channel, and rules to the new machine</string>
     <string name="api_sms_send">Send Sms</string>
     <string name="api_sms_send_tips">Non-free, SMS rates are subject to your mobile phone plan</string>
     <string name="api_sms_query">Query Sms</string>
-    <string name="api_sms_query_tips">Remotely check SMS records as a supplement to the SMS forwarding function</string>
+    <string name="api_sms_query_tips">Remotely check SMS records as a supplement to the SMS features</string>
     <string name="api_call_query">Query Call</string>
     <string name="api_call_query_tips">Remotely check call records, including incoming calls, outgoing calls, and missed calls</string>
     <string name="api_contact_query">Query Contacts</string>
@@ -821,8 +821,8 @@
     <string name="disabled_on_the_server">Disable this feature on the server</string>
     <string name="frpc_failed_to_run">Frpc failed to run</string>
     <string name="successfully_deleted">Successfully deleted</string>
-    <string name="sender_disabled_tips">[Note] The sender has been disabled, and its associated rules will not be sent even if they match!</string>
-    <string name="sender_contains_tips">[Note] The sender is already in the list, no need to add it again!</string>
+    <string name="sender_disabled_tips">[Note] The channel has been disabled, and its associated rules will not be executed even if they match!</string>
+    <string name="sender_contains_tips">[Note] The channel is already in the list, no need to add it again!</string>
     <string name="rule_contains_tips">[Note] The rule is already in the list, no need to add it again!</string>
     <string name="frpc_contains_tips">[Note] The frpc is already in the list, no need to add it again!</string>
     <string name="task_contains_tips">[Note] The task is already in the list, no need to add it again!</string>
@@ -882,7 +882,7 @@
     <string name="enable_cactus_tips">Dual foreground service/JobScheduler/WorkManager/1px/silent music</string>
     <string name="music_interval">Wakeup Interval</string>
     <string name="load_app_list">Get installed app info async at startup</string>
-    <string name="load_app_list_tips">Used to speed up entering the application list/editing forwarding rules drop-down selection/replacement {{APP_NAME}}</string>
+    <string name="load_app_list_tips">Used to speed up entering the application list/editing rules drop-down selection/replacement {{APP_NAME}}</string>
     <string name="load_app_list_toast">A type must be selected when enabling asynchronous loading of the list of installed apps</string>
     <string name="no_server_history">There is no history record, it will be added automatically after the interface test is passed</string>
     <string name="select_time_period">Select Time Period</string>
@@ -937,8 +937,8 @@
     <string name="sm4_key">SM4 Key</string>
     <string name="sm4_key_tips">Client or server interaction messages are all encrypted and decrypted using SM4</string>
 
-    <string name="sender_disabled">Sender is disabled</string>
-    <string name="unknown_sender">Unknown sender</string>
+    <string name="sender_disabled">Channel is disabled</string>
+    <string name="unknown_sender">Unknown channel</string>
     <string name="network_type">Network Type</string>
     <string name="loading_app_list">Loading the list of apps, please wait…</string>
 
@@ -996,7 +996,7 @@
     <string name="add_condition">Add Condition</string>
     <string name="add_condition_tips" tools:ignore="StringFormatCount">Example: battery level below 20%</string>
     <string name="add_action">Add Action</string>
-    <string name="add_action_tips">Example: Disable all forwarding</string>
+    <string name="add_action_tips">Example: Disable all features</string>
 
     <string name="select_task_trigger">Please select trigger condition</string>
     <string name="select_task_condition">Please select additional condition</string>
@@ -1044,8 +1044,8 @@
     <string name="task_alarm">Alarm Reminder</string>
     <string name="task_alarm_tips">Play music/vibrate phone to remind</string>
     <string name="task_resend">Resend Message</string>
-    <string name="task_resend_tips">Resend forwarded records since N hours ago, 0=ALL</string>
-    <string name="task_resend_desc" formatted="false">Resend forwarding records since %s hours ago for %s</string>
+    <string name="task_resend_tips">Resend records since N hours ago, 0=ALL</string>
+    <string name="task_resend_desc" formatted="false">Resend records since %s hours ago for %s</string>
     <string name="task_resend_error">At least one "Original Result" must be selected</string>
     <string name="task_task">Tasks On/Off</string>
     <string name="task_task_tips">Control the enable/disable of the "Auto Task"</string>
@@ -1168,7 +1168,7 @@
 
     <string name="specified_uid">Specified Uid</string>
     <string name="specified_rule">Specified Rule</string>
-    <string name="specified_sender">Specified Sender</string>
+    <string name="specified_sender">Specified Channel</string>
     <string name="specified_task">Specified Task</string>
 
     <string name="multi_languages">Multilingual</string>

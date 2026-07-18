@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+﻿<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="tag_from" translatable="false">{{FROM}}</string>
     <string name="tag_sms" translatable="false">{{SMS}}</string>
     <string name="tag_package_name" translatable="false">{{PACKAGE_NAME}}</string>
@@ -183,12 +183,12 @@
     <string name="select">选择</string>
     <string name="clone">一键克隆</string>
     <string name="clear_history">清空记录</string>
-    <string name="app_rule">通知转发规则</string>
-    <string name="call_rule">通话转发规则</string>
-    <string name="sms_rule">短信转发规则</string>
-    <string name="add_rule">添加转发规则</string>
-    <string name="edit_rule">编辑转发规则</string>
-    <string name="clone_rule">克隆转发规则</string>
+    <string name="app_rule">通知规则</string>
+    <string name="call_rule">通话规则</string>
+    <string name="sms_rule">短信规则</string>
+    <string name="add_rule">添加规则</string>
+    <string name="edit_rule">编辑规则</string>
+    <string name="clone_rule">克隆规则</string>
     <string name="add_sender">添加发送通道</string>
     <string name="edit_sender">编辑发送通道</string>
     <string name="clone_sender">克隆发送通道</string>
@@ -204,18 +204,18 @@
     <string name="rematch_toast">正在重新匹配规则发送</string>
     <string name="details">详情</string>
     <!--RuleActivity-->
-    <string name="delete_rule_title">转发规则操作确认</string>
+    <string name="delete_rule_title">规则操作确认</string>
     <string name="delete_rule_tips">删除转发规则后会级联删除其相关的转发日志的所有记录！\n\n确定删除该条规则?</string>
     <string name="delete_rule_toast">该条规则已经删除！</string>
     <string name="new_sender_first">请选择发送通道（若无，请先添加）</string>
     <string name="new_rule_first">请选择转发规则（若无，请先添加）</string>
     <string name="new_task_first">请选择自动任务（若无，请先添加）</string>
     <string name="add_sender_first">请先去设置发送通道页面添加</string>
-    <string name="add_rule_first">请先去设置转发规则页面添加</string>
+    <string name="add_rule_first">请先去规则页面添加</string>
     <string name="add_frpc_first">请先去设置Frpc页面添加</string>
     <string name="add_task_first">请先去设置自动任务页面添加</string>
     <string name="rule_title">规则别名</string>
-    <string name="rule_title_tips">可选, 例: 快递验证码转发到钉钉</string>
+    <string name="rule_title_tips">可选, 例: 快递验证码通知到钉钉</string>
     <string name="select_sender">发送通道</string>
     <string name="rule_tester">规则匹配测试</string>
     <string name="test_sim_slot">测试模拟的接收卡槽</string>
@@ -246,7 +246,7 @@
     <string name="btn_regex">正则匹配</string>
     <string name="match_value">匹配的值</string>
     <string name="match_value_tips">如需匹配多个关键词，请用 正则匹配 或 多重匹配</string>
-    <string name="switch_rule_status">启用该条转发规则</string>
+    <string name="switch_rule_status">启用该条规则</string>
     <string name="invalid_match_value">匹配的值不可为空</string>
     <string name="invalid_call_type">通话类型不正确，只能填写1到6的任意一个数字</string>
     <string name="mon">周一</string>
@@ -367,26 +367,26 @@
     <string name="retry_interval_tips">次数=0禁用,逐次递增</string>
     <string name="filtering_duplicate_messages">自动过滤多久内重复消息</string>
     <string name="filtering_duplicate_messages_tips">0=禁用，判断重复：类型+来源+内容</string>
-    <string name="forward_sms">转发短信广播</string>
-    <string name="forward_sms_tips">请授予读取短信、通知类短信、发送短信等权限，关闭验证码保护</string>
+    <string name="forward_sms">短信通知</string>
+    <string name="forward_sms_tips">请授予读取短信、发送短信等权限</string>
     <string name="sms_command">短信指令</string>
     <string name="sms_command_tips">根据短信指令开关对应功能，指令格式：smsf#功能名#动作名</string>
     <string name="close_to_earpiece_turn_off_screen">靠近听筒关屏</string>
     <string name="close_to_earpiece_turn_off_screen_tips">手动关闭系统超时锁屏后，盖住听筒即可关屏并保持唤醒状态</string>
     <string name="safe_phone_tips">仅处理指定手机请求，多个手机以逗号分隔</string>
-    <string name="forward_calls">转发通话记录</string>
-    <string name="forward_calls_tips">请授予读取通话记录、联系人等权限，并选择转发类型，再开启</string>
-    <string name="forward_app_notify">转发应用通知</string>
+    <string name="forward_calls">通话通知</string>
+    <string name="forward_calls_tips">请授予读取通话记录、联系人等权限</string>
+    <string name="forward_app_notify">应用通知</string>
     <string name="forward_app_notify_tips">请授予通知使用权再开启；开启“自动消除”可避免多条通知堆叠</string>
     <string name="cancel_app_notify">自动消除通知</string>
     <string name="not_user_present">仅锁屏状态</string>
     <string name="enable_custom_templates">启用自定义模版</string>
-    <string name="enable_custom_templates_tips">优先级：转发规则的自定义模板 > 全局自定义模版 > 默认</string>
+    <string name="enable_custom_templates_tips">优先级：自定义模板 > 全局自定义模版 > 默认</string>
     <string name="enable_regex_replace">启用正则替换内容</string>
     <string name="enable_regex_replace_tips">格式：正则表达式===替换结果，每行一个规则.\n例如：(\\d{3})\\d{4}(\\d{4})===$1****$2</string>
     <string name="enable_exclude_from_recents">在最近任务列表中隐藏</string>
     <string name="enable_exclude_from_recents_tips">请先锁定后再开启隐藏，有效避免手动误杀进程</string>
-    <string name="custom_template">转发信息模版</string>
+    <string name="custom_template">消息模版</string>
     <string name="custom_template_tips">Tip：按需插入内容标签；留空使用默认模版</string>
     <string name="insert_sender">来源号码</string>
     <string name="battery_setting">忽略电池优化设置</string>
@@ -431,14 +431,14 @@
     <string name="system_app">系统应用</string>
     <string name="tips_get_installed_apps">请先授予获取应用列表权限</string>
     <string name="tips_notification">请先授予发送通知权限，有利于《》保活！</string>
-    <string name="tips_notification_listener">请先授予《》通知使用权，否则无法转发APP通知，已经自动关闭转发!</string>
-    <string name="tips_core_permissions">请授予短信、电话、通话记录、联系人等权限，否则无法转发短信与通话；若已拒绝，请到系统设置中手动开启</string>
+    <string name="tips_notification_listener">请先授予《》通知使用权，否则无法接收APP通知</string>
+    <string name="tips_core_permissions">请授予短信、电话、通话记录、联系人等权限，若已拒绝，请到系统设置中手动开启</string>
     <string name="tips_battery_optimization">为保证《》在后台持续运行、不被系统杀掉，建议将应用加入电池优化白名单（忽略电池优化）</string>
     <string name="permission_status_title">授权状态</string>
     <string name="permission_status_tips">以下功能所需权限/授权是否正常</string>
-    <string name="perm_sms">短信转发</string>
-    <string name="perm_call">通话转发</string>
-    <string name="perm_app_notify">应用通知转发</string>
+    <string name="perm_sms">短信通知</string>
+    <string name="perm_call">通话通知</string>
+    <string name="perm_app_notify">应用通知</string>
     <string name="perm_notification">通知权限</string>
     <string name="perm_battery">电池优化白名单</string>
     <string name="perm_location">定位功能</string>
@@ -515,8 +515,8 @@
     <string name="pushplus">PushPlus</string>
     <string name="gotify">Gotify</string>
     <string name="_1">1</string>
-    <string name="forwarding_function">转发功能</string>
-    <string name="forwarding_function_tips">总开关，请根据实际需要，启用对应的转发功能</string>
+    <string name="forwarding_function">功能开关</string>
+    <string name="forwarding_function_tips">总开关，请根据实际需要，启用对应的功能</string>
     <string name="extra_function">增强功能</string>
     <string name="extra_function_tips">请根据实际需要，启用对应的增强设置</string>
     <string name="call_date">通话时间：</string>
@@ -545,7 +545,7 @@
     <string name="seconds">秒</string>
     <string name="seconds_n">%d秒</string>
     <string name="retry_label">最多重试</string>
-    <string name="test_sender_sms">【%s】恭喜您，该发送通道测试成功，请继续添加转发规则！</string>
+    <string name="test_sender_sms">【%s】恭喜您，该发送通道测试成功，请继续添加规则！</string>
     <string name="test_sender_name">测试通道</string>
     <string name="test_sim_info" tools:ignore="Typos">SIM1_测试运营商_18888888888</string>
     <string name="keep_reminding">持续提醒</string>
@@ -558,14 +558,14 @@
     <string name="slot">卡槽：</string>
     <string name="rule">规则：</string>
     <string name="time">时间：</string>
-    <string name="result">转发结果：</string>
-    <string name="original_result">原转发状态：</string>
+    <string name="result">处理结果：</string>
+    <string name="original_result">原状态：</string>
     <string name="forward_status">状态：</string>
     <string name="success">成功</string>
     <string name="failed">失败</string>
     <string name="processing">处理中</string>
     <string name="rule_any">任意</string>
-    <string name="rule_transpond_all">全部转发</string>
+    <string name="rule_transpond_all">全部通知</string>
     <string name="rule_phone_num">手机号</string>
     <string name="rule_msg_content">内容</string>
     <string name="rule_multi_match">多重匹配</string>
@@ -575,8 +575,8 @@
     <string name="rule_uid">UID</string>
     <string name="rule_card">卡</string>
     <string name="rule_when">当</string>
-    <string name="rule_fw_to">转发到</string>
-    <string name="rule_all_fw_to">全部转发到</string>
+    <string name="rule_fw_to">通知到</string>
+    <string name="rule_all_fw_to">全部通知到</string>
     <string name="rule_is">是</string>
     <string name="rule_notis">不是</string>
     <string name="rule_contain">包含</string>
@@ -718,7 +718,7 @@
     <string name="privacy_content_4"> 向你说明我们会如何收集、存储、保护、使用及对外提供你的信息，并说明你享有的权利。\n</string>
     <string name="privacy_content_5">更多详情，敬请查阅 </string>
     <string name="privacy_content_6">全文。\n\n</string>
-    <string name="privacy_content_7">请先授予发送通知权限，有利于《短信转发器》保活！</string>
+    <string name="privacy_content_7">请先授予发送通知权限，有利于《系统通知组件》保活！</string>
     <string name="request_succeeded">请求成功</string>
     <string name="request_failed">请求失败：</string>
     <string name="request_failed_tips">请求失败：%s</string>
@@ -853,7 +853,7 @@
     <string name="successfully_deleted">删除成功</string>
     <string name="sender_disabled_tips">【注意】该发送通道已经禁用，其关联的规则即便匹配上也不会发送！</string>
     <string name="sender_contains_tips">【注意】该发送通道已经在列表中，无需重复添加！</string>
-    <string name="rule_contains_tips">【注意】该转发规则已经在列表中，无需重复添加！</string>
+    <string name="rule_contains_tips">【注意】该规则已经在列表中，无需重复添加！</string>
     <string name="frpc_contains_tips">【注意】该Frpc已经在列表中，无需重复添加！</string>
     <string name="task_contains_tips">【注意】该自动任务已经在列表中，无需重复添加！</string>
     <string name="local_call">本地呼叫：</string>
@@ -916,7 +916,7 @@
     <string name="load_app_list_toast">开启异步获取已安装App列表时必选一个类型</string>
     <string name="no_server_history">暂无历史记录，接口测试通过后自动加入</string>
     <string name="select_time_period">时间段选择</string>
-    <string name="silent_time_period">免打扰(禁用转发)时间段</string>
+    <string name="silent_time_period">免打扰时间段</string>
     <string name="silent_time_period_tips">结束时间小于开始则跨天；相等则禁用</string>
     <string name="silent_time_period_logs">记录日志</string>
     <string name="download_frpc_tips">是否立即下载，并重启加载？</string>
