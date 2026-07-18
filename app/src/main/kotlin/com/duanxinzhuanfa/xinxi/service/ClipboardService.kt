@@ -169,7 +169,7 @@ class ClipboardService : Service() {
         try {
             Log.d(TAG, "Forwarding clipboard via SendWorker")
             val data = workDataOf(
-                com.duanxinzhuanfa.xinxi.utils.Worker.MSG_INFO to Gson().toJson(msgInfo)
+                com.duanxinzhuanfa.xinxi.utils.Worker.SEND_MSG_INFO to Gson().toJson(msgInfo)
             )
             val request = OneTimeWorkRequestBuilder<SendWorker>()
                 .setInputData(data)
