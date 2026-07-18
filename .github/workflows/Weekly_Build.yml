@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      output: "${{ github.workspace }}/app/build/outputs/apk/release"
+      output: "${{ github.workspace }}/build/app/outputs/apk/release"
       ver_suffix_1: 100
       ver_suffix_3: 300
       ver_suffix_5: 500

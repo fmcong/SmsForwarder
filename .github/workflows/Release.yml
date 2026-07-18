@@ -57,6 +57,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: SmsForwarder ${{ github.ref_name }}
-          files: ./app/build/outputs/apk/release/SmsF_*
+          files: ./build/app/outputs/apk/release/SmsF_*
           draft: false
           prerelease: false
