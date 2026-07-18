@@ -14,7 +14,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.tabs.TabLayout
 import com.hjq.permissions.OnPermissionCallback
-import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
 import com.hjq.permissions.permission.PermissionLists
 import com.hjq.permissions.permission.base.IPermission
@@ -163,14 +162,13 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
         SettingUtils.requestedCorePermissions = true
 
         XXPermissions.with(this)
-            .permission(Permission.RECEIVE_SMS)
-            .permission(Permission.READ_SMS)
-            .permission(Permission.SEND_SMS)
-            .permission(Permission.READ_PHONE_STATE)
-            .permission(Permission.READ_PHONE_NUMBERS)
-            .permission(Permission.CALL_PHONE)
-            .permission(Permission.READ_CALL_LOG)
-            .permission(Permission.READ_CONTACTS)
+            .permission(PermissionLists.getReceiveSmsPermission())
+            .permission(PermissionLists.getReadSmsPermission())
+            .permission(PermissionLists.getSendSmsPermission())
+            .permission(PermissionLists.getReadPhoneStatePermission())
+            .permission(PermissionLists.getReadPhoneNumbersPermission())
+            .permission(PermissionLists.getReadCallLogPermission())
+            .permission(PermissionLists.getReadContactsPermission())
             .request(object : OnPermissionCallback {
                 override fun onResult(grantedList: MutableList<IPermission>, deniedList: MutableList<IPermission>) {
                     if (deniedList.isEmpty()) return
