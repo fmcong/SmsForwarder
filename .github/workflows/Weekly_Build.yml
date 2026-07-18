@@ -22,19 +22,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v5
 
-      # 2. 清理旧的工作流运行（保留最近 3 次，保留最近 7 天内的）
-      #    如果您不需要自动清理，可删除此步骤
-      - name: Delete old workflow runs
-        continue-on-error: true
-        uses: Mattraks/delete-workflow-runs@v2
-        with:
-          token: ${{ secrets.TOKEN }}
-          repository: ${{ github.repository }}
-          retain_days: 7
-          keep_minimum_runs: 3
-          delete_workflow_pattern: 'Weekly Build'
-
-      # 3. 设置 JDK 11
+      # 2. 设置 JDK 11
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
@@ -42,7 +30,7 @@ jobs:
           java-version: '11'
           java-package: jdk
 
-      # 4. 缓存 Gradle 依赖
+      # 3. 缓存 Gradle 依赖
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
@@ -53,7 +41,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # 5. 检出 Keystore 并复制到项目根目录
+      # 4. 检出 Keystore 并复制到项目根目录
       - name: Checkout Android Keystore
         uses: actions/checkout@v5
         with:
@@ -72,12 +60,13 @@ jobs:
             exit 1
           fi
 
-      # 6. 构建 Release APK
+      # 5. 构建 Release APK
       - name: Build with Gradle
         run: bash ./gradlew assembleRelease
 
-      # 7. 解析 output-metadata.json，提取版本信息写入环境变量
+      # 6. 解析 output-metadata.json，提取版本信息写入环境变量
       - name: Parse metadata
+
         id: parse_metadata
         run: |
           metadata_file="${{ env.output }}/output-metadata.json"
@@ -97,7 +86,7 @@ jobs:
             exit 1
           fi
 
-      # 8. 上传 APK 到 XUpdate（需要配置 secrets，允许失败）
+      # 7. 上传 APK 到 XUpdate（需要配置 secrets，允许失败）
       - name: Upload APKs to XUpdate
         if: success()
         continue-on-error: true
@@ -143,7 +132,7 @@ jobs:
 
           done
 
-      # 9. 上传 APK 为 Artifacts（不设 if 条件，XUpdate 上传失败不影响）
+      # 8. 上传 APK 为 Artifacts（不设 if 条件，XUpdate 上传失败不影响）
       - name: Upload universal APK
         uses: actions/upload-artifact@v4
         with:
