@@ -76,20 +76,15 @@ jobs:
       - name: Build with Gradle
         run: bash ./gradlew assembleRelease
 
-      # 7. 解析 output-metadata.json 并上传 APK 到 XUpdate
-      - name: Parse metadata and upload APKs to XUpdate
-        id: upload_xupdate
+      # 7. 解析 output-metadata.json，提取版本信息写入环境变量
+      - name: Parse metadata
+        id: parse_metadata
         run: |
           metadata_file="${{ env.output }}/output-metadata.json"
           if [ ! -f "$metadata_file" ]; then
             echo "Error: output-metadata.json not found!"
             exit 1
           fi
-
-          applicationId=$(jq -r '.applicationId' "$metadata_file")
-          buildDate=$(jq -r '.buildDate' "$metadata_file")
-          buildTime=$(jq -r '.buildTime' "$metadata_file")
-          gitCommitId=$(jq -r '.gitCommitId' "$metadata_file")
 
           first_apk=$(jq -r '.elements[0].outputFile' "$metadata_file")
           if [[ $first_apk =~ SmsF_([^_]+)_([^_]+)_(.+)_release\.apk ]]; then
@@ -102,13 +97,22 @@ jobs:
             exit 1
           fi
 
+      # 8. 上传 APK 到 XUpdate（需要配置 secrets，允许失败）
+      - name: Upload APKs to XUpdate
+        if: success()
+        continue-on-error: true
+        run: |
+          metadata_file="${{ env.output }}/output-metadata.json"
+          applicationId=$(jq -r '.applicationId' "$metadata_file")
+          buildTime=$(jq -r '.buildTime' "$metadata_file")
+          gitCommitId=$(jq -r '.gitCommitId' "$metadata_file")
+
           jq -r '.elements[].outputFile' "$metadata_file" | while IFS= read -r apk_file; do
             echo "Processing APK: $apk_file"
 
             if [[ $apk_file =~ SmsF_([^_]+)_([^_]+)_(.+)_release\.apk ]]; then
               apk_versionName="${BASH_REMATCH[1]}"
               apk_versionCode="${BASH_REMATCH[2]}"
-              abi="${BASH_REMATCH[3]}"
             else
               echo "Skipping invalid APK filename: $apk_file"
               continue
@@ -123,7 +127,7 @@ jobs:
 
             version_id=$(echo "$response" | jq -r '.versionId')
             if [[ -z "$version_id" || "$version_id" == "null" ]]; then
-              echo "Error: Failed to get versionId, response: $response"
+              echo "Warning: XUpdate version registration skipped (no URL configured or API error)"
               continue
             fi
 
@@ -135,18 +139,12 @@ jobs:
               -H "X-Token: ${{ secrets.X_TOKEN }}" \
               -F "file=@${{ env.output }}/${apk_file};filename=${apk_file}" \
               -F "versionId=${version_id}" \
-              ${{ secrets.URL_UPLOAD_APK }}
+              ${{ secrets.URL_UPLOAD_APK }} || echo "Warning: XUpdate APK upload skipped"
 
-            if [ $? -ne 0 ]; then
-              echo "Error uploading APK: $apk_file"
-            else
-              echo "Successfully uploaded $apk_file"
-            fi
           done
 
-      # 8. 上传 APK 为 Artifacts
+      # 9. 上传 APK 为 Artifacts（不设 if 条件，XUpdate 上传失败不影响）
       - name: Upload universal APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_1 }}${{ env.ver_code }}_universal_release.apk"
@@ -154,7 +152,6 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload arm64-v8a APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_3 }}${{ env.ver_code }}_arm64-v8a_release.apk"
@@ -162,7 +159,6 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload x86_64 APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_5 }}${{ env.ver_code }}_x86_64_release.apk"
