@@ -21,12 +21,18 @@ import com.google.gson.Gson
 import com.xuexiang.xrouter.utils.TextUtils
 import com.xuexiang.xutil.display.ScreenUtils
 import java.util.Date
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 
 @Suppress("PrivatePropertyName", "DEPRECATION")
 class NotificationService : NotificationListenerService() {
 
     private val TAG: String = NotificationService::class.java.simpleName
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onListenerConnected() {
         Log.d(TAG, "onListenerConnected")
@@ -111,16 +117,19 @@ class NotificationService : NotificationListenerService() {
             }
             //TODO：自动消除通知（临时方案，重复查询换取准确性）
             if (SettingUtils.enableCancelAppNotify) {
-                val ruleList: List<Rule> = Core.rule.getRuleList(msgInfo.type, 1, "SIM0")
-                for (rule in ruleList) {
-                    if (rule.checkMsg(msgInfo)) {
-                        Log.d(TAG, "自动消除通知")
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            cancelNotification(sbn.key)
-                        } else {
-                            cancelNotification(sbn.packageName, sbn.tag, sbn.id)
+                //查询规则列表移到 IO 线程，避免在主线程(通知监听回调)同步查库导致 ANR
+                serviceScope.launch {
+                    val ruleList: List<Rule> = Core.rule.getRuleList(msgInfo.type, 1, "SIM0")
+                    for (rule in ruleList) {
+                        if (rule.checkMsg(msgInfo)) {
+                            Log.d(TAG, "自动消除通知")
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                cancelNotification(sbn.key)
+                            } else {
+                                cancelNotification(sbn.packageName, sbn.tag, sbn.id)
+                            }
+                            break
                         }
-                        break
                     }
                 }
             }
@@ -164,6 +173,11 @@ class NotificationService : NotificationListenerService() {
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         Log.d(TAG, "Removed Package Name : ${sbn?.packageName}")
+    }
+
+    override fun onDestroy() {
+        serviceScope.cancel()
+        super.onDestroy()
     }
 
 }

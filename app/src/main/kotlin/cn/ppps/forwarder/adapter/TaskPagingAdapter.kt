@@ -126,7 +126,7 @@ class TaskPagingAdapter(private val itemClickListener: OnItemClickListener) : Pa
 
             @SuppressLint("DiffUtilEquals")
             override fun areContentsTheSame(oldItem: Task, newItem: Task): Boolean {
-                return oldItem === newItem
+                return oldItem == newItem
             }
         }
     }

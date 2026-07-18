@@ -12,6 +12,7 @@ import android.widget.RadioGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
+import kotlinx.coroutines.Job
 import com.alibaba.android.vlayout.VirtualLayoutManager
 import cn.ppps.forwarder.App.Companion.FORWARD_STATUS_MAP
 import cn.ppps.forwarder.R
@@ -134,13 +135,15 @@ class LogsFragment : BaseFragment<FragmentLogsBinding?>(), MsgPagingAdapter.OnIt
         }
     }
 
+    private var collectJob: Job? = null
+
     override fun initListeners() {
         binding!!.recyclerView.adapter = adapter
 
-        //下拉刷新
+        //下拉刷新：取消上一次收集，避免每次刷新叠加新的 Flow 收集协程造成泄漏与重复提交
         binding!!.refreshLayout.setOnRefreshListener { refreshLayout: RefreshLayout ->
-            //adapter.refresh()
-            lifecycleScope.launch {
+            collectJob?.cancel()
+            collectJob = lifecycleScope.launch {
                 viewModel.setType(currentType).setFilter(currentFilter).allMsg.collectLatest { adapter.submitData(it) }
             }
             refreshLayout.finishRefresh()

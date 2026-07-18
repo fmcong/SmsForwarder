@@ -87,16 +87,19 @@ class TaskSettingAdapter(
     }
 
     override fun onItemMove(fromPosition: Int, toPosition: Int) {
-        if (fromPosition < toPosition) {
-            for (i in fromPosition until toPosition) {
+        if (fromPosition < 0 || fromPosition >= itemList.size) return
+        val target = toPosition.coerceIn(0, itemList.size - 1)
+        if (fromPosition == target) return
+        if (fromPosition < target) {
+            for (i in fromPosition until target) {
                 Collections.swap(itemList, i, i + 1)
             }
         } else {
-            for (i in fromPosition downTo toPosition + 1) {
+            for (i in fromPosition downTo target + 1) {
                 Collections.swap(itemList, i, i - 1)
             }
         }
-        notifyItemMoved(fromPosition, toPosition)
+        notifyItemMoved(fromPosition, target)
     }
 
     override fun onDragFinished() {}

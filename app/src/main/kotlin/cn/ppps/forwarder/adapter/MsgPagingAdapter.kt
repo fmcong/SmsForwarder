@@ -72,7 +72,7 @@ class MsgPagingAdapter(private val itemClickListener: OnItemClickListener) : Pag
 
             @SuppressLint("DiffUtilEquals")
             override fun areContentsTheSame(oldItem: MsgAndLogs, newItem: MsgAndLogs): Boolean {
-                return oldItem.msg === newItem.msg
+                return oldItem.msg == newItem.msg
             }
         }
     }

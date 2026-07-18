@@ -234,6 +234,12 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         LiveEventBus.get(EVENT_LOAD_APP_LIST, String::class.java).observeStickyForever(appListObserver)
     }
 
+    override fun onDestroyView() {
+        //移除观察者，避免 Fragment 重建后观察者累积导致重复加载与内存泄漏
+        LiveEventBus.get(EVENT_LOAD_APP_LIST, String::class.java).removeObserver(appListObserver)
+        super.onDestroyView()
+    }
+
     @SuppressLint("SetTextI18n")
     @SingleClick
     override fun onClick(v: View) {
@@ -1207,11 +1213,13 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
                 //CommonUtils.switchLanguage(oldLang, newLang)
                 XToastUtils.toast(R.string.multi_languages_toast)
                 //切换语种后重启APP
-                Thread.sleep(200)
                 val intent = Intent(App.context, MainActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                startActivity(intent)
-                requireActivity().finish()
+                //避免在主线程 sleep 冻结 UI，改为延迟执行重启
+                v.postDelayed({
+                    startActivity(intent)
+                    activity?.finish()
+                }, 200)
             }
         }
     }

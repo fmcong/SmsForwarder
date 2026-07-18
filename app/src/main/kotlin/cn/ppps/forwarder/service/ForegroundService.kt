@@ -53,9 +53,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.io.File
 
 @SuppressLint("SimpleDateFormat")
@@ -66,6 +67,7 @@ class ForegroundService : Service() {
     private var notificationManager: NotificationManager? = null
 
     private val compositeDisposable = CompositeDisposable()
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val frpcObserver = Observer { uid: String ->
         if (!App.FrpclibInited || Frpclib.isRunning(uid)) return@Observer
 
@@ -250,6 +252,11 @@ class ForegroundService : Service() {
     }
 
     override fun onDestroy() {
+        //移除 LiveEventBus 观察者，避免泄漏与重复注册
+        LiveEventBus.get(INTENT_FRPC_APPLY_FILE, String::class.java).removeObserver(frpcObserver)
+        LiveEventBus.get<AlarmSetting>(EVENT_ALARM_ACTION).removeObserver(alarmObserver)
+        compositeDisposable.clear()
+        serviceScope.cancel()
         //非纯客户端模式
         if (!SettingUtils.enablePureClientMode) stopForegroundService()
         flashUtils.release()
@@ -274,7 +281,7 @@ class ForegroundService : Service() {
             }
 
             //启动定时任务
-            GlobalScope.async(Dispatchers.IO) {
+            serviceScope.launch {
                 val taskList = Core.task.getByType(TASK_CONDITION_CRON)
                 taskList.forEach { task ->
                     Log.d(TAG, "task = $task")
@@ -294,7 +301,7 @@ class ForegroundService : Service() {
                 //监听Frpc启动指令
                 LiveEventBus.get(INTENT_FRPC_APPLY_FILE, String::class.java).observeForever(frpcObserver)
                 //自启动的Frpc
-                GlobalScope.async(Dispatchers.IO) {
+                serviceScope.launch {
                     val frpcList = Core.frpc.getAutorun()
 
                     if (frpcList.isEmpty()) {
@@ -304,7 +311,7 @@ class ForegroundService : Service() {
 
                     for (frpc in frpcList) {
                         Log.d(TAG, "自启动的Frpc: $frpc")
-                        GlobalScope.async(Dispatchers.IO) {
+                        serviceScope.launch {
                             val error = Frpclib.runContent(frpc.uid, frpc.config)
                             Log.d(TAG, "自启动的Frpc: uid=${frpc.uid}, error=$error")
                             if (!TextUtils.isEmpty(error)) {
