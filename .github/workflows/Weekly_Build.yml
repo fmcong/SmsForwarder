@@ -14,9 +14,7 @@ jobs:
     env:
       output: "${{ github.workspace }}/app/build/outputs/apk/release"
       ver_suffix_1: 100
-      ver_suffix_2: 200
       ver_suffix_3: 300
-      ver_suffix_4: 400
       ver_suffix_5: 500
 
     steps:
@@ -155,28 +153,12 @@ jobs:
           path: "${{ env.output }}/SmsF_*_universal_release.apk"
           if-no-files-found: warn
 
-      - name: Upload armeabi-v7a APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_2 }}${{ env.ver_code }}_armeabi-v7a_release.apk"
-          path: "${{ env.output }}/SmsF_*_armeabi-v7a_release.apk"
-          if-no-files-found: warn
-
       - name: Upload arm64-v8a APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_3 }}${{ env.ver_code }}_arm64-v8a_release.apk"
           path: "${{ env.output }}/SmsF_*_arm64-v8a_release.apk"
-          if-no-files-found: warn
-
-      - name: Upload x86 APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: "SmsF_${{ env.ver_name }}_${{ env.ver_suffix_4 }}${{ env.ver_code }}_x86_release.apk"
-          path: "${{ env.output }}/SmsF_*_x86_release.apk"
           if-no-files-found: warn
 
       - name: Upload x86_64 APK
