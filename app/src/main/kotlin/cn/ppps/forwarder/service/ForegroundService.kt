@@ -57,6 +57,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -316,7 +317,7 @@ class ForegroundService : Service() {
 
                     if (frpcList.isEmpty()) {
                         Log.d(TAG, "没有自启动的Frpc")
-                        return@async
+                        return@launch
                     }
 
                     for (frpc in frpcList) {

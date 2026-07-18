@@ -262,8 +262,9 @@ class EmailUtils {
                                                 "OpenPGP" -> {
                                                     val recipientPGPSecretKeyRing = PGPainless.readKeyRing().secretKeyRing(ks)
                                                     recipientPGPPublicKeyRing = recipientPGPSecretKeyRing?.let { PGPainless.extractCertificate(it) }
-                                                    if (recipientPGPPublicKeyRing != null) {
-                                                        val keyInfo = KeyRingInfo(recipientPGPPublicKeyRing)
+                                                    val ring = recipientPGPPublicKeyRing
+                                                    if (ring != null) {
+                                                        val keyInfo = KeyRingInfo(ring)
                                                         Log.d(TAG, "Recipient key info: $keyInfo")
                                                     }
                                                 }
@@ -288,8 +289,9 @@ class EmailUtils {
 
                                                 "OpenPGP" -> {
                                                     recipientPGPPublicKeyRing = PGPainless.readKeyRing().publicKeyRing(ks)
-                                                    if (recipientPGPPublicKeyRing != null) {
-                                                        val keyInfo = KeyRingInfo(recipientPGPPublicKeyRing)
+                                                    val ring = recipientPGPPublicKeyRing
+                                                    if (ring != null) {
+                                                        val keyInfo = KeyRingInfo(ring)
                                                         Log.d(TAG, "Recipient key info: $keyInfo")
                                                     }
                                                 }

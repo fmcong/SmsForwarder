@@ -11,6 +11,7 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.ItemTouchHelper

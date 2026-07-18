@@ -1224,7 +1224,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
                 val intent = Intent(App.context, MainActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 //避免在主线程 sleep 冻结 UI，改为延迟执行重启
-                v.postDelayed({
+                view?.postDelayed({
                     startActivity(intent)
                     activity?.finish()
                 }, 200)
