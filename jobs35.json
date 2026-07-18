@@ -1,0 +1,169 @@
+{
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 88082283427,
+      "run_id": 29645240149,
+      "workflow_name": "Weekly Build",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/fmcong/SmsForwarder/actions/runs/29645240149",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORDh4o88AAAAUghz7ow",
+      "head_sha": "1f6b948472316ff698a8e1caf2fa036814cd7c11",
+      "url": "https://api.github.com/repos/fmcong/SmsForwarder/actions/jobs/88082283427",
+      "html_url": "https://github.com/fmcong/SmsForwarder/actions/runs/29645240149/job/88082283427",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-07-18T12:56:40Z",
+      "started_at": "2026-07-18T12:56:43Z",
+      "completed_at": null,
+      "name": "build",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-07-18T12:56:44Z",
+          "completed_at": "2026-07-18T12:56:46Z"
+        },
+        {
+          "name": "Checkout source code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-07-18T12:56:46Z",
+          "completed_at": "2026-07-18T12:56:47Z"
+        },
+        {
+          "name": "Delete old workflow runs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-07-18T12:56:47Z",
+          "completed_at": "2026-07-18T12:56:49Z"
+        },
+        {
+          "name": "Set up JDK 11",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-07-18T12:56:49Z",
+          "completed_at": "2026-07-18T12:56:54Z"
+        },
+        {
+          "name": "Cache Gradle dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-07-18T12:56:54Z",
+          "completed_at": "2026-07-18T12:56:55Z"
+        },
+        {
+          "name": "Checkout Android Keystore",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-07-18T12:56:55Z",
+          "completed_at": "2026-07-18T12:56:56Z"
+        },
+        {
+          "name": "Copy keystore to app folder",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-07-18T12:56:56Z",
+          "completed_at": "2026-07-18T12:56:56Z"
+        },
+        {
+          "name": "Build with Gradle",
+          "status": "in_progress",
+          "conclusion": null,
+          "number": 8,
+          "started_at": "2026-07-18T12:56:56Z",
+          "completed_at": null
+        },
+        {
+          "name": "Parse metadata",
+          "status": "pending",
+          "conclusion": null,
+          "number": 9,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Upload APKs to XUpdate",
+          "status": "pending",
+          "conclusion": null,
+          "number": 10,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Upload universal APK",
+          "status": "pending",
+          "conclusion": null,
+          "number": 11,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Upload arm64-v8a APK",
+          "status": "pending",
+          "conclusion": null,
+          "number": 12,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Upload x86_64 APK",
+          "status": "pending",
+          "conclusion": null,
+          "number": 13,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Checkout Android Keystore",
+          "status": "pending",
+          "conclusion": null,
+          "number": 23,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Cache Gradle dependencies",
+          "status": "pending",
+          "conclusion": null,
+          "number": 24,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Set up JDK 11",
+          "status": "pending",
+          "conclusion": null,
+          "number": 25,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Checkout source code",
+          "status": "pending",
+          "conclusion": null,
+          "number": 26,
+          "started_at": null,
+          "completed_at": null
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/fmcong/SmsForwarder/check-runs/88082283427",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000001573,
+      "runner_name": "GitHub Actions 1000001573",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}
