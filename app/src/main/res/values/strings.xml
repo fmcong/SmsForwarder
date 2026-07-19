@@ -726,7 +726,7 @@
     <string name="frpclib_download_title">缺少 FrpcLib v%s 动态库</string>
     <string name="frpclib_download_content">正在下载中，请稍后……</string>
     <string name="frpclib_version_mismatch">FrpcLib 版本不匹配</string>
-    <string name="frpclib_builtin_tips">FrpcLib v%s 已内置到APK中\n当前加载版本：%s</string>
+    <string name="frpclib_builtin_tips">FrpcLib v%1$s 已内置到APK中\n当前加载版本：%2$s</string>
     <string name="frpclib_load_failed">FrpcLib 动态库加载失败，请检查设备兼容性</string>
     <string name="page_not_found">页面未找到！</string>
     <string name="data_error">数据出错！</string>

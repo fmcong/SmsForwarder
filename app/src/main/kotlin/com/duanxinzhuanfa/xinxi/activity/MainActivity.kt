@@ -54,6 +54,7 @@ import com.xuexiang.xui.utils.ResUtils
 import com.xuexiang.xui.utils.ThemeUtils
 import com.xuexiang.xui.utils.ViewUtils
 import com.xuexiang.xui.utils.WidgetUtils
+import com.xuexiang.xui.widget.dialog.materialdialog.MaterialDialog
 import com.xuexiang.xutil.net.NetworkUtils
 import com.yarolegovich.slidingrootnav.SlideGravity
 import com.yarolegovich.slidingrootnav.SlidingRootNav
@@ -371,7 +372,7 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
         val version = try {
             frpclib.Frpclib.getVersion()
         } catch (e: Throwable) {
-            getString(R.string.unknown)
+            "unknown"
         }
         MaterialDialog.Builder(this)
             .iconRes(R.drawable.ic_menu_frpc)
