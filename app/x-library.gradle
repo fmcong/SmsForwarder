@@ -4,7 +4,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'com.xuexiang.xaop'
 
 //自动添加依赖
-configurations.each { configuration ->
+configurations.configureEach { configuration ->
     def dependencies = getProject().dependencies
     if (configuration.name.equals("implementation")) {
         //为Project加入X-Library依赖

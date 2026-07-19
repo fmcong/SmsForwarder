@@ -204,14 +204,14 @@ static def addRepos(RepositoryHandler handler) {
     handler.maven { url "https://repo1.maven.org/maven2/" }
     handler.maven { url 'https://oss.sonatype.org/content/repositories/public' }
     handler.maven { url "https://jitpack.io" }
-    //Add the Local repository
-    handler.maven { url 'LocalRepository' }
+    //Add the Local repository（本地未使用，移除避免 CI 报错）
+    //handler.maven { url 'LocalRepository' }
 }
 
 ext.addRepos = this.&addRepos
 
 //自动添加XAOP和XRouter插件
-project.buildscript.configurations.each { configuration ->
+project.buildscript.configurations.configureEach { configuration ->
     def dependencies = getProject().dependencies
     //noinspection ChangeToOperator
     if (configuration.name.equals("classpath")) {
