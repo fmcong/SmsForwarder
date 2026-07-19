@@ -26,12 +26,11 @@ object Core : Configuration.Provider {
         this.app = app
     }
 
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder().apply {
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder().apply {
             setDefaultProcessName(app.packageName + ":bg")
             setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
             setExecutor { (app as App).applicationScope.launch { it.run() } }
             setTaskExecutor { (app as App).applicationScope.launch { it.run() } }
         }.build()
-    }
 }
