@@ -30,7 +30,22 @@ jobs:
           java-version: '17'
           java-package: jdk
 
-      # 3. 缓存 Gradle 依赖
+      # 3. 诊断：输出环境信息
+      - name: Diagnose environment
+        run: |
+          java -version 2>&1
+          echo "---"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          echo "---"
+          ls -la app/libs/ 2>/dev/null || echo "No app/libs/"
+          echo "---"
+          # 检查关键文件是否存在
+          for f in app/build.gradle gradle.properties settings.gradle build.gradle versions.gradle; do
+            if [ -f "$f" ]; then echo "OK: $f"; else echo "MISSING: $f"; fi
+          done
+
+      # 4. 缓存 Gradle 依赖
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
@@ -41,7 +56,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # 4. 检出 Keystore 并复制到项目根目录
+      # 5. 检出 Keystore 并复制到项目根目录
       - name: Checkout Android Keystore
         uses: actions/checkout@v4
         with:
@@ -51,16 +66,20 @@ jobs:
 
       - name: Copy keystore to app folder
         run: |
+          ls -la keystore/ 2>/dev/null || echo "keystore dir empty"
           if ls keystore/*.jks 1> /dev/null 2>&1; then
             cp keystore/*.jks app/
+            echo "keystore copied to app/"
           elif ls keystore/*.keystore 1> /dev/null 2>&1; then
             cp keystore/*.keystore app/
+            echo "keystore copied to app/"
           else
             echo "No keystore file found in keystore directory"
             exit 1
           fi
+          ls -la app/*.jks app/*.keystore 2>/dev/null || echo "No keystore in app/"
 
-      # 5. 构建 Release APK（--stacktrace 便于定位错误）
+      # 6. 构建 Release APK
       - name: Build with Gradle
         run: bash ./gradlew assembleRelease --stacktrace --no-daemon
 
