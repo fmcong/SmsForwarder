@@ -35,7 +35,7 @@
 /frp_source_v70/
 /frpc_wrapper/
 
-# CI monitoring temp files (created during build debugging)
+# CI monitoring & build temp files
 /run*.json
 /jobs*.json
 /push*.log
@@ -45,3 +45,5 @@
 /new_run*.json
 /run_status.json
 /dispatch.json
+/rebuild_frpclib.log
+*.log
