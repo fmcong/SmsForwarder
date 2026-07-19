@@ -195,13 +195,15 @@ android {
     }
 
     android.applicationVariants.configureEach { variant ->
-        variant.outputs.configureEach { output ->
-            def abiName = (output.filters.find { it.filterType == com.android.build.OutputFile.ABI }?.identifier ?: "universal")
+        variant.outputs.each { output ->
+            //noinspection GrDeprecatedAPIUsage
+            def abiName = output.getFilter(com.android.build.OutputFile.ABI)
+            if (abiName == null) abiName = "universal"
             output.versionCodeOverride = abiCodes.get(abiName, 0) * 100000 + variant.versionCode
             output.outputFileName = "SmsF_${versionName}_${output.versionCode}_${abiName}_${variant.name}.apk"
 
             // 修改 output-metadata.json 追加编译日期、编译时间、Git Commit ID
-            def assembleTaskName = "assemble${variant.name.substring(0, 1).toUpperCase()}${variant.name.substring(1)}"
+            def assembleTaskName = "assemble${variant.name.capitalize()}"
             tasks.named(assembleTaskName) {
                 doLast {
                     def metadataFile = file("${output.outputFile.parent}/output-metadata.json")
