@@ -20,7 +20,7 @@ jobs:
     steps:
       # 1. 检出代码
       - name: Checkout source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       # 2. 设置 JDK 11
       - name: Set up JDK 11
@@ -43,7 +43,7 @@ jobs:
 
       # 4. 检出 Keystore 并复制到项目根目录
       - name: Checkout Android Keystore
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           repository: fmcong/keystore
           token: ${{ secrets.TOKEN }}
