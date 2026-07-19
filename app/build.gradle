@@ -276,7 +276,7 @@ tasks.configureEach { task ->
 //统一 kotlin-stdlib 变体版本
 configurations.all {
     resolutionStrategy {
-        force "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+        force "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
     }
 }
 

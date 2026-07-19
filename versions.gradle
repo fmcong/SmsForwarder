@@ -30,7 +30,7 @@ versions.gson = "2.11.0"
 versions.okhttp3 = "3.12.13"
 versions.leakcanary = "2.14"
 versions.lifecycle = "2.8.7"
-versions.kotlin = '1.9.24'
+versions.kotlin = '1.8.10'
 
 //========xlibrary start========//
 versions.xui = "dev~1.2.2-SNAPSHOT"
