@@ -307,6 +307,9 @@
 -keep class frpclib.** { *; }
 -keepclassmembers class frpclib.** { *; }
 
+# Kotlin 分析 API（旧版 R8 找不到此类时 NPE 崩溃，需显式保留）
+-keep class org.jetbrains.kotlin.analysis.api.** { *; }
+
 # 忽略所有 R8 stack map warnings
 -ignorewarnings
 -dontwarn **
