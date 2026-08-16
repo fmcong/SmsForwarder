@@ -273,13 +273,6 @@ tasks.configureEach { task ->
     }
 }
 
-//统一 kotlin-stdlib 变体版本
-configurations.all {
-    resolutionStrategy {
-        force "org.jetbrains.kotlin:kotlin-stdlib:1.7.21"
-    }
-}
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation files('libs/frpclib.aar')
