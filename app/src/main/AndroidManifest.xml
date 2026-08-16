@@ -383,11 +383,7 @@
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="merge">
-            <!-- If you are using androidx.startup to initialize other components -->
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
+            <!-- 保留 WorkManagerInitializer：App 实现了 Configuration.Provider，自动初始化使用 Core 自定义配置，避免手动 initialize 冲突 -->
         </provider>
 
     </application>

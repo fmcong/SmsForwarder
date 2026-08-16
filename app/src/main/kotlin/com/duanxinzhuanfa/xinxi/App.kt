@@ -183,8 +183,8 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
             //纯客户端模式
             if (SettingUtils.enablePureClientMode) return
 
-            //初始化WorkManager
-            WorkManager.initialize(this, Configuration.Builder().build())
+            //WorkManager 由 Configuration.Provider（Core）自动初始化，此处不再手动 initialize，
+            //否则可能抛 IllegalStateException: WorkManager is already initialized
 
             //========== 自动刷新初始化 ==========
 
