@@ -111,9 +111,9 @@ android {
             debuggable false
             jniDebuggable false
             // 移除无用的资源
-            shrinkResources true
-            // 代码混淆开关
-            minifyEnabled true
+            shrinkResources false
+            // 代码混淆开关（临时关闭排查 R8 4.0 混淆导致的闪退；确认稳定后再开启并完善 keep 规则）
+            minifyEnabled false
             // 混淆配置
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (isNeedPackage.toBoolean()) {
