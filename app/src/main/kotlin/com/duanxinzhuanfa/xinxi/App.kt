@@ -355,9 +355,25 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 }
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
+            //捕获 Error（NoClassDefFoundError/UnsatisfiedLinkError 等）并写崩溃日志，避免静默闪退
             e.printStackTrace()
             Log.e(TAG, "onCreate: $e")
+            try {
+                val logPath = this.cacheDir.absolutePath + "/logs"
+                val logDir = File(logPath)
+                if (!logDir.exists()) logDir.mkdirs()
+                val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                val logFile = File(logPath, "crash_${dateFormat.format(Date())}.txt")
+                BufferedWriter(FileWriter(logFile, true)).use { writer ->
+                    writer.append("$e\n")
+                    for (ste in e.stackTrace) {
+                        writer.append("\tat $ste\n")
+                    }
+                }
+            } catch (ex: Throwable) {
+                ex.printStackTrace()
+            }
         }
     }
 
