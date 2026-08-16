@@ -56,8 +56,12 @@ class HideNotificationService : Service() {
                 .setOngoing(true)
                 .build()
 
-            // 用同一个 ID 注册前台服务
-            startForeground(FRONT_NOTIFY_ID, notification)
+            // 用同一个 ID 注册前台服务（API 34+ 必须显式传 foregroundServiceType，否则抛 MissingForegroundServiceTypeException）
+            if (Build.VERSION.SDK_INT >= 34) {
+                startForeground(FRONT_NOTIFY_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            } else {
+                startForeground(FRONT_NOTIFY_ID, notification)
+            }
             // 立即移除通知（关键步骤：去掉通知栏展示）
             stopForeground(true)
         } catch (e: Exception) {
