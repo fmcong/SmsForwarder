@@ -170,8 +170,7 @@ const val FRONT_NOTIFY_ID = 0x1010
 const val FRONT_CHANNEL_ID = "com.duanxinzhuanfa.xinxi"
 const val FRONT_CHANNEL_NAME = "SmsForwarder Foreground Service"
 
-//Frp内网穿透
-const val FRPC_LIB_DOWNLOAD_URL = "https://xupdate.ppps.cn/uploads/%s/%s/libgojni.so"
+//Frp内网穿透（动态库已内置到 APK，不再提供下载）
 const val FRPC_LIB_VERSION = "0.70.0"
 const val EVENT_FRPC_UPDATE_CONFIG = "EVENT_FRPC_UPDATE_CONFIG"
 const val EVENT_FRPC_DELETE_CONFIG = "EVENT_FRPC_DELETE_CONFIG"
