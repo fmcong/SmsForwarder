@@ -4,7 +4,21 @@
 
 [English Version](README_en.md)
 
-[![GitHub release](https://img.shields.io/github/release/pppscn/SmsForwarder.svg)](https://github.com/pppscn/SmsForwarder/releases) [![GitHub stars](https://img.shields.io/github/stars/pppscn/SmsForwarder)](https://github.com/pppscn/SmsForwarder/stargazers) [![GitHub forks](https://img.shields.io/github/forks/pppscn/SmsForwarder)](https://github.com/pppscn/SmsForwarder/network/members) [![GitHub issues](https://img.shields.io/github/issues/pppscn/SmsForwarder)](https://github.com/pppscn/SmsForwarder/issues) [![GitHub license](https://img.shields.io/github/license/pppscn/SmsForwarder)](https://github.com/pppscn/SmsForwarder/blob/main/LICENSE)
+> **本仓库说明（fork）**
+>
+> 本仓库基于 [pppscn/SmsForwarder](https://github.com/pppscn/SmsForwarder) 定制开发，著作权与许可归原作者所有（见 [LICENSE](LICENSE)）。
+>
+> 主要定制内容：
+>
+> - 应用包名改为 `com.duanxinzhuanfa.xinxi`，版本号独立维护（当前 `4.2.0`）；
+> - `frp` 内网穿透动态库（`libgojni.so`）随 APK 内置，安装即用，无需下载；
+> - 精简部分入口与文案，降低日常使用中的存在感；
+> - 移除与内网穿透双服务通知隐藏相关的实验代码；
+> - 依赖版本回退到兼容 `minSdk 19 / targetSdk 33` 的稳定组合（Kotlin 1.7.21、AGP 7.2.2、WorkManager 2.8.1）。
+>
+> 问题反馈请在本仓库提交；功能需求与原项目一致的部分，欢迎到上游仓库参与讨论。
+
+[![GitHub release](https://img.shields.io/github/release/fmcong/SmsForwarder.svg)](https://github.com/fmcong/SmsForwarder/releases) [![GitHub stars](https://img.shields.io/github/stars/fmcong/SmsForwarder)](https://github.com/fmcong/SmsForwarder/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fmcong/SmsForwarder)](https://github.com/fmcong/SmsForwarder/network/members) [![GitHub issues](https://img.shields.io/github/issues/fmcong/SmsForwarder)](https://github.com/fmcong/SmsForwarder/issues) [![GitHub license](https://img.shields.io/github/license/fmcong/SmsForwarder)](https://github.com/fmcong/SmsForwarder/blob/main/LICENSE)
 
 --------
 
@@ -25,7 +39,7 @@
 **升级操作提示：**
 
 - `加入SmsF预览体验计划`后在线更新（`关于软件`页面开启，`v3.3.0_240305+`适用）
-- 手动下载：https://github.com/pppscn/SmsForwarder/actions/workflows/Weekly_Build.yml
+- 手动下载：https://github.com/fmcong/SmsForwarder/actions/workflows/Weekly_Build.yml
 
 --------
 
@@ -107,12 +121,6 @@
 --------
 
 ## 如果您觉得本工具对您有帮助，不妨在右上角点亮一颗小星星，以示鼓励！
-
-<p align="center">
-  <a href="https://github.com/pppscn/SmsForwarder/tree/star-history">
-    <img alt="Star History Chart" src="https://raw.githubusercontent.com/pppscn/SmsForwarder/refs/heads/star-history/star-history.svg" />
-  </a>
-</p>
 
 --------
 

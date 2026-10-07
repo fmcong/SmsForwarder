@@ -4,7 +4,21 @@
 
 [中文版](README.md)
 
-[![GitHub release](https://img.shields.io/github/release/pppscn/SmsForwarder.svg)](https://github.com/pppscn/SmsForwarder/releases) [![GitHub stars](https://img.shields.io/github/stars/pppscn/SmsForwarder)](https://github.com/pppscn/SmsForwarder/stargazers) [![GitHub forks](https://img.shields.io/github/forks/pppscn/SmsForwarder)](https://github.com/pppscn/SmsForwarder/network/members) [![GitHub issues](https://img.shields.io/github/issues/pppscn/SmsForwarder)](https://github.com/pppscn/SmsForwarder/issues) [![GitHub license](https://img.shields.io/github/license/pppscn/SmsForwarder)](https://github.com/pppscn/SmsForwarder/blob/main/LICENSE)
+> **About this repository (fork)**
+>
+> This repository is a customized fork of [pppscn/SmsForwarder](https://github.com/pppscn/SmsForwarder). Copyright and license remain with the original author (see [LICENSE](LICENSE)).
+>
+> Main customizations:
+>
+> - Application id changed to `com.duanxinzhuanfa.xinxi`, with an independent version number (currently `4.2.0`);
+> - The frp tunnel native library (`libgojni.so`) is bundled in the APK — works right after install, no download needed;
+> - Simplified some entries and copy to keep the app low-profile in daily use;
+> - Removed the experimental dual-service notification-hiding code;
+> - Dependencies rolled back to a stable set compatible with `minSdk 19 / targetSdk 33` (Kotlin 1.7.21, AGP 7.2.2, WorkManager 2.8.1).
+>
+> Please report issues here; feature requests that match upstream are welcome in the upstream repository.
+
+[![GitHub release](https://img.shields.io/github/release/fmcong/SmsForwarder.svg)](https://github.com/fmcong/SmsForwarder/releases) [![GitHub stars](https://img.shields.io/github/stars/fmcong/SmsForwarder)](https://github.com/fmcong/SmsForwarder/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fmcong/SmsForwarder)](https://github.com/fmcong/SmsForwarder/network/members) [![GitHub issues](https://img.shields.io/github/issues/fmcong/SmsForwarder)](https://github.com/fmcong/SmsForwarder/issues) [![GitHub license](https://img.shields.io/github/license/fmcong/SmsForwarder)](https://github.com/fmcong/SmsForwarder/blob/main/LICENSE)
 
 --------
 
@@ -24,7 +38,7 @@ Automated Tasks & Quick Commands, effortlessly automate your life, doubling your
 
 **Upgrade Instructions:**
 - After joining the SmsF Preview Experience Program, update online (available from `About Software` page, applicable for `v3.3.0_240305+`).
-- Manual download: [https://github.com/pppscn/SmsForwarder/actions/workflows/Weekly_Build.yml](https://github.com/pppscn/SmsForwarder/actions/workflows/Weekly_Build.yml)
+- Manual download: [https://github.com/fmcong/SmsForwarder/actions/workflows/Weekly_Build.yml](https://github.com/fmcong/SmsForwarder/actions/workflows/Weekly_Build.yml)
 
 --------
 
@@ -102,14 +116,6 @@ See more screenshots：https://github.com/pppscn/SmsForwarder/wiki
 --------
 
 ## Star this repo if you find this application useful!
-
-<a href="https://star-history.com/#pppscn/SmsForwarder&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=pppscn/SmsForwarder&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=pppscn/SmsForwarder&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=pppscn/SmsForwarder&type=Date" />
-  </picture>
-</a>
 
 --------
 
