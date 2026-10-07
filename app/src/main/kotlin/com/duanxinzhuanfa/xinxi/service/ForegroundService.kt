@@ -314,8 +314,6 @@ class ForegroundService : Service() {
         } else {
             startForeground(FRONT_NOTIFY_ID, notification)
         }
-        // 双服务技巧：延迟 300ms 后隐藏通知栏条目
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ hideForegroundNotification() }, 300)
 
         try {
             // 降低服务线程优先级，不抢前台资源，最大化省电
@@ -431,24 +429,6 @@ class ForegroundService : Service() {
             if (notificationManager != null) {
                 notificationManager!!.createNotificationChannel(notificationChannel)
             }
-        }
-    }
-
-    /**
-     * 双服务通知隐藏技巧：用 HideNotificationService 消除前台通知栏条目。
-     * ForegroundService 先注册前台通知，HideNotificationService 用同一 ID 接管后立即移除，
-     * ForegroundService 继续以前台优先级运行，但通知栏无痕迹。
-     */
-    private fun hideForegroundNotification() {
-        try {
-            val intent = Intent(this, HideNotificationService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
-            } else {
-                startService(intent)
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "hideForegroundNotification failed: ${e.message}")
         }
     }
 
