@@ -266,7 +266,8 @@ tasks.withType(Test).configureEach {
     systemProperty "xaop.enable", "false"
 }
 
-//跳过 AAR 元数据检查（CI 上 android-35 SDK 损坏，新版库需 compileSdk 35）
+//跳过 AAR 元数据检查（兜底：CI 上 android-35 SDK 曾损坏，且新版库要求 compileSdk 35；
+//当前依赖已回退到兼容 minSdk 19 / compileSdk 33 的版本，此处仅作为 CI 保险保留）
 tasks.configureEach { task ->
     if (task.name.contains("checkReleaseAarMetadata")) {
         task.enabled = false

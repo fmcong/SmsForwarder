@@ -23,7 +23,6 @@ import com.duanxinzhuanfa.xinxi.utils.EVENT_FRPC_DELETE_CONFIG
 import com.duanxinzhuanfa.xinxi.utils.EVENT_FRPC_RUNNING_ERROR
 import com.duanxinzhuanfa.xinxi.utils.EVENT_FRPC_RUNNING_SUCCESS
 import com.duanxinzhuanfa.xinxi.utils.EVENT_FRPC_UPDATE_CONFIG
-import com.duanxinzhuanfa.xinxi.utils.FRPC_LIB_VERSION
 import com.duanxinzhuanfa.xinxi.utils.FrpcUtils
 import com.duanxinzhuanfa.xinxi.utils.INTENT_FRPC_APPLY_FILE
 import com.duanxinzhuanfa.xinxi.utils.INTENT_FRPC_EDIT_FILE
@@ -148,7 +147,7 @@ class FrpcFragment : BaseFragment<FragmentFrpcsBinding?>(), FrpcPagingAdapter.On
 
             R.id.iv_play -> {
                 if (!App.FrpclibInited) {
-                    XToastUtils.error(String.format(getString(R.string.frpclib_download_title), FRPC_LIB_VERSION))
+                    XToastUtils.error(getString(R.string.frpclib_load_failed))
                     return
                 }
 
@@ -198,7 +197,7 @@ class FrpcFragment : BaseFragment<FragmentFrpcsBinding?>(), FrpcPagingAdapter.On
 
             else -> {
                 if (!App.FrpclibInited) {
-                    XToastUtils.error(String.format(getString(R.string.frpclib_download_title), FRPC_LIB_VERSION))
+                    XToastUtils.error(getString(R.string.frpclib_load_failed))
                     return
                 }
 
