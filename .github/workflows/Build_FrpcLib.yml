@@ -1,0 +1,198 @@
+name: Build FrpcLib
+
+# 手动触发：编译 frp 为 frpclib.aar（内置 frp 库升级）
+# 用法：Actions → Build FrpcLib → Run workflow → 填 frp 版本（如 v0.70.0）
+# 产物：artifact frpclib-aar，下载后用其中的 frpclib.aar 替换 app/libs/frpclib.aar
+on:
+  workflow_dispatch:
+    inputs:
+      frp_version:
+        description: 'frp 版本（tag）'
+        required: true
+        default: 'v0.70.0'
+      android_api:
+        description: '目标 Android API（minSdk 19，建议 19~21）'
+        required: false
+        default: '21'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build frpclib.aar
+    runs-on: ubuntu-latest
+    env:
+      FRP_VERSION: ${{ inputs.frp_version }}
+      ANDROID_API: ${{ inputs.android_api }}
+      WRAPPER_DIR: ${{ github.workspace }}/frpclib_wrapper
+
+    steps:
+      # 1. 拉取 frp 源码
+      - name: Checkout frp source
+        uses: actions/checkout@v4
+        with:
+          repository: fatedier/frp
+          ref: ${{ inputs.frp_version }}
+          path: frp_source
+          fetch-depth: 1
+
+      # 2. 安装 Go
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: false
+
+      # 3. 安装 Android NDK
+      - name: Install Android NDK
+        run: |
+          sdkmanager "ndk;27.0.12077973" "platform-tools"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> "$GITHUB_ENV"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> "$GITHUB_ENV"
+          "$ANDROID_HOME/ndk/27.0.12077973/ndk-build" --version 2>/dev/null | head -1 || ls "$ANDROID_HOME/ndk/27.0.12077973" | head -5
+
+      # 4. 安装 gomobile 并初始化
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          gomobile version
+
+      - name: gomobile init
+        run: gomobile init
+
+      # 5. 生成 Go 包装层（package frpclib → 生成类 frpclib.Frpclib）
+      - name: Create Go wrapper
+        run: |
+          mkdir -p "$WRAPPER_DIR"
+          cat > "$WRAPPER_DIR/go.mod" <<EOF
+          module frpclibwrapper
+
+          go 1.22
+
+          require github.com/fatedier/frp ${FRP_VERSION}
+          replace github.com/fatedier/frp => ../frp_source
+          EOF
+          cat > "$WRAPPER_DIR/frpclib.go" <<'EOF'
+          package frpclib
+
+          import (
+            "context"
+            "fmt"
+            "os"
+            "sync"
+            "time"
+
+            "github.com/fatedier/frp/client"
+            "github.com/fatedier/frp/pkg/config"
+            "github.com/fatedier/frp/pkg/config/source"
+            "github.com/fatedier/frp/pkg/util/log"
+            "github.com/fatedier/frp/pkg/util/version"
+          )
+
+          func init() { log.InitLogger("console", "error", 0, false) }
+
+          var (
+            mu   sync.Mutex
+            svcs = make(map[int64]*client.Service)
+            canc = make(map[int64]context.CancelFunc)
+          )
+
+          func GetVersion() string { return version.Full() }
+
+          func RunContent(uid int64, content string) bool {
+            mu.Lock()
+            defer mu.Unlock()
+            if s, ok := svcs[uid]; ok {
+              s.GracefulClose(3 * time.Second)
+              delete(svcs, uid)
+            }
+            if c, ok := canc[uid]; ok {
+              c()
+              delete(canc, uid)
+            }
+            f, _ := os.CreateTemp("", fmt.Sprintf("frpc_%d_*.toml", uid))
+            if f == nil {
+              return false
+            }
+            f.WriteString(content)
+            f.Close()
+            path := f.Name()
+            defer os.Remove(path)
+            common, proxies, visitors, _, err := config.LoadClientConfig(path, false)
+            if err != nil {
+              return false
+            }
+            src := source.NewConfigSource()
+            if src.ReplaceAll(proxies, visitors) != nil {
+              return false
+            }
+            agg := source.NewAggregator(src)
+            svr, err := client.NewService(client.ServiceOptions{Common: common, ConfigSourceAggregator: agg})
+            if err != nil {
+              return false
+            }
+            ctx, cancel := context.WithCancel(context.Background())
+            go svr.Run(ctx)
+            svcs[uid] = svr
+            canc[uid] = cancel
+            return true
+          }
+
+          func IsRunning(uid int64) bool {
+            mu.Lock()
+            defer mu.Unlock()
+            _, ok := svcs[uid]
+            return ok
+          }
+
+          func Close(uid int64) bool {
+            mu.Lock()
+            defer mu.Unlock()
+            if s, ok := svcs[uid]; ok {
+              s.GracefulClose(3 * time.Second)
+              delete(svcs, uid)
+            }
+            if c, ok := canc[uid]; ok {
+              c()
+              delete(canc, uid)
+            }
+            return true
+          }
+          EOF
+          echo "--- wrapper go.mod ---"
+          cat "$WRAPPER_DIR/go.mod"
+
+      # 6. 解析依赖
+      - name: Resolve dependencies
+        working-directory: frpclib_wrapper
+        run: |
+          go mod tidy
+          go list ./...
+
+      # 7. 编译 AAR
+      - name: Build frpclib.aar
+        working-directory: frpclib_wrapper
+        run: |
+          gomobile bind -v -target android -androidapi "$ANDROID_API" -o frpclib.aar frpclibwrapper
+
+      # 8. 校验产物
+      - name: Verify artifact
+        run: |
+          ls -la frpclib_wrapper/frpclib.aar
+          mkdir -p verify && cd verify
+          unzip -o -q ../frpclib_wrapper/frpclib.aar
+          echo "--- AAR 内容 ---"
+          find . -name '*.so' -o -name '*.jar' | sort
+          echo "--- 导出的类 ---"
+          unzip -l classes.jar | grep -i frpclib || true
+
+      # 9. 上传 artifact
+      - name: Upload frpclib.aar
+        uses: actions/upload-artifact@v4
+        with:
+          name: frpclib-aar-${{ inputs.frp_version }}
+          path: frpclib_wrapper/frpclib.aar
+          if-no-files-found: error
