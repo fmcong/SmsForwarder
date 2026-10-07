@@ -96,14 +96,14 @@ class FeishuAppUtils private constructor() {
             Log.d(TAG, "requestUrl：$requestUrl")
 
             val content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }
 
             val msgContent = if ("interactive" == setting.msgType) {
                 val title = if (rule != null) {
-                    msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace)
+                    msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace, rule.title)
                 } else {
                     msgInfo.getTitleForSend(setting.titleTemplate)
                 }
@@ -114,7 +114,8 @@ class FeishuAppUtils private constructor() {
                         setting.messageCard.trimIndent()
                             .replace("{{MSG_TITLE}}", jsonInnerStr(title))
                             .replace("{{MSG_URL}}", jsonInnerStr("https://github.com/pppscn/SmsForwarder"))
-                            .replace("{{MSG_CONTENT}}", jsonInnerStr(content))
+                            .replace("{{MSG_CONTENT}}", jsonInnerStr(content)),
+                        rule?.title ?: ""
                     )
                 }
             } else {

@@ -201,12 +201,15 @@ class ConditionUtils private constructor() {
 
                         val batteryStatus = TaskUtils.batteryStatus
                         val batteryPlugged = TaskUtils.batteryPlugged
-                        if (batteryStatus != chargeSetting.status || (chargeSetting.plugged != 0 && batteryPlugged != chargeSetting.plugged)) {
-                            Log.d(TAG, "TASK-$taskId：batteryStatus or batteryPlugged is not match, chargeSetting = $chargeSetting")
+                        val batteryVoltage = TaskUtils.batteryVoltage
+                        val batteryHealth = TaskUtils.batteryHealth
+                        val batteryTemperature = TaskUtils.batteryTemperature
+                        if (!chargeSetting.isMatch(batteryStatus, batteryPlugged, batteryVoltage, batteryHealth, batteryTemperature)) {
+                            Log.d(TAG, "TASK-$taskId：charge condition is not match, batteryStatus = $batteryStatus, batteryPlugged = $batteryPlugged, batteryVoltage = $batteryVoltage, batteryHealth = $batteryHealth, batteryTemperature = $batteryTemperature, chargeSetting = $chargeSetting")
                             return false
                         }
 
-                        Log.d(TAG, "TASK-$taskId：batteryStatus and batteryPlugged is match, chargeSetting = $chargeSetting")
+                        Log.d(TAG, "TASK-$taskId：charge condition is match, chargeSetting = $chargeSetting")
                     }
 
                     TASK_CONDITION_LOCK_SCREEN -> {

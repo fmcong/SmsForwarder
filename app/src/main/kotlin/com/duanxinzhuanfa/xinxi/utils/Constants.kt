@@ -199,6 +199,13 @@ const val KEY_RULE_TYPE = "key_rule_type"
 const val KEY_RULE_CLONE = "key_rule_clone"
 const val KEY_DEFAULT_SELECTION = "key_default_selection"
 
+//转发规则测试弹窗填写内容缓存（key需拼接ruleType后缀区分）
+const val SP_RULE_TEST_SIM_SLOT = "rule_test_sim_slot_"
+const val SP_RULE_TEST_FROM = "rule_test_from_"
+const val SP_RULE_TEST_TITLE = "rule_test_title_"
+const val SP_RULE_TEST_CONTENT = "rule_test_content_"
+const val SP_RULE_TEST_CALL_TYPE = "rule_test_call_type_"
+
 const val KEY_TASK_ID = "key_task_id"
 const val KEY_TASK_TYPE = "key_task_type"
 const val KEY_TASK_CLONE = "key_task_clone"
@@ -291,6 +298,9 @@ const val SP_BATTERY_STATUS = "battery_status"
 const val SP_BATTERY_LEVEL = "battery_level"
 const val SP_BATTERY_PCT = "battery_pct"
 const val SP_BATTERY_PLUGGED = "battery_plugged"
+const val SP_BATTERY_VOLTAGE = "battery_voltage"
+const val SP_BATTERY_HEALTH = "battery_health"
+const val SP_BATTERY_TEMPERATURE = "battery_temperature"
 
 const val SP_NETWORK_STATE = "network_state"
 const val SP_DATA_SIM_SLOT = "data_sim_slot"

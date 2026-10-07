@@ -34,7 +34,7 @@ class DingtalkGroupRobotUtils private constructor() {
             msgId: Long = 0L
         ) {
             var content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }
@@ -88,7 +88,7 @@ class DingtalkGroupRobotUtils private constructor() {
 
             if ("markdown" == msgMap["msgtype"]) {
                 val titleTemplate = setting.titleTemplate
-                val title = rule?.let { msgInfo.getTitleForSend(titleTemplate, it.regexReplace) } ?: msgInfo.getTitleForSend(titleTemplate)
+                val title = rule?.let { msgInfo.getTitleForSend(titleTemplate, it.regexReplace, it.title) } ?: msgInfo.getTitleForSend(titleTemplate)
                 msgMap["markdown"] = mutableMapOf<String, Any>("title" to title, "text" to content)
             } else {
                 msgMap["text"] = mutableMapOf<String, Any>("content" to content)

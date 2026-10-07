@@ -46,6 +46,18 @@ class BatteryReceiver : BroadcastReceiver() {
         val isStatusChanged = statusNew != statusOld
         TaskUtils.batteryStatus = statusNew
 
+        val voltage: Int = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
+        TaskUtils.batteryVoltage = voltage
+
+        //EXTRA_TEMPERATURE 单位为 0.1℃，换算为 ℃
+        val temperature: Int = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10
+        TaskUtils.batteryTemperature = temperature
+
+        val healthNew: Int = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, BatteryManager.BATTERY_HEALTH_UNKNOWN)
+        val healthOld = TaskUtils.batteryHealth
+        val isHealthChanged = healthNew != healthOld
+        TaskUtils.batteryHealth = healthNew
+
         //电量改变
         if (isLevelChanged) {
             Log.d(TAG, "电量改变")
@@ -60,8 +72,8 @@ class BatteryReceiver : BroadcastReceiver() {
             WorkManager.getInstance(context).enqueue(request)
         }
 
-        //充电状态改变
-        if (isPluggedChanged || isStatusChanged) {
+        //充电状态改变（含电池健康度变化）
+        if (isPluggedChanged || isStatusChanged || isHealthChanged) {
             Log.d(TAG, "充电状态改变")
             val inputData = workDataOf(
                 TaskWorker.CONDITION_TYPE to TASK_CONDITION_CHARGE,
@@ -69,6 +81,10 @@ class BatteryReceiver : BroadcastReceiver() {
                 "status_old" to statusOld,
                 "plugged_new" to pluggedNew,
                 "plugged_old" to pluggedOld,
+                "health_new" to healthNew,
+                "health_old" to healthOld,
+                "voltage" to voltage,
+                "temperature" to temperature,
             )
             // 使用 hashcode 生成唯一的标识符
             val inputDataHash = inputData.hashCode().toString()

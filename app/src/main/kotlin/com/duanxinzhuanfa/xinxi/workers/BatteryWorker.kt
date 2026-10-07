@@ -1,6 +1,7 @@
 package com.duanxinzhuanfa.xinxi.workers
 
 import android.content.Context
+import android.os.BatteryManager
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
@@ -92,7 +93,11 @@ class BatteryWorker(context: Context, params: WorkerParameters) : CoroutineWorke
                     val statusOld = inputData.getInt("status_old", -1)
                     val pluggedNew = inputData.getInt("plugged_new", -1)
                     val pluggedOld = inputData.getInt("plugged_old", -1)
-                    Log.d(TAG, "statusNew: $statusNew, statusOld: $statusOld, pluggedNew: $pluggedNew, pluggedOld: $pluggedOld")
+                    val healthNew = inputData.getInt("health_new", BatteryManager.BATTERY_HEALTH_UNKNOWN)
+                    val healthOld = inputData.getInt("health_old", BatteryManager.BATTERY_HEALTH_UNKNOWN)
+                    val voltage = inputData.getInt("voltage", 0)
+                    val temperature = inputData.getInt("temperature", 0)
+                    Log.d(TAG, "statusNew: $statusNew, statusOld: $statusOld, pluggedNew: $pluggedNew, pluggedOld: $pluggedOld, healthNew: $healthNew, healthOld: $healthOld, voltage: $voltage, temperature: $temperature")
                     if (statusNew == -1 || statusOld == -1 || pluggedNew == -1 || pluggedOld == -1) {
                         Log.d(TAG, "statusNew or statusOld or pluggedNew or pluggedOld is -1")
                         return Result.failure()
@@ -120,9 +125,9 @@ class BatteryWorker(context: Context, params: WorkerParameters) : CoroutineWorke
                             continue
                         }
 
-                        val msg = chargeSetting.getMsg(statusNew, statusOld, pluggedNew, pluggedOld, TaskUtils.batteryInfo)
+                        val msg = chargeSetting.getMsg(statusNew, statusOld, pluggedNew, pluggedOld, healthNew, healthOld, voltage, temperature, TaskUtils.batteryInfo)
                         if (msg.isEmpty()) {
-                            Log.d(TAG, "TASK-${task.id}：msg is empty, chargeSetting = $chargeSetting, statusNew = $statusNew, statusOld = $statusOld, pluggedNew = $pluggedNew, pluggedOld = $pluggedOld")
+                            Log.d(TAG, "TASK-${task.id}：msg is empty, chargeSetting = $chargeSetting, statusNew = $statusNew, statusOld = $statusOld, pluggedNew = $pluggedNew, pluggedOld = $pluggedOld, healthNew = $healthNew, healthOld = $healthOld, voltage = $voltage, temperature = $temperature")
                             continue
                         }
 

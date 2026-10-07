@@ -37,7 +37,7 @@ class EmailSender(
     // 安全选项
     private val openSSL: Boolean = false, //是否开启ssl验证 默认关闭
     private val startTls: Boolean = false, //是否开启starttls加密方式 默认关闭
-    // 邮件加密方式: S/MIME、OpenPGP、Plain（不传证书）
+    // 邮件加密方式: S/MIME、OpenPGP、OpenKeychain、Plain（不传证书）
     private val encryptionProtocol: String = "S/MIME",
     // 邮件 S/MIME 加密和签名
     private val recipientX509Cert: X509Certificate? = null, //收件人公钥（用于加密）
@@ -47,6 +47,9 @@ class EmailSender(
     private var recipientPGPPublicKeyRing: PGPPublicKeyRing? = null, // 收件人公钥（用于加密）
     private var senderPGPSecretKeyRing: PGPSecretKeyRing? = null, // 发件人私钥（用于签名）
     private val senderPGPSecretKeyPassword: String = "", // 发件人私钥密码
+    //邮件 OpenKeychain 加密和签名（密钥全部由OpenKeychain管理，按收件人邮箱匹配公钥）
+    private val openKeychainHelper: OpenKeychainHelper? = null,
+    private val openKeychainSignKeyId: Long = 0L, // 签名密钥ID，0表示只加密不签名
 ) {
 
     private val TAG: String = EmailSender::class.java.simpleName
@@ -141,6 +144,29 @@ class EmailSender(
                         isSign -> pgpEmail.sendSignedEmail()
                         else -> pgpEmail.sendPlainEmail()
                     }
+                    listener?.onEmailSent(result.first, result.second)
+                }
+
+                "OpenKeychain" -> {
+                    // 通过 OpenKeychain（OpenPGP API）加密发送，公钥按收件人邮箱自动匹配
+                    if (openKeychainHelper == null) {
+                        listener?.onEmailSent(false, "OpenKeychainHelper is null")
+                        return
+                    }
+                    val openKeychainEmail = OpenKeychainMailUtils(
+                        session = Session.getInstance(properties, authenticator),
+                        fromAlias = fromAlias,
+                        nickname = nickname,
+                        subject = subject,
+                        body = html,
+                        attachFiles = attachFiles,
+                        toAddress = toAddress,
+                        ccAddress = ccAddress,
+                        bccAddress = bccAddress,
+                        openKeychainHelper = openKeychainHelper,
+                        signKeyId = openKeychainSignKeyId,
+                    )
+                    val result = openKeychainEmail.sendEncryptedEmail()
                     listener?.onEmailSent(result.first, result.second)
                 }
 

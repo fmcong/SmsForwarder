@@ -343,7 +343,82 @@
                         style="@style/rg_rb_style"
                         android:text="@string/openpgp" />
 
+                    <RadioButton
+                        android:id="@+id/rb_encryption_protocol_openkeychain"
+                        style="@style/rg_rb_style"
+                        android:text="@string/openkeychain" />
+
                 </RadioGroup>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_openkeychain_sign_key"
+                style="@style/BarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sender_openkeychain_sign_key"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/openkeychain_sign_key_tips"
+                    android:textSize="@dimen/text_size_mini" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_openkeychain_sign_key"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/openkeychain_sign_key_none"
+                        android:textSize="@dimen/text_size_small" />
+
+                    <com.xuexiang.xui.widget.button.shadowbutton.RippleShadowShadowButton
+                        android:id="@+id/btn_openkeychain_sign_key_picker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:gravity="center"
+                        android:padding="5dp"
+                        android:text="@string/openkeychain_select_sign_key"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_size_mini"
+                        app:sb_color_unpressed="@color/colorBlueGrey"
+                        app:sb_ripple_color="@color/white"
+                        app:sb_ripple_duration="500"
+                        app:sb_shape_type="rectangle"
+                        tools:ignore="SmallSp" />
+
+                    <com.xuexiang.xui.widget.button.shadowbutton.RippleShadowShadowButton
+                        android:id="@+id/btn_openkeychain_sign_key_clear"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:gravity="center"
+                        android:padding="5dp"
+                        android:text="@string/openkeychain_clear_sign_key"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_size_mini"
+                        app:sb_color_unpressed="@color/colorBlueGrey"
+                        app:sb_ripple_color="@color/white"
+                        app:sb_ripple_duration="500"
+                        app:sb_shape_type="rectangle"
+                        tools:ignore="SmallSp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

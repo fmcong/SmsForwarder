@@ -22,6 +22,7 @@ import com.xuexiang.xrouter.annotation.AutoWired
 import com.xuexiang.xrouter.launcher.XRouter
 import com.xuexiang.xui.widget.actionbar.TitleBar
 import com.xuexiang.xui.widget.button.SmoothCheckBox
+import com.xuexiang.xui.widget.picker.XRangeSlider
 
 @Page(name = "Charge")
 @Suppress("PrivatePropertyName", "SameParameterValue")
@@ -67,10 +68,46 @@ class ChargeFragment : BaseFragment<FragmentTasksConditionChargeBinding?>(), Vie
             binding!!.cbPluggedUsb.isChecked = R.id.cb_plugged_usb in pluggedIds
             binding!!.cbPluggedWireless.isChecked = R.id.cb_plugged_wireless in pluggedIds
             binding!!.cbPluggedUnlimited.isChecked = R.id.cb_plugged_unlimited in pluggedIds
+            val healthIds = settingVo.getHealthCheckIds()
+            binding!!.cbHealthUnlimited.isChecked = R.id.cb_health_unlimited in healthIds
+            binding!!.cbHealthGood.isChecked = R.id.cb_health_good in healthIds
+            binding!!.cbHealthOverheat.isChecked = R.id.cb_health_overheat in healthIds
+            binding!!.cbHealthCold.isChecked = R.id.cb_health_cold in healthIds
+            binding!!.cbHealthDead.isChecked = R.id.cb_health_dead in healthIds
+            binding!!.cbHealthOverVoltage.isChecked = R.id.cb_health_over_voltage in healthIds
+            binding!!.cbHealthUnspecifiedFailure.isChecked = R.id.cb_health_unspecified_failure in healthIds
+            binding!!.cbHealthUnknown.isChecked = R.id.cb_health_unknown in healthIds
+            val voltageLimited = settingVo.voltageMax > 0
+            binding!!.cbVoltageUnlimited.isChecked = !voltageLimited
+            binding!!.layoutVoltage.visibility = if (voltageLimited) View.VISIBLE else View.GONE
+            if (voltageLimited) {
+                binding!!.xrsVoltage.setStartingMinMax(settingVo.voltageMin, settingVo.voltageMax)
+            } else {
+                binding!!.xrsVoltage.setStartingMinMax(3000, 4500)
+            }
+            val temperatureLimited = settingVo.temperatureLimited
+            binding!!.cbTemperatureUnlimited.isChecked = !temperatureLimited
+            binding!!.layoutTemperature.visibility = if (temperatureLimited) View.VISIBLE else View.GONE
+            if (temperatureLimited) {
+                binding!!.xrsTemperature.setStartingMinMax(settingVo.temperatureMin, settingVo.temperatureMax)
+            } else {
+                binding!!.xrsTemperature.setStartingMinMax(0, 45)
+            }
+            if (settingVo.matchType == 1) {
+                binding!!.rbMatchAny.isChecked = true
+            } else {
+                binding!!.rbMatchAll.isChecked = true
+            }
         } else {
             // 新建任务的默认值（XML 的 android:checked 对 SmoothCheckBox 不一定生效）
             binding!!.cbBatteryCharging.isChecked = true
             binding!!.cbPluggedUnlimited.isChecked = true
+            binding!!.cbVoltageUnlimited.isChecked = true
+            binding!!.cbTemperatureUnlimited.isChecked = true
+            binding!!.cbHealthUnlimited.isChecked = true
+            binding!!.rbMatchAll.isChecked = true
+            binding!!.xrsVoltage.setStartingMinMax(3000, 4500)
+            binding!!.xrsTemperature.setStartingMinMax(0, 45)
         }
     }
 
@@ -83,8 +120,31 @@ class ChargeFragment : BaseFragment<FragmentTasksConditionChargeBinding?>(), Vie
             binding!!.cbBatteryCharging, binding!!.cbBatteryDischarging,
             binding!!.cbBatteryNotCharging, binding!!.cbBatteryFull, binding!!.cbBatteryUnknown,
             binding!!.cbPluggedAc, binding!!.cbPluggedUsb,
-            binding!!.cbPluggedWireless, binding!!.cbPluggedUnlimited
+            binding!!.cbPluggedWireless, binding!!.cbPluggedUnlimited,
+            binding!!.cbHealthUnlimited, binding!!.cbHealthGood, binding!!.cbHealthOverheat,
+            binding!!.cbHealthCold, binding!!.cbHealthDead, binding!!.cbHealthOverVoltage,
+            binding!!.cbHealthUnspecifiedFailure, binding!!.cbHealthUnknown
         ).forEach { cb -> cb.setOnCheckedChangeListener(listener) }
+        binding!!.cbVoltageUnlimited.setOnCheckedChangeListener { _, isChecked ->
+            binding!!.layoutVoltage.visibility = if (isChecked) View.GONE else View.VISIBLE
+            checkSetting(true)
+        }
+        binding!!.cbTemperatureUnlimited.setOnCheckedChangeListener { _, isChecked ->
+            binding!!.layoutTemperature.visibility = if (isChecked) View.GONE else View.VISIBLE
+            checkSetting(true)
+        }
+        val rangeSliderListener = object : XRangeSlider.OnRangeSliderListener {
+            override fun onMinChanged(slider: XRangeSlider, min: Int) {
+                checkSetting(true)
+            }
+
+            override fun onMaxChanged(slider: XRangeSlider, max: Int) {
+                checkSetting(true)
+            }
+        }
+        binding!!.xrsVoltage.setOnRangeSliderListener(rangeSliderListener)
+        binding!!.xrsTemperature.setOnRangeSliderListener(rangeSliderListener)
+        binding!!.rgMatchType.setOnCheckedChangeListener { _, _ -> checkSetting(true) }
     }
 
     @SingleClick
@@ -130,7 +190,44 @@ class ChargeFragment : BaseFragment<FragmentTasksConditionChargeBinding?>(), Vie
         if (binding!!.cbPluggedWireless.isChecked) pluggedCheckIds.add(R.id.cb_plugged_wireless)
         if (binding!!.cbPluggedUnlimited.isChecked) pluggedCheckIds.add(R.id.cb_plugged_unlimited)
 
-        val settingVo = ChargeSetting(statusCheckIds = statusCheckIds, pluggedCheckIds = pluggedCheckIds)
+        val healthCheckIds = mutableListOf<Int>()
+        if (binding!!.cbHealthUnlimited.isChecked) healthCheckIds.add(R.id.cb_health_unlimited)
+        if (binding!!.cbHealthGood.isChecked) healthCheckIds.add(R.id.cb_health_good)
+        if (binding!!.cbHealthOverheat.isChecked) healthCheckIds.add(R.id.cb_health_overheat)
+        if (binding!!.cbHealthCold.isChecked) healthCheckIds.add(R.id.cb_health_cold)
+        if (binding!!.cbHealthDead.isChecked) healthCheckIds.add(R.id.cb_health_dead)
+        if (binding!!.cbHealthOverVoltage.isChecked) healthCheckIds.add(R.id.cb_health_over_voltage)
+        if (binding!!.cbHealthUnspecifiedFailure.isChecked) healthCheckIds.add(R.id.cb_health_unspecified_failure)
+        if (binding!!.cbHealthUnknown.isChecked) healthCheckIds.add(R.id.cb_health_unknown)
+
+        var voltageMin = 0
+        var voltageMax = 0
+        if (!binding!!.cbVoltageUnlimited.isChecked) {
+            voltageMin = binding!!.xrsVoltage.selectedMin
+            voltageMax = binding!!.xrsVoltage.selectedMax
+        }
+
+        val temperatureLimited = !binding!!.cbTemperatureUnlimited.isChecked
+        var temperatureMin = 0
+        var temperatureMax = 0
+        if (temperatureLimited) {
+            temperatureMin = binding!!.xrsTemperature.selectedMin
+            temperatureMax = binding!!.xrsTemperature.selectedMax
+        }
+
+        val matchType = if (binding!!.rbMatchAny.isChecked) 1 else 0
+
+        val settingVo = ChargeSetting(
+            statusCheckIds = statusCheckIds,
+            pluggedCheckIds = pluggedCheckIds,
+            healthCheckIds = healthCheckIds,
+            voltageMin = voltageMin,
+            voltageMax = voltageMax,
+            temperatureLimited = temperatureLimited,
+            temperatureMin = temperatureMin,
+            temperatureMax = temperatureMax,
+            matchType = matchType,
+        )
         if (updateView) binding!!.tvDescription.text = settingVo.description
         return settingVo
     }

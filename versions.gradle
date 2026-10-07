@@ -177,6 +177,7 @@ static def addRepos(RepositoryHandler handler) {
     handler.mavenLocal()
     handler.google()
     handler.mavenCentral()
+    // 海外 CI 排除阿里云镜像，避免 502 导致依赖解析失败
     if (System.getenv('GITHUB_ACTIONS') == null) {
         handler.maven { url 'https://maven.aliyun.com/repository/google' }
         handler.maven { url 'https://maven.aliyun.com/repository/central' }

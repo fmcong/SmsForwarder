@@ -90,12 +90,12 @@ class FeishuUtils private constructor() {
         ) {
             val from: String = msgInfo.from
             val title: String = if (rule != null) {
-                msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace)
+                msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getTitleForSend(setting.titleTemplate)
             }
             val content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }
@@ -132,7 +132,8 @@ class FeishuUtils private constructor() {
                             .replace("{{MSG_TITLE}}", jsonInnerStr(title))
                             .replace("{{MSG_TIME}}", msgTime)
                             .replace("{{MSG_FROM}}", jsonInnerStr(from))
-                            .replace("{{MSG_CONTENT}}", jsonInnerStr(if (atLarkMd.isNotEmpty()) "$atLarkMd\n$content" else content))
+                            .replace("{{MSG_CONTENT}}", jsonInnerStr(if (atLarkMd.isNotEmpty()) "$atLarkMd\n$content" else content)),
+                        rule?.title ?: ""
                     )
                     requestMsg = Gson().toJson(msgMap)
                 }
@@ -194,6 +195,7 @@ class FeishuUtils private constructor() {
                     .joinToString(" ") { id ->
                         if (forText) "<at user_id=\"${id.trim()}\">@</at>" else "<at id=${id.trim()}></at>"
                     }
+
                 else -> ""
             }
         }

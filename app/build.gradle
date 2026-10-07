@@ -365,6 +365,8 @@ dependencies {
     implementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastle_version"
     //PGPainless
     implementation 'org.pgpainless:pgpainless-core:1.6.7'
+    //OpenKeychain OpenPGP API：https://github.com/open-keychain/openpgp-api
+    implementation 'org.sufficientlysecure:openpgp-api:10.0'
 
     //Android Keep Alive(安卓保活)，Cactus 集成双进程前台服务，JobScheduler，onePix(一像素)，WorkManager，无声音乐
     //https://github.com/gyf-dev/Cactus

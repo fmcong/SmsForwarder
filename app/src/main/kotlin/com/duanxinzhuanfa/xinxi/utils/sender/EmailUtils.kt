@@ -9,6 +9,8 @@ import com.duanxinzhuanfa.xinxi.utils.Log
 import com.duanxinzhuanfa.xinxi.utils.SendUtils
 import com.duanxinzhuanfa.xinxi.utils.SettingUtils
 import com.duanxinzhuanfa.xinxi.utils.mail.EmailSender
+import com.duanxinzhuanfa.xinxi.App
+import com.duanxinzhuanfa.xinxi.utils.mail.OpenKeychainHelper
 import com.xuexiang.xutil.resource.ResUtils.getString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -39,12 +41,12 @@ class EmailUtils {
             msgId: Long = 0L
         ) {
             val title: String = if (rule != null) {
-                msgInfo.getTitleForSend(setting.title, rule.regexReplace)
+                msgInfo.getTitleForSend(setting.title, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getTitleForSend(setting.title)
             }
             val message: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }
@@ -144,7 +146,7 @@ class EmailUtils {
                         val fromAlias = setting.fromEmailAlias.ifEmpty {
                             setting.fromEmail
                         }
-                        val nickname = msgInfo.getTitleForSend(setting.nickname)
+                        val nickname = msgInfo.getTitleForSend(setting.nickname, "", rule?.title ?: "")
                         setting.recipients.ifEmpty {
                             //兼容旧的设置
                             val emails = setting.toEmail.replace("[,，;；]".toRegex(), ",").trim(',').split(',')
@@ -235,6 +237,34 @@ class EmailUtils {
 
                         //逐一发送加密邮件
                         val recipientsWithoutCert = mutableListOf<String>()
+                        if (setting.encryptionProtocol == "OpenKeychain") {
+                            //OpenKeychain：公钥按收件人邮箱由OpenKeychain自动匹配，一次加密发送给全部收件人
+                            val openKeychainHelper = OpenKeychainHelper(App.context)
+                            try {
+                                sendWithRetry { emailListener ->
+                                    EmailSender(
+                                        host,
+                                        port,
+                                        from,
+                                        password,
+                                        fromAlias,
+                                        nickname,
+                                        title,
+                                        content,
+                                        toAddress = setting.recipients.keys.toMutableList(),
+                                        listener = emailListener,
+                                        openSSL = openSSL,
+                                        startTls = startTls,
+                                        encryptionProtocol = setting.encryptionProtocol,
+                                        openKeychainHelper = openKeychainHelper,
+                                        openKeychainSignKeyId = setting.openKeychainSignKeyId,
+                                    )
+                                }
+                            } finally {
+                                openKeychainHelper.unbind()
+                            }
+                            return@launch
+                        }
                         setting.recipients.forEach { (email, cert) ->
                             val keystoreBase64 = cert.first
                             val keystorePassword = cert.second

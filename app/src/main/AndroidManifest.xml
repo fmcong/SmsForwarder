@@ -79,6 +79,14 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- OpenKeychain：确保 API 30+ 上 OpenPGP 服务可见（即使未来移除 QUERY_ALL_PACKAGES 也不受影响） -->
+    <queries>
+        <package android:name="org.sufficientlysecure.keychain" />
+        <intent>
+            <action android:name="org.openintents.openpgp.IOpenPgpService2" />
+        </intent>
+    </queries>
+
     <application
         android:name=".App"
         android:configChanges="screenSize|keyboardHidden|orientation|keyboard"

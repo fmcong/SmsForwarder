@@ -38,12 +38,12 @@ class BarkUtils {
         ) {
             //Log.i(TAG, "sendMsg setting:$setting msgInfo:$msgInfo rule:$rule senderIndex:$senderIndex logId:$logId msgId:$msgId")
             val title: String = if (rule != null) {
-                msgInfo.getTitleForSend(setting.title, rule.regexReplace)
+                msgInfo.getTitleForSend(setting.title, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getTitleForSend(setting.title)
             }
             val content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }
@@ -71,7 +71,7 @@ class BarkUtils {
             if (!TextUtils.isEmpty(setting.sound)) msgMap["sound"] = setting.sound
             if (!TextUtils.isEmpty(setting.badge)) msgMap["badge"] = setting.badge
             if (!TextUtils.isEmpty(setting.url)) {
-                val replacedUrl = msgInfo.getContentForSend(setting.url)
+                val replacedUrl = msgInfo.getContentForSend(setting.url, "", rule?.title ?: "")
                 msgMap["url"] = replacedUrl
             }
 
@@ -89,7 +89,7 @@ class BarkUtils {
                     }
                 }
             } else {
-                msgMap["copy"] = msgInfo.getContentForSend(setting.autoCopy)
+                msgMap["copy"] = msgInfo.getContentForSend(setting.autoCopy, "", rule?.title ?: "")
                 msgMap["autoCopy"] = 1
             }
 

@@ -13,7 +13,7 @@ import com.duanxinzhuanfa.xinxi.utils.SettingUtils
 import com.xuexiang.xutil.XUtil
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 class UrlSchemeUtils private constructor() {
     companion object {
@@ -30,7 +30,7 @@ class UrlSchemeUtils private constructor() {
         ) {
             val from: String = msgInfo.from
             val content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }

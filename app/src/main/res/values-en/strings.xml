@@ -29,6 +29,7 @@
     <string name="insert_tag_net_type">Network Status</string>
     <string name="insert_tag_contact_name">Contact Name</string>
     <string name="insert_tag_phone_area">Phone Area</string>
+    <string name="insert_tag_rule_title">Rule Title</string>
 
     <string name="type_param_sms">Sms</string>
     <string name="type_param_call">Call</string>
@@ -273,8 +274,18 @@
     <string name="email_to_smime_tips">Tip: Click to add recipients and S/MIME encryption public keys (opt.).</string>
     <string name="email_to_openpgp">Recipients &amp; OpenPGP Public Cert.</string>
     <string name="email_to_openpgp_tips">Tip: Click to add recipients and OpenPGP public keys (opt.).</string>
+    <string name="email_to_openkeychain">Recipients (keys auto-matched by OpenKeychain)</string>
+    <string name="email_to_openkeychain_tips">Tip: Encryption keys are auto-matched by recipient email in OpenKeychain. Import their public keys into OpenKeychain first.</string>
     <string name="sender_smime_keystore">Sender S/MIME Cert. (Opt.)</string>
     <string name="sender_openpgp_keystore">Sender OpenPGP Cert. (Opt.)</string>
+    <string name="sender_openkeychain_sign_key">Sender OpenKeychain Signing Key (Opt.)</string>
+    <string name="openkeychain_sign_key_none">Not selected (encrypt only)</string>
+    <string name="openkeychain_select_sign_key">Select Signing Key</string>
+    <string name="openkeychain_clear_sign_key">Clear</string>
+    <string name="openkeychain_sign_key_selected">Signing key selected: %s</string>
+    <string name="openkeychain_sign_key_tips">Tip: If the signing key has a passphrase, enable passphrase caching in OpenKeychain, otherwise background signing will fail.</string>
+    <string name="openkeychain_not_installed">OpenKeychain is not installed. Get it at https://www.openkeychain.org</string>
+    <string name="openkeychain_check_failed">OpenKeychain encryption pre-check failed: %s</string>
     <string name="invalid_sender_keystore">Invalid Sender Signing Private Key</string>
     <string name="recipient_email">Recipient</string>
     <string name="keystore_base64">Specified Cert.</string>
@@ -440,6 +451,7 @@
     <string name="plain">Plain</string>
     <string name="smime">S/MIME</string>
     <string name="openpgp">OpenPGP</string>
+    <string name="openkeychain">OpenKeychain</string>
     <string name="proxy_settings">Proxy Settings</string>
     <string name="proxy_none">None</string>
     <string name="proxy_http">HTTP</string>
@@ -550,9 +562,9 @@
     <string name="rule_is">IS</string>
     <string name="rule_notis">NOTIS</string>
     <string name="rule_contain">CONTAIN</string>
-    <string name="rule_startwith">STARTWITH</string>
-    <string name="rule_endwith">ENDWITH</string>
-    <string name="rule_notcontain">NOTCONTAIN</string>
+    <string name="rule_startwith">START_WITH</string>
+    <string name="rule_endwith">END_WITH</string>
+    <string name="rule_notcontain">NOT_CONTAIN</string>
     <string name="rule_regex">REGEX</string>
     <string name="package_name_copied">Package name copied:</string>
     <string name="enable_phone_fw_tips">A call type must be selected to enable call log processing!</string>
@@ -681,7 +693,7 @@
     <string name="app_notify_blacklist">App Notification Keyword Blacklist</string>
     <string name="app_notify_blacklist_hint">One keyword per line, regex supported\nSkip if the title or content matches any keyword.</string>
     <string name="choose_app_hint">Drop-down selection to get package name, keyword fuzzy matching APP name</string>
-    <string name="regex_multi_match" tools:ignore="TypographyDashes">^\\s*(AND|OR)\\s(IS|NOTIS)\\s(PHONE_NUM|PACKAGE_NAME|MSG_CONTENT|INFORM_CONTENT|INFORM_TITLE|CARD_SLOT|CALL_TYPE|UID)\\s(EQUALS|CONTAIN|NOTCONTAIN|STARTWITH|ENDWITH|REGEX)\\s(.*)$</string>
+    <string name="regex_multi_match" tools:ignore="TypographyDashes">^\\s*(AND|OR|and|or)\\s(IS|NOTIS)\\s(PHONE_NUM|PACKAGE_NAME|MSG_CONTENT|INFORM_CONTENT|INFORM_TITLE|CARD_SLOT|CALL_TYPE|UID)\\s(EQUALS|CONTAIN|NOT_CONTAIN|START_WITH|END_WITH|REGEX)\\s(.*)$</string>
     <string name="privacy_content_1">Welcome to</string>
     <string name="privacy_content_2">We understand the importance of personal information to you and thank you for your trust in us.\n</string>
     <string name="privacy_content_3">In order to better protect your rights and comply with relevant regulatory requirements, we will pass "</string>
@@ -813,6 +825,15 @@
     <string name="battery_health">Health: %s</string>
     <string name="battery_plugged">Plugged: %s</string>
     <string name="battery_plugged_title">Plugged</string>
+    <string name="battery_voltage_title">Voltage (mV)</string>
+    <string name="battery_temperature_title">Temperature (℃)</string>
+    <string name="battery_health_title">Health</string>
+    <string name="battery_health_changed">, [Battery health] changes: </string>
+    <string name="battery_voltage_range_error">Min voltage cannot exceed max voltage</string>
+    <string name="battery_temperature_range_error">Min temperature cannot exceed max temperature</string>
+    <string name="condition_match_type_title">Match type</string>
+    <string name="condition_match_all">Match all</string>
+    <string name="condition_match_any">Match any</string>
 
     <string name="server_history">History</string>
     <string name="server_test">Login</string>

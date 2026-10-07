@@ -478,6 +478,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 getString(R.string.tag_card_subid) to getString(R.string.insert_tag_card_subid),
                 getString(R.string.tag_contact_name) to getString(R.string.insert_tag_contact_name),
                 getString(R.string.tag_phone_area) to getString(R.string.insert_tag_phone_area),
+                getString(R.string.tag_rule_title) to getString(R.string.insert_tag_rule_title),
             )
         )
         CALL_TAG_MAP.clear()
@@ -490,6 +491,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 getString(R.string.tag_call_type) to getString(R.string.insert_tag_call_type),
                 getString(R.string.tag_contact_name) to getString(R.string.insert_tag_contact_name),
                 getString(R.string.tag_phone_area) to getString(R.string.insert_tag_phone_area),
+                getString(R.string.tag_rule_title) to getString(R.string.insert_tag_rule_title),
             )
         )
         APP_TAG_MAP.clear()
@@ -500,6 +502,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 getString(R.string.tag_app_name) to getString(R.string.insert_tag_app_name),
                 getString(R.string.tag_title) to getString(R.string.insert_tag_title),
                 getString(R.string.tag_msg) to getString(R.string.insert_tag_msg),
+                getString(R.string.tag_rule_title) to getString(R.string.insert_tag_rule_title),
             )
         )
         LOCATION_TAG_MAP.clear()

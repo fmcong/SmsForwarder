@@ -1,5 +1,8 @@
 package com.duanxinzhuanfa.xinxi.fragment.senders
 
+import android.app.Activity
+import android.app.PendingIntent
+import android.content.Intent
 import android.os.Environment
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -35,6 +38,7 @@ import com.duanxinzhuanfa.xinxi.utils.Log
 import com.duanxinzhuanfa.xinxi.utils.SettingUtils
 import com.duanxinzhuanfa.xinxi.utils.XToastUtils
 import com.duanxinzhuanfa.xinxi.utils.sender.EmailUtils
+import com.duanxinzhuanfa.xinxi.utils.mail.OpenKeychainHelper
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.xuexiang.xaop.annotation.SingleClick
 import com.xuexiang.xpage.annotation.Page
@@ -50,6 +54,8 @@ import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import org.openintents.openpgp.OpenPgpError
+import org.openintents.openpgp.util.OpenPgpApi
 import org.pgpainless.PGPainless
 import org.pgpainless.key.info.KeyRingInfo
 import java.io.ByteArrayInputStream
@@ -72,8 +78,13 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
     private var recipientItemMap: MutableMap<Int, LinearLayout> = mutableMapOf()
     private val downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
 
-    //加密协议: S/MIME、OpenPGP、Plain（不传证书）
+    //加密协议: S/MIME、OpenPGP、OpenKeychain、Plain（不传证书）
     private var encryptionProtocol: String = "Plain"
+
+    //OpenKeychain签名密钥（0=只加密不签名）
+    private var openKeychainSignKeyId: Long = 0L
+    private var openKeychainSignKeyDesc: String = ""
+    private var openKeychainHelper: OpenKeychainHelper? = null
 
     @JvmField
     @AutoWired(name = KEY_SENDER_ID)
@@ -138,6 +149,7 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
                 R.id.rb_encryption_protocol_smime -> {
                     encryptionProtocol = "S/MIME"
                     binding!!.layoutSenderKeystore.visibility = View.VISIBLE
+                    binding!!.layoutOpenkeychainSignKey.visibility = View.GONE
                     binding!!.tvSenderKeystore.text = getString(R.string.sender_smime_keystore)
                     binding!!.tvEmailTo.text = getString(R.string.email_to_smime)
                     binding!!.tvEmailToTips.text = getString(R.string.email_to_smime_tips)
@@ -146,23 +158,37 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
                 R.id.rb_encryption_protocol_openpgp -> {
                     encryptionProtocol = "OpenPGP"
                     binding!!.layoutSenderKeystore.visibility = View.VISIBLE
+                    binding!!.layoutOpenkeychainSignKey.visibility = View.GONE
                     binding!!.tvSenderKeystore.text = getString(R.string.sender_openpgp_keystore)
                     binding!!.tvEmailTo.text = getString(R.string.email_to_openpgp)
                     binding!!.tvEmailToTips.text = getString(R.string.email_to_openpgp_tips)
                 }
 
+                R.id.rb_encryption_protocol_openkeychain -> {
+                    encryptionProtocol = "OpenKeychain"
+                    binding!!.layoutSenderKeystore.visibility = View.GONE
+                    binding!!.layoutOpenkeychainSignKey.visibility = View.VISIBLE
+                    binding!!.tvEmailTo.text = getString(R.string.email_to_openkeychain)
+                    binding!!.tvEmailToTips.text = getString(R.string.email_to_openkeychain_tips)
+                    if (!OpenKeychainHelper.isProviderInstalled(requireContext())) {
+                        XToastUtils.warning(R.string.openkeychain_not_installed)
+                    }
+                }
+
                 else -> {
                     encryptionProtocol = "Plain"
                     binding!!.layoutSenderKeystore.visibility = View.GONE
+                    binding!!.layoutOpenkeychainSignKey.visibility = View.GONE
                     binding!!.tvEmailTo.text = getString(R.string.email_to)
                     binding!!.tvEmailToTips.text = getString(R.string.email_to_tips)
                 }
             }
 
             //遍历 layout_recipients 子元素，设置 layout_recipient_keystore 可见性
+            //Plain 无需证书；OpenKeychain 公钥由其按邮箱自动匹配，也无需证书
             for (recipientItem in recipientItemMap.values) {
                 val layoutRecipientKeystore = recipientItem.findViewById<LinearLayout>(R.id.layout_recipient_keystore)
-                layoutRecipientKeystore.visibility = if (encryptionProtocol == "Plain") View.GONE else View.VISIBLE
+                layoutRecipientKeystore.visibility = if (encryptionProtocol == "Plain" || encryptionProtocol == "OpenKeychain") View.GONE else View.VISIBLE
             }
         }
 
@@ -236,6 +262,9 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
                     }
                     binding!!.etSenderKeystore.setText(settingVo.keystore)
                     binding!!.etSenderPassword.setText(settingVo.password)
+                    openKeychainSignKeyId = settingVo.openKeychainSignKeyId
+                    openKeychainSignKeyDesc = settingVo.openKeychainSignKeyDesc
+                    updateOpenKeychainSignKeyText()
                 }
             }
         })
@@ -250,6 +279,14 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
         }
         binding!!.btnSenderKeystorePicker.setOnClickListener {
             pickCert(binding!!.etSenderKeystore)
+        }
+        binding!!.btnOpenkeychainSignKeyPicker.setOnClickListener {
+            pickOpenKeychainSignKey()
+        }
+        binding!!.btnOpenkeychainSignKeyClear.setOnClickListener {
+            openKeychainSignKeyId = 0L
+            openKeychainSignKeyDesc = ""
+            updateOpenKeychainSignKeyText()
         }
         LiveEventBus.get(KEY_SENDER_TEST, String::class.java).observe(this) { mCountDownHelper?.finish() }
     }
@@ -330,6 +367,12 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
             }
             Log.d(TAG, "email: $email, cert: $cert")
             when (encryptionProtocol) {
+                "OpenKeychain" -> {
+                    if (!OpenKeychainHelper.isProviderInstalled(requireContext())) {
+                        throw Exception(getString(R.string.openkeychain_not_installed))
+                    }
+                }
+
                 "S/MIME" -> {
                     when {
                         cert.first.isNotEmpty() && cert.second.isNotEmpty() -> {
@@ -466,7 +509,7 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
 
         }
 
-        return EmailSetting(mailType, fromEmail, pwd, nickname, host, port, ssl, startTls, title, recipients, "", keystore, password, encryptionProtocol, fromEmailAlias)
+        return EmailSetting(mailType, fromEmail, pwd, nickname, host, port, ssl, startTls, title, recipients, "", keystore, password, encryptionProtocol, fromEmailAlias, openKeychainSignKeyId, openKeychainSignKeyDesc)
     }
 
     //recipient序号
@@ -512,7 +555,7 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
         }
 
         val layoutRecipientKeystore = itemAddRecipient.findViewById<LinearLayout>(R.id.layout_recipient_keystore)
-        layoutRecipientKeystore.visibility = if (encryptionProtocol == "Plain") View.GONE else View.VISIBLE
+        layoutRecipientKeystore.visibility = if (encryptionProtocol == "Plain" || encryptionProtocol == "OpenKeychain") View.GONE else View.VISIBLE
 
         binding!!.layoutRecipients.addView(itemAddRecipient)
         recipientItemMap[recipientItemId] = itemAddRecipient
@@ -609,9 +652,91 @@ class EmailFragment : BaseFragment<FragmentSendersEmailBinding?>(), View.OnClick
         return Base64.encode(pfxBytes)
     }
 
+    //刷新OpenKeychain签名密钥显示
+    private fun updateOpenKeychainSignKeyText() {
+        binding?.tvOpenkeychainSignKey?.text = if (openKeychainSignKeyId == 0L) {
+            getString(R.string.openkeychain_sign_key_none)
+        } else {
+            String.format(getString(R.string.openkeychain_sign_key_selected), openKeychainSignKeyDesc.ifEmpty { openKeychainSignKeyId.toString() })
+        }
+    }
+
+    /**
+     * 选择OpenKeychain签名密钥：
+     * 首次调用返回 USER_INTERACTION_REQUIRED + PendingIntent（OpenKeychain的密钥选择界面），
+     * 用户选择后经 onActivityResult 携带结果Intent重新执行，返回 EXTRA_SIGN_KEY_ID
+     */
+    private fun pickOpenKeychainSignKey(data: Intent = Intent().apply { action = OpenPgpApi.ACTION_GET_SIGN_KEY_ID }) {
+        if (!OpenKeychainHelper.isProviderInstalled(requireContext())) {
+            XToastUtils.error(R.string.openkeychain_not_installed)
+            return
+        }
+        Thread {
+            try {
+                if (openKeychainHelper == null) openKeychainHelper = OpenKeychainHelper(requireContext().applicationContext)
+                val result = openKeychainHelper!!.executeApi(data, null, null)
+                when (result.getIntExtra(OpenPgpApi.RESULT_CODE, OpenPgpApi.RESULT_CODE_ERROR)) {
+                    OpenPgpApi.RESULT_CODE_SUCCESS -> {
+                        val signKeyId = result.getLongExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, 0L)
+                        //以十六进制KeyId作为描述（openpgp-api 10.0 不返回主用户ID）
+                        val keyDesc = "0x" + java.lang.Long.toHexString(signKeyId).uppercase()
+                        requireActivity().runOnUiThread {
+                            openKeychainSignKeyId = signKeyId
+                            openKeychainSignKeyDesc = keyDesc
+                            updateOpenKeychainSignKeyText()
+                        }
+                    }
+
+                    OpenPgpApi.RESULT_CODE_USER_INTERACTION_REQUIRED -> {
+                        val pi: PendingIntent? = result.getParcelableExtra(OpenPgpApi.RESULT_INTENT)
+                        if (pi != null) {
+                            requireActivity().runOnUiThread {
+                                try {
+                                    startIntentSenderForResult(pi.intentSender, REQUEST_CODE_OPENKEYCHAIN_SIGN_KEY, null, 0, 0, 0, null)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    XToastUtils.error(String.format(getString(R.string.openkeychain_check_failed), e.message))
+                                }
+                            }
+                        }
+                    }
+
+                    else -> {
+                        val error: OpenPgpError? = result.getParcelableExtra(OpenPgpApi.RESULT_ERROR)
+                        requireActivity().runOnUiThread {
+                            XToastUtils.error(String.format(getString(R.string.openkeychain_check_failed), error?.message ?: "unknown error"))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e(TAG, "pickOpenKeychainSignKey error: $e")
+                requireActivity().runOnUiThread {
+                    XToastUtils.error(String.format(getString(R.string.openkeychain_check_failed), e.message))
+                }
+            }
+        }.start()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_OPENKEYCHAIN_SIGN_KEY && resultCode == Activity.RESULT_OK) {
+            //用户在OpenKeychain完成选择/授权后，携带结果Intent重新执行（需补上action）
+            val retryData = (data ?: Intent()).apply { action = OpenPgpApi.ACTION_GET_SIGN_KEY_ID }
+            pickOpenKeychainSignKey(retryData)
+        }
+    }
+
     override fun onDestroyView() {
         if (mCountDownHelper != null) mCountDownHelper!!.recycle()
+        openKeychainHelper?.unbind()
+        openKeychainHelper = null
         super.onDestroyView()
+    }
+
+    companion object {
+        private const val REQUEST_CODE_OPENKEYCHAIN_SIGN_KEY = 9716
     }
 
 }

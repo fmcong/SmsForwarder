@@ -30,12 +30,12 @@ class PushplusUtils private constructor() {
             msgId: Long = 0L
         ) {
             val title: String = if (rule != null) {
-                msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace)
+                msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getTitleForSend(setting.titleTemplate)
             }
             val content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }

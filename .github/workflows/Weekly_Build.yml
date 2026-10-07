@@ -18,9 +18,11 @@ jobs:
       ver_suffix_5: 500
 
     steps:
-      # 1. 检出代码
+      # 1. 检出代码（保留足够历史，便于排查与诊断）
       - name: Checkout source code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
 
       # 2. 设置 JDK
       - name: Set up JDK 17

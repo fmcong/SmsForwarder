@@ -46,6 +46,9 @@ import com.duanxinzhuanfa.xinxi.utils.TASK_CONDITION_NETWORK
 import com.duanxinzhuanfa.xinxi.utils.TASK_CONDITION_SIM
 import com.duanxinzhuanfa.xinxi.utils.TASK_CONDITION_SMS
 import com.duanxinzhuanfa.xinxi.utils.TASK_CONDITION_TO_ADDRESS
+import com.duanxinzhuanfa.xinxi.utils.SP_BATTERY_HEALTH
+import com.duanxinzhuanfa.xinxi.utils.SP_BATTERY_TEMPERATURE
+import com.duanxinzhuanfa.xinxi.utils.SP_BATTERY_VOLTAGE
 
 /**
  * 自动任务工具类 —— 用于存储自动任务相关的配置
@@ -128,6 +131,15 @@ class TaskUtils private constructor() {
 
         //充电方式
         var batteryPlugged: Int by SharedPreference(SP_BATTERY_PLUGGED, BatteryManager.BATTERY_PLUGGED_AC)
+
+        //电池电压（mV）
+        var batteryVoltage: Int by SharedPreference(SP_BATTERY_VOLTAGE, 0)
+
+        //电池健康度
+        var batteryHealth: Int by SharedPreference(SP_BATTERY_HEALTH, BatteryManager.BATTERY_HEALTH_UNKNOWN)
+
+        //电池温度（℃）
+        var batteryTemperature: Int by SharedPreference(SP_BATTERY_TEMPERATURE, 0)
 
         //网络状态：0-没有网络，1-移动网络，2-WiFi，3-以太网, 4-未知
         var networkState: Int by SharedPreference(SP_NETWORK_STATE, 0)

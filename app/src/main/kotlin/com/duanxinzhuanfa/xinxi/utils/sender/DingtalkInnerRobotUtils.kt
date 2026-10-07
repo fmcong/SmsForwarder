@@ -132,7 +132,7 @@ class DingtalkInnerRobotUtils private constructor() {
             Log.d(TAG, "requestUrl：$requestUrl")
 
             val content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }
@@ -140,7 +140,7 @@ class DingtalkInnerRobotUtils private constructor() {
             val msgParam: MutableMap<String, Any> = mutableMapOf()
             if ("sampleMarkdown" == setting.msgKey) {
                 msgParam["title"] = if (rule != null) {
-                    msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace)
+                    msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace, rule.title)
                 } else {
                     msgInfo.getTitleForSend(setting.titleTemplate)
                 }

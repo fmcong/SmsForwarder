@@ -29,6 +29,7 @@
     <string name="insert_tag_net_type">網路狀態</string>
     <string name="insert_tag_contact_name">來源姓名</string>
     <string name="insert_tag_phone_area">来源歸屬</string>
+    <string name="insert_tag_rule_title">規則別名</string>
 
     <string name="type_param_sms">簡訊</string>
     <string name="type_param_call">通話</string>
@@ -274,8 +275,18 @@
     <string name="email_to_smime_tips">提示：點擊按鈕添加收件人郵箱、S/MIME加密公鑰（可選）</string>
     <string name="email_to_openpgp">收件人郵箱 &amp; OpenPGP加密公鑰</string>
     <string name="email_to_openpgp_tips">提示：點擊按鈕添加收件人郵箱、OpenPGP加密公鑰（可選）</string>
+    <string name="email_to_openkeychain">收件人郵箱（OpenKeychain自動匹配公鑰）</string>
+    <string name="email_to_openkeychain_tips">提示：加密公鑰由OpenKeychain按收件人郵箱自動匹配，需先在OpenKeychain中導入對應公鑰</string>
     <string name="sender_smime_keystore">發件人S/MIME簽名私鑰（可選）</string>
     <string name="sender_openpgp_keystore">發件人OpenPGP簽名私鑰（可選）</string>
+    <string name="sender_openkeychain_sign_key">發件人OpenKeychain簽名密鑰（可選）</string>
+    <string name="openkeychain_sign_key_none">未選擇（只加密不簽名）</string>
+    <string name="openkeychain_select_sign_key">選擇簽名密鑰</string>
+    <string name="openkeychain_clear_sign_key">清除</string>
+    <string name="openkeychain_sign_key_selected">已選擇簽名密鑰：%s</string>
+    <string name="openkeychain_sign_key_tips">提示：簽名密鑰若設有密碼，請在OpenKeychain中開啟密碼緩存，否則後台轉發時簽名會失敗</string>
+    <string name="openkeychain_not_installed">未安裝OpenKeychain，請先安裝：https://www.openkeychain.org</string>
+    <string name="openkeychain_check_failed">OpenKeychain加密預檢失敗：%s</string>
     <string name="invalid_sender_keystore">發件人簽名私鑰無效</string>
     <string name="recipient_email">收件人郵箱</string>
     <string name="keystore_base64">指定證書</string>
@@ -441,6 +452,7 @@
     <string name="plain">明文</string>
     <string name="smime">S/MIME</string>
     <string name="openpgp">OpenPGP</string>
+    <string name="openkeychain">OpenKeychain</string>
     <string name="proxy_settings">代理設置</string>
     <string name="proxy_none">無代理</string>
     <string name="proxy_http">HTTP</string>
@@ -814,6 +826,15 @@
     <string name="battery_health">健康度：%s</string>
     <string name="battery_plugged">充電器：%s</string>
     <string name="battery_plugged_title">充電器</string>
+    <string name="battery_voltage_title">電池電壓（mV）</string>
+    <string name="battery_temperature_title">電池溫度（℃）</string>
+    <string name="battery_health_title">電池健康度</string>
+    <string name="battery_health_changed">，【電池健康度】發生變化：</string>
+    <string name="battery_voltage_range_error">最低電壓不能大於最高電壓</string>
+    <string name="battery_temperature_range_error">最低溫度不能大於最高溫度</string>
+    <string name="condition_match_type_title">條件組合方式</string>
+    <string name="condition_match_all">全部滿足</string>
+    <string name="condition_match_any">任一滿足</string>
 
     <string name="server_history">歷史記錄</string>
     <string name="server_test">登入服務</string>
