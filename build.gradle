@@ -33,6 +33,9 @@ allprojects {
         maven { url 'https://repo1.maven.org/maven2/' }
         maven { url 'https://oss.sonatype.org/content/repositories/public' }
         maven { url "https://jitpack.io" }
+        // OpenKeychain OpenPGP API（org.sufficientlysecure:openpgp-api 未发布到 Maven Central / JitPack，
+        // 仅 Appodeal 公共仓库提供；缺失该仓库会导致 OpenKeychain 端到端加密功能依赖解析失败）
+        maven { url 'https://artifactory.appodeal.com/appodeal-public/' }
     }
 
     // 将构建文件统一输出到项目根目录下的 build 文件夹

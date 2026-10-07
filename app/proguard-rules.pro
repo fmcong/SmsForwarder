@@ -307,6 +307,15 @@
 -keep class frpclib.** { *; }
 -keepclassmembers class frpclib.** { *; }
 
+# OpenKeychain OpenPGP API（AIDL 接口 + Parcelable 结果对象，被混淆会导致加密预检失败）
+-dontwarn org.openintents.openpgp.**
+-keep class org.openintents.openpgp.** { *; }
+-keep interface org.openintents.openpgp.** { *; }
+
+# jakarta.mail / jakarta.activation（上游 2.0.2 系列，包名为 jakarta.*）
+-dontwarn jakarta.**
+-keep class jakarta.** { *; }
+
 # Kotlin 分析 API（旧版 R8 找不到此类时 NPE 崩溃，需显式保留）
 -keep class org.jetbrains.kotlin.analysis.api.** { *; }
 
