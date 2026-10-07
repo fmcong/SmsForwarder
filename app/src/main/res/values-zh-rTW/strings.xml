@@ -84,11 +84,11 @@
     <string name="about_item_github">GitHub</string>
     <string name="about_item_gitee">Gitee</string>
     <string name="about_item_donation_link">打賞名單</string>
-    <string name="url_project_github">https://github.com/pppscn/SmsForwarder</string>
+    <string name="url_project_github">https://github.com/fmcong/SmsForwarder</string>
     <string name="url_project_gitee">https://gitee.com/pp/SmsForwarder</string>
-    <string name="url_help">https://gitee.com/pp/SmsForwarder/wikis/pages</string>
+    <string name="url_help">https://github.com/pppscn/SmsForwarder/wiki</string>
     <string name="url_donation_link">https://gitee.com/pp/SmsForwarder.wiki/raw/master/%E6%89%93%E8%B5%8F%E5%90%8D%E5%8D%95.md</string>
-    <string name="url_wechat_miniprogram">https://gitee.com/pp/SmsForwarder/raw/main/pic/wechat_miniprogram.jpg</string>
+    <string name="url_wechat_miniprogram">https://raw.githubusercontent.com/fmcong/SmsForwarder/main/pic/wechat_miniprogram.jpg</string>
     <string name="url_tips">https://gitee.com/pp/SmsForwarder.wiki/raw/master/tips_tc.json</string>
 
     <string name="lab_yes">是</string>
@@ -627,7 +627,7 @@
     <string name="bark_badge">消息角標</string>
     <string name="bark_badge_tips">可選，例：888</string>
     <string name="bark_url">消息鏈接</string>
-    <string name="bark_url_tips">可選，例：https://github.com/pppscn/SmsForwarder</string>
+    <string name="bark_url_tips">可選，例：https://github.com/fmcong/SmsForwarder</string>
     <string name="bark_level">通知級別</string>
     <string name="bark_level_critical">重要警告：靜音模式下也會響鈴</string>
     <string name="bark_level_active">立即亮屏顯示通知</string>
