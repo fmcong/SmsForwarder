@@ -293,6 +293,12 @@ class ForegroundService : Service() {
         LiveEventBus.get<AlarmSetting>(EVENT_ALARM_ACTION).removeObserver(alarmObserver)
         compositeDisposable.clear()
         serviceScope.cancel()
+        //停止剪切板监控服务，避免服务泄漏（此前只有启动没有停止）
+        try {
+            ClipboardService.stop(this)
+        } catch (e: Exception) {
+            Log.w(TAG, "剪切板监控停止失败: ${e.message}")
+        }
         //非纯客户端模式
         if (!SettingUtils.enablePureClientMode) stopForegroundService()
         if (::flashUtils.isInitialized) {

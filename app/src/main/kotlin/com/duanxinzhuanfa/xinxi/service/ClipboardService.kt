@@ -45,16 +45,20 @@ class ClipboardService : Service() {
     companion object {
         @Volatile
         var isRunning = false
-        /** 是否启用剪切板监控（由用户配置控制） */
-        var enableClipboardMonitor = false
 
         fun start(context: android.content.Context) {
-            if (!enableClipboardMonitor) return
+            // 开关以 SharedPreference 为唯一数据源（此前的静态字段从未被赋值，导致功能实际不生效）
+            if (!SettingUtils.enableClipboardMonitor) return
             val intent = Intent(context, ClipboardService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
+            // 注意：这里必须用 startService 而非 startForegroundService。
+            // 本服务只做被动监听，不调用 startForeground()，若走 startForegroundService，
+            // Android 12+（API 31）会抛 ForegroundServiceDidNotStartInTimeException 导致应用崩溃。
+            // 调用方 ForegroundService 本身已是前台服务，进程处于前台，用 startService 安全。
+            try {
                 context.startService(intent)
+            } catch (e: Exception) {
+                // Android 8.0+ 后台启动服务受限，若失败仅记录，不崩溃
+                Log.w("ClipboardService", "start failed: ${e.message}")
             }
         }
 
@@ -116,7 +120,7 @@ class ClipboardService : Service() {
 
     private fun handleClipboardChange() {
         // 总开关检查
-        if (SettingUtils.enablePureClientMode || !enableClipboardMonitor) return
+        if (SettingUtils.enablePureClientMode || !SettingUtils.enableClipboardMonitor) return
 
         try {
             val clip = clipboardManager?.primaryClip ?: return
