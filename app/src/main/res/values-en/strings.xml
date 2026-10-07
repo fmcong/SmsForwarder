@@ -706,7 +706,7 @@
     <string name="request_failed_tips">Request failed: %s</string>
     <string name="no_sms_sending_permission">No SMS sending permission</string>
     <string name="frpclib_version_mismatch">FrpcLib version mismatch</string>
-    <string name="frpclib_builtin_tips">FrpcLib v%1$s is bundled in the APK\nLoaded version: %2$s</string>
+    <string name="frpclib_builtin_tips">FrpcLib is bundled in the APK\nLoaded version: %s</string>
     <string name="frpclib_load_failed">Failed to load FrpcLib, please check device compatibility</string>
     <string name="page_not_found">Page not found!</string>
     <string name="data_error">Data error!</string>

@@ -40,7 +40,6 @@ import com.duanxinzhuanfa.xinxi.service.ForegroundService
 import com.duanxinzhuanfa.xinxi.utils.ACTION_START
 import com.duanxinzhuanfa.xinxi.utils.CommonUtils.Companion.restartApplication
 import com.duanxinzhuanfa.xinxi.utils.EVENT_LOAD_APP_LIST
-import com.duanxinzhuanfa.xinxi.utils.FRPC_LIB_VERSION
 import com.duanxinzhuanfa.xinxi.utils.KeepAliveUtils
 import com.duanxinzhuanfa.xinxi.utils.Log
 import com.duanxinzhuanfa.xinxi.utils.SettingUtils
@@ -370,14 +369,14 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
     //查看FrpcLib版本（已内置在APK中）
     private fun downloadFrpcLib() {
         val version = try {
-            frpclib.Frpclib.getVersion()
+            frpclib.Frpclib.getVersion().ifEmpty { "unknown" }
         } catch (e: Throwable) {
             "unknown"
         }
         MaterialDialog.Builder(this)
             .iconRes(R.drawable.ic_menu_frpc)
             .title(R.string.menu_frpc)
-            .content(getString(R.string.frpclib_builtin_tips, FRPC_LIB_VERSION, version))
+            .content(getString(R.string.frpclib_builtin_tips, version))
             .positiveText(R.string.confirm)
             .show()
     }

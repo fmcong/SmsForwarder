@@ -171,6 +171,8 @@ const val FRONT_CHANNEL_ID = "com.duanxinzhuanfa.xinxi"
 const val FRONT_CHANNEL_NAME = "SmsForwarder Foreground Service"
 
 //Frp内网穿透（动态库已内置到 APK，不再提供下载）
+//注意：此处为「构建时声明的版本」，仅用于启动日志与一致性检查（不一致只告警、不阻断）；
+//内置 AAR 实际构建于 2022-11（对应 frp v0.44 左右），如需真正升级到新版 frp 需用 NDK + gomobile 重新编译。
 const val FRPC_LIB_VERSION = "0.70.0"
 const val EVENT_FRPC_UPDATE_CONFIG = "EVENT_FRPC_UPDATE_CONFIG"
 const val EVENT_FRPC_DELETE_CONFIG = "EVENT_FRPC_DELETE_CONFIG"

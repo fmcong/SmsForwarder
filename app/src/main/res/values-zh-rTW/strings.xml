@@ -707,7 +707,7 @@
     <string name="request_failed_tips">請求失敗：%s</string>
     <string name="no_sms_sending_permission">沒有簡訊發送權限</string>
     <string name="frpclib_version_mismatch">FrpcLib 版本不匹配</string>
-    <string name="frpclib_builtin_tips">FrpcLib v%1$s 已內置到APK中\n目前載入版本：%2$s</string>
+    <string name="frpclib_builtin_tips">FrpcLib 已內置到APK中\n目前載入版本：%s</string>
     <string name="frpclib_load_failed">FrpcLib 動態庫載入失敗，請檢查裝置相容性</string>
     <string name="page_not_found">頁面未找到！</string>
     <string name="data_error">數據出錯！</string>
