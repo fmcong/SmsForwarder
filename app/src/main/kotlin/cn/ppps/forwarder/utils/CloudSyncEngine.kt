@@ -16,6 +16,7 @@ import java.net.URLEncoder
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.TreeMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 //自动双向同步引擎：
@@ -107,8 +108,7 @@ object CloudSyncEngine {
 
     //②推送：本地导出内容有变化才推送，成功后记录本地哈希
     private fun pushIfChanged(serverAddress: String, clientSignKey: String, clientUserCode: String) {
-        val exportInfo = HttpServerUtils.exportSettings()
-        exportInfo.userCode = clientUserCode
+        val exportInfo = buildLocalExport(clientUserCode)
         val localHash = sha256(Gson().toJson(exportInfo))
         if (localHash == lastPushedHash) {
             Log.d(TAG, "本地配置未变化，无需推送")
@@ -148,12 +148,21 @@ object CloudSyncEngine {
         }
     }
 
+    //构建本地导出对象（推送与推送基准共用同一管道，保证哈希可比）
+    //settings 用纯 JSON（键排序）：服务端 store 只存 JSON，后台可视化配置表单按 JSON 键值渲染，
+    //exportPreference() 的 Java 序列化串表单无法解析；拉取路径由 sanitizeSettingsForRestore 兼容两种格式，不受影响
+    private fun buildLocalExport(userCode: String): CloneInfo {
+        val exportInfo = HttpServerUtils.exportSettings()
+        exportInfo.userCode = userCode
+        exportInfo.settings = Gson().toJson(TreeMap<String, Any>(SharedPreference.preference.all))
+        return exportInfo
+    }
+
     //记录「远端已应用」标记；同时以恢复后的本地重新导出哈希刷新推送基准
     //（本地==远端，防回环；注意不能直接用远端哈希——两端序列化管道不同，字符串哈希必然不同，会造成每轮空推）
     fun recordApplied(remoteHash: String) {
         lastAppliedHash = remoteHash
-        val exportInfo = HttpServerUtils.exportSettings()
-        exportInfo.userCode = HttpServerUtils.clientUserCode
+        val exportInfo = buildLocalExport(HttpServerUtils.clientUserCode)
         lastPushedHash = sha256(Gson().toJson(exportInfo))
         lastCloudSyncTime = now()
     }
