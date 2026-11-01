@@ -17,6 +17,7 @@
     <string name="insert_tag_location_longitude">Longitude</string>
     <string name="insert_tag_location_latitude">Latitude</string>
     <string name="insert_tag_location_address">Address</string>
+    <string name="insert_tag_location_map_link">Map Link</string>
     <string name="insert_tag_battery_pct">Battery Percentage</string>
     <string name="insert_tag_battery_status">Battery Status</string>
     <string name="insert_tag_battery_plugged">Charging Method</string>
@@ -979,6 +980,8 @@
 
     <string name="enable_location">Location Service</string>
     <string name="enable_location_dialog">Enable location services to use this feature. Yes or No?</string>
+    <string name="amap_web_key">AMap Web Key</string>
+    <string name="amap_web_key_tips">Optional, used for reverse geocoding when system geocoder fails</string>
     <string name="enable_location_tips">Used for locating the phone, {{LOCATION}} tag.</string>
     <string name="accuracy">Accuracy</string>
     <string name="accuracy_fine">Fine</string>

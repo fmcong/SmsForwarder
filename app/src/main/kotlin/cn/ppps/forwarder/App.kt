@@ -471,6 +471,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 getString(R.string.tag_location_longitude) to getString(R.string.insert_tag_location_longitude),
                 getString(R.string.tag_location_latitude) to getString(R.string.insert_tag_location_latitude),
                 getString(R.string.tag_location_address) to getString(R.string.insert_tag_location_address),
+                getString(R.string.tag_location_map_link) to getString(R.string.insert_tag_location_map_link),
             )
         )
         BATTERY_TAG_MAP.clear()

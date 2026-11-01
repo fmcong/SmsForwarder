@@ -254,21 +254,34 @@ data class MsgInfo(
         val location = HttpServerUtils.apiLocationCache
         var locationStr = location.toString()
         var address = location.address
+
+        //高德地图标记链接（用原始地址编码，避免受 encoderName 二次编码影响）
+        var locationMapLink = ""
+        if (location.longitude != 0.0 || location.latitude != 0.0) {
+            locationMapLink = "https://uri.amap.com/marker?position=${location.longitude},${location.latitude}"
+            if (!TextUtils.isEmpty(location.address)) {
+                locationMapLink += "&name=" + URLEncoder.encode(location.address, "UTF-8")
+            }
+        }
+
         when (encoderName) {
             "Gson" -> {
                 locationStr = toJsonStr(locationStr)
                 address = toJsonStr(address)
+                locationMapLink = toJsonStr(locationMapLink)
             }
 
             "URLEncoder" -> {
                 locationStr = URLEncoder.encode(locationStr, "UTF-8")
                 address = URLEncoder.encode(address, "UTF-8")
+                locationMapLink = URLEncoder.encode(locationMapLink, "UTF-8")
             }
         }
         return this.replaceTag(getString(R.string.tag_location), locationStr)
             .replaceTag(getString(R.string.tag_location_longitude), location.longitude.toString())
             .replaceTag(getString(R.string.tag_location_latitude), location.latitude.toString())
             .replaceTag(getString(R.string.tag_location_address), address)
+            .replaceTag(getString(R.string.tag_location_map_link), locationMapLink)
     }
 
     //直接插入json字符串需要转义

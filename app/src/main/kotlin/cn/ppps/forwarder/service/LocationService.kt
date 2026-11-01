@@ -31,6 +31,9 @@ import com.king.location.LocationErrorCode
 import com.king.location.OnExceptionListener
 import com.king.location.OnLocationListener
 import com.xuexiang.xaop.util.PermissionUtils
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.Date
 
 @SuppressLint("SimpleDateFormat")
@@ -110,6 +113,13 @@ class LocationService : Service() {
                         val list = App.Geocoder.getFromLocation(location.latitude, location.longitude, 1)
                         if (list?.isNotEmpty() == true) {
                             locationInfoNew.address = list[0].getAddressLine(0)
+                        } else {
+                            //系统 Geocoder 失败时尝试高德逆地理兜底
+                            reverseGeocodeByAmap(location.longitude, location.latitude) { address ->
+                                locationInfoNew.address = address
+                                HttpServerUtils.apiLocationCache = locationInfoNew
+                                TaskUtils.locationInfoNew = locationInfoNew
+                            }
                         }
 
                         Log.d(TAG, "locationInfoNew = $locationInfoNew")
@@ -152,6 +162,32 @@ class LocationService : Service() {
             e.printStackTrace()
             Log.e(TAG, "startService: ${e.message}")
             isRunning = false
+        }
+    }
+
+    //高德逆地理编码兜底：Key 为空或请求失败时静默跳过，绝不影响定位主流程
+    private fun reverseGeocodeByAmap(longitude: Double, latitude: Double, onResult: (String) -> Unit) {
+        try {
+            val key = SettingUtils.amapWebKey
+            if (key.isBlank()) return
+            Thread {
+                try {
+                    val url = URL("https://restapi.amap.com/v3/geocode/regeo?location=$longitude,$latitude&key=$key")
+                    val json = with(url.openConnection() as HttpURLConnection) {
+                        connectTimeout = 5000
+                        readTimeout = 5000
+                        requestMethod = "GET"
+                        inputStream.bufferedReader().use { it.readText() }
+                    }
+                    val regeocodes = JSONObject(json).optJSONArray("regeocodes")
+                    val address = regeocodes?.optJSONObject(0)?.optString("formatted_address") ?: ""
+                    if (!address.isEmpty()) onResult(address)
+                } catch (e: Exception) {
+                    Log.w(TAG, "reverseGeocodeByAmap: ${e.message}")
+                }
+            }.start()
+        } catch (e: Exception) {
+            Log.w(TAG, "reverseGeocodeByAmap: ${e.message}")
         }
     }
 

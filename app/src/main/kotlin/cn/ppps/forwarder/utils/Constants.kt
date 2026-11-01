@@ -94,6 +94,7 @@ const val SP_LOCATION_ACCURACY = "location_accuracy"
 const val SP_LOCATION_POWER_REQUIREMENT = "location_power_requirement"
 const val SP_LOCATION_MIN_INTERVAL = "location_min_interval_time"
 const val SP_LOCATION_MIN_DISTANCE = "location_min_distance"
+const val SP_AMAP_WEB_KEY = "amap_web_key"
 
 const val SP_BLUETOOTH = "enable_bluetooth"
 const val SP_BLUETOOTH_SCAN_INTERVAL = "bluetooth_scan_interval"

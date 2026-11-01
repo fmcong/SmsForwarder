@@ -695,6 +695,24 @@
 
                     </LinearLayout>
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/amap_web_key"
+                        android:textSize="@dimen/text_size_small"
+                        android:textStyle="bold"
+                        tools:ignore="SmallSp" />
+
+                    <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                        android:id="@+id/et_amap_web_key"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/amap_web_key_tips"
+                        android:inputType="text"
+                        app:met_clearButton="true"
+                        tools:ignore="TextContrastCheck" />
+
                 </LinearLayout>
 
             </LinearLayout>

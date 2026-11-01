@@ -17,6 +17,7 @@
     <string name="insert_tag_location_longitude">定位經度</string>
     <string name="insert_tag_location_latitude">定位緯度</string>
     <string name="insert_tag_location_address">定位地址</string>
+    <string name="insert_tag_location_map_link">定位地圖連結</string>
     <string name="insert_tag_battery_pct">電池電量</string>
     <string name="insert_tag_battery_status">電池狀態</string>
     <string name="insert_tag_battery_plugged">充電方式</string>
@@ -980,6 +981,8 @@
 
     <string name="enable_location">GPS定位服務</string>
     <string name="enable_location_dialog">必須開啟定位服務，才能使用獲取！\n是否立即啟用？</string>
+    <string name="amap_web_key">高德WebKey</string>
+    <string name="amap_web_key_tips">可選，用於定位轉文字地址，留空使用系統服務</string>
     <string name="enable_location_tips">以便支持 查找手機、{{定位信息}}標籤 等需要GPS的功能</string>
     <string name="accuracy">位置精度</string>
     <string name="accuracy_fine">精確位置</string>
