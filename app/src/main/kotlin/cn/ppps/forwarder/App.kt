@@ -15,7 +15,12 @@ import android.os.Build
 import androidx.lifecycle.MutableLiveData
 import androidx.multidex.MultiDex
 import androidx.work.Configuration
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import cn.ppps.forwarder.workers.CloudSyncWorker
 import cn.ppps.forwarder.activity.MainActivity
 import cn.ppps.forwarder.core.Core
 import cn.ppps.forwarder.database.AppDatabase
@@ -186,6 +191,12 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
 
             //初始化WorkManager
             WorkManager.initialize(this, Configuration.Builder().build())
+
+            //云端配置自动同步：每小时检查一次（Worker 内部自检配置是否齐全）
+            val cloudSyncRequest = PeriodicWorkRequestBuilder<CloudSyncWorker>(1, TimeUnit.HOURS)
+                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                .build()
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork("cloud_sync", ExistingPeriodicWorkPolicy.KEEP, cloudSyncRequest)
 
             //动态加载FrpcLib
             val libPath = filesDir.absolutePath + "/libs"
