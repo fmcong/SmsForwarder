@@ -485,6 +485,7 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
             map["client_user_code"] = HttpServerUtils.clientUserCode
             map["client_pairing_code"] = HttpServerUtils.pairingCode
             map["client_sign_key"] = HttpServerUtils.clientSignKey
+        map["client_safety_measures"] = 3   //恢复后保持 SM4 加密，否则推送/拉取回落明文分支
             map[IS_AGREE_PRIVACY_KEY] = true
             map[SP_ENABLE_SMS] = false   //安全兜底：配置下发不静默开启转发
             map[SP_ENABLE_PHONE] = false
