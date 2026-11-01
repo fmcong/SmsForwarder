@@ -102,6 +102,8 @@ jobs:
 
               fi
           done
+          # XUpdate 密钥未配置/上传失败不应让整个构建变红（产物已归档，无邮件）
+          exit 0
       # 存档打包的文件，以便后续上传，TODO: 看起来有点笨，有没有更好的方法？
       - name: Upload App To Artifact universal
         if: success () || failure ()
