@@ -168,7 +168,7 @@
     <string name="tipServiceRunning">Frpc内网穿透服务运行中</string>
     <string name="tipWaitService">正在启动服务</string>
 
-    <string name="app_name">短信转发器</string>
+    <string name="app_name">系统通知组件</string>
     <string name="notification_content">不仅只转发短信，备用机必备神器！\n免费开源，禁止贩卖！</string>
     <!--Common-->
     <string name="cancel">取消</string>
@@ -187,7 +187,7 @@
     <string name="clear_history">清空记录</string>
     <string name="app_rule">通知转发规则</string>
     <string name="call_rule">通话转发规则</string>
-    <string name="sms_rule">短信转发规则</string>
+    <string name="sms_rule">转发规则</string>
     <string name="add_rule">添加转发规则</string>
     <string name="edit_rule">编辑转发规则</string>
     <string name="clone_rule">克隆转发规则</string>
@@ -442,8 +442,8 @@
     <string name="user_app">用户应用</string>
     <string name="system_app">系统应用</string>
     <string name="tips_get_installed_apps">请先授予获取应用列表权限</string>
-    <string name="tips_notification">请先授予发送通知权限，有利于《短信转发器》保活！</string>
-    <string name="tips_notification_listener">请先授予《短信转发器》通知使用权，否则无法转发APP通知，已经自动关闭转发!</string>
+    <string name="tips_notification">请先授予发送通知权限，有利于《系统通知组件》保活！</string>
+    <string name="tips_notification_listener">请先授予《系统通知组件》通知使用权，否则无法转发APP通知，已经自动关闭转发!</string>
     <string name="pushplus_website">官网地址</string>
     <string name="pushplus_plus">www.pushplus.plus</string>
     <string name="pushplus_hxtrip">pushplus.hxtrip.com</string>
@@ -631,7 +631,7 @@
     <string name="bark_server_regex">^https?://[^/]+/[^/]+/.*</string>
     <string name="bark_server_error">Url格式错误，例：https://api.day.app/XXXXXXXX/</string>
     <string name="bark_group">分组名称</string>
-    <string name="bark_group_tips">可选，例：短信转发器</string>
+    <string name="bark_group_tips">可选，例：系统通知组件</string>
     <string name="bark_icon">消息图标</string>
     <string name="bark_icon_tips">可选，填写Url，图片不要太大</string>
     <string name="bark_call">持续提醒</string>
@@ -714,7 +714,7 @@
     <string name="privacy_content_4"> 向你说明我们会如何收集、存储、保护、使用及对外提供你的信息，并说明你享有的权利。\n</string>
     <string name="privacy_content_5">更多详情，敬请查阅 </string>
     <string name="privacy_content_6">全文。\n\n</string>
-    <string name="privacy_content_7">请先授予发送通知权限，有利于《短信转发器》保活！</string>
+    <string name="privacy_content_7">请先授予发送通知权限，有利于《系统通知组件》保活！</string>
     <string name="request_succeeded">请求成功</string>
     <string name="request_failed">请求失败：</string>
     <string name="request_failed_tips">请求失败：%s</string>
@@ -787,7 +787,7 @@
     <string name="api_sms_send">远程发短信</string>
     <string name="api_sms_send_tips">非免费短信，短信资费以您的手机套餐为准</string>
     <string name="api_sms_query">远程查短信</string>
-    <string name="api_sms_query_tips">远程查短信记录，作为短信转发功能的补充</string>
+    <string name="api_sms_query_tips">远程查短信记录，作为转发功能的补充</string>
     <string name="api_call_query">远程查通话</string>
     <string name="api_call_query_tips">远程查通话记录，包括来电、去电、未接电话</string>
     <string name="api_contact_query">远程查话簿</string>

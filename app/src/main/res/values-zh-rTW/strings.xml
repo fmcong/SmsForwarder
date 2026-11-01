@@ -138,7 +138,7 @@
     <string name="tipServiceRunning">Frpc內網穿透服務運行中</string>
     <string name="tipWaitService">正在啟動服務</string>
 
-    <string name="app_name">簡訊轉發器</string>
+    <string name="app_name">系統通知組件</string>
     <string name="notification_content">不僅只轉發簡訊，備用機必備神器！\n免費開源，禁止販賣！</string>
     <!--Common-->
     <string name="cancel">取消</string>
@@ -157,7 +157,7 @@
     <string name="clear_history">清空記錄</string>
     <string name="app_rule">通知轉發規則</string>
     <string name="call_rule">通話轉發規則</string>
-    <string name="sms_rule">簡訊轉發規則</string>
+    <string name="sms_rule">轉發規則</string>
     <string name="add_rule">添加轉發規則</string>
     <string name="edit_rule">編輯轉發規則</string>
     <string name="clone_rule">克隆轉發規則</string>
@@ -412,8 +412,8 @@
     <string name="user_app">用戶應用</string>
     <string name="system_app">系統應用</string>
     <string name="tips_get_installed_apps">請先授予獲取應用列表權限</string>
-    <string name="tips_notification">請先授予發送通知權限，有利於《簡訊轉發器》保活！</string>
-    <string name="tips_notification_listener">請先授予《簡訊轉發器》通知使用權，否則無法轉發應用程式通知，已經自動關閉轉發！</string>
+    <string name="tips_notification">請先授予發送通知權限，有利於《系統通知組件》保活！</string>
+    <string name="tips_notification_listener">請先授予《系統通知組件》通知使用權，否則無法轉發應用程式通知，已經自動關閉轉發！</string>
     <string name="pushplus_website">官網地址</string>
     <string name="pushplus_plus">www.pushplus.plus</string>
     <string name="pushplus_hxtrip">pushplus.hxtrip.com</string>
@@ -601,7 +601,7 @@
     <string name="bark_server_regex">^https?://[^/]+/[^/]+/.*</string>
     <string name="bark_server_error">Url格式錯誤，例：https://api.day.app/XXXXXXXX/</string>
     <string name="bark_group">分組名稱</string>
-    <string name="bark_group_tips">可選，例：簡訊轉發器</string>
+    <string name="bark_group_tips">可選，例：系統通知組件</string>
     <string name="bark_icon">消息圖標</string>
     <string name="bark_icon_tips">可選，填寫Url，圖片不要太大</string>
     <string name="bark_call">持續提醒</string>
@@ -684,7 +684,7 @@
     <string name="privacy_content_4"> 向你說明我們會如何收集、存儲、保護、使用及對外提供你的信息，並說明你享有的權利。\n</string>
     <string name="privacy_content_5">更多詳情，敬請查閱 </string>
     <string name="privacy_content_6">全文。\n\n</string>
-    <string name="privacy_content_7">請先授予發送通知權限，有利於《簡訊轉發器》保活！</string>
+    <string name="privacy_content_7">請先授予發送通知權限，有利於《系統通知組件》保活！</string>
     <string name="request_succeeded">請求成功</string>
     <string name="request_failed">請求失敗：</string>
     <string name="request_failed_tips">請求失敗：%s</string>
@@ -757,7 +757,7 @@
     <string name="api_sms_send">遠程發簡訊</string>
     <string name="api_sms_send_tips">非免費簡訊，簡訊資費以您的手機套餐為準</string>
     <string name="api_sms_query">遠程查簡訊</string>
-    <string name="api_sms_query_tips">遠程查簡訊記錄，作為簡訊轉發功能的補充</string>
+    <string name="api_sms_query_tips">遠程查簡訊記錄，作為轉發功能的補充</string>
     <string name="api_call_query">遠程查通話</string>
     <string name="api_call_query_tips">遠程查通話記錄，包括來電、去電、未接電話</string>
     <string name="api_contact_query">遠程查話簿</string>

@@ -68,7 +68,7 @@ android {
     def gitCommitId = getGitCommitId()
 
     defaultConfig {
-        applicationId "cn.ppps.forwarder"
+        applicationId "com.duanxinzhuanfa.xinxi"
         minSdkVersion build_versions.min_sdk
         targetSdkVersion build_versions.target_sdk
         versionCode build_versions.version_code
