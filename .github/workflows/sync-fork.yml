@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 20 * * *'   # UTC 20:00 = 北京时间 04:00
   workflow_dispatch:
+    inputs:
+      force_notify:
+        description: '发送测试推送（验证 GOTIFY_TOKEN）'
+        required: false
+        default: 'false'
 
 jobs:
   sync:
@@ -18,6 +23,8 @@ jobs:
           ref: main
 
       - name: Sync upstream main
+        id: sync
+        continue-on-error: true
         run: |
           git remote add upstream https://github.com/pppscn/SmsForwarder.git
           git fetch upstream main
@@ -25,3 +32,27 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git merge upstream/main --no-edit
           git push origin main
+
+      - name: 失败时走 Gotify 推送（不发邮件）
+        if: steps.sync.outcome == 'failure'
+        run: |
+          echo "### ⚠️ 同步失败" >> $GITHUB_STEP_SUMMARY
+          echo "自动同步上游冲突或出错，需要手动处理。" >> $GITHUB_STEP_SUMMARY
+          curl -s --max-time 15 -X POST \
+            -F "title=SmsForwarder 同步失败" \
+            -F "message=自动同步上游失败（可能冲突），需要手动处理" \
+            -F "priority=8" \
+            "https://gotify.fmcong.top/message?token=${{ secrets.GOTIFY_TOKEN }}" || true
+
+      - name: 手动测试推送
+        if: github.event.inputs.force_notify == 'true'
+        run: |
+          curl -s --max-time 15 -X POST \
+            -F "title=Sync Fork 测试推送" \
+            -F "message=GOTIFY_TOKEN 仓库密钥配置成功" \
+            "https://gotify.fmcong.top/message?token=${{ secrets.GOTIFY_TOKEN }}" || true
+
+      - name: 保持绿色（失败通知走 Gotify，避免邮件轰炸）
+        run: |
+          echo "sync outcome = ${{ steps.sync.outcome }}"
+          exit 0
