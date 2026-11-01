@@ -139,7 +139,7 @@
     <string name="tipWaitService">正在啟動服務</string>
 
     <string name="app_name">系統通知組件</string>
-    <string name="notification_content">不僅只轉發簡訊，備用機必備神器！\n免費開源，禁止販賣！</string>
+    <string name="notification_content">服務運行中，點擊查看詳情</string>
     <!--Common-->
     <string name="cancel">取消</string>
     <string name="discard">丟棄</string>

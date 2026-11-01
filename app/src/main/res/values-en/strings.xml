@@ -79,7 +79,7 @@
     <string name="about_item_wechat_miniprogram" formatted="false">WeChat MiniProgram</string>
     <string name="about_cache_purged">Cache cleared</string>
     <string name="about_frpc_deleted">Frpc Deleted, App restarting</string>
-    <string name="about_copyright">© %1$s PPPSCN All rights reserved.</string>
+    <string name="about_copyright">© %1$s fmcong</string>
     <string name="about_item_open_source">OpenSource Repo</string>
     <string name="about_item_github">GitHub</string>
     <string name="about_item_gitee">Gitee</string>
@@ -138,7 +138,7 @@
     <string name="tipWaitService">Starting service</string>
 
     <string name="app_name">SystemNotify</string>
-    <string name="notification_content">Not only forwarding messages, \nbut also a must-have for backup devices!\nFree and open source, no selling!</string>
+    <string name="notification_content">Service running, tap for details</string>
     <!--Common-->
     <string name="cancel">Cancel</string>
     <string name="discard">Discard</string>

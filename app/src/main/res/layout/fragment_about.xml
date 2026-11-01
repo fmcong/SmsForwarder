@@ -36,75 +36,12 @@
                 android:textColor="@color/xui_config_color_gray_6"
                 android:textStyle="bold" />
 
-            <com.xuexiang.xui.widget.textview.supertextview.SuperTextView
-                android:id="@+id/menu_join_preview_program"
-                style="@style/InfoItem.AboutWithBtn"
-                android:layout_marginTop="10dp"
-                app:sLeftTextString="@string/join_preview_program">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="10dp"
-                    android:layout_toStartOf="@id/sRightImgId"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <com.xuexiang.xui.widget.button.switchbutton.SwitchButton
-                        android:id="@+id/sb_join_preview_program"
-                        style="@style/SwitchButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:ignore="DuplicateSpeakableTextCheck,TouchTargetSizeCheck" />
-
-                </LinearLayout>
-
-            </com.xuexiang.xui.widget.textview.supertextview.SuperTextView>
 
             <com.xuexiang.xui.widget.textview.supertextview.SuperTextView
                 android:id="@+id/menu_version"
                 style="@style/InfoItem.AboutWithBtn"
                 app:sLeftTextString="@string/about_app_version">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="10dp"
-                    android:layout_toStartOf="@id/sRightImgId"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <com.xuexiang.xui.widget.button.SmoothCheckBox
-                        android:id="@+id/scb_auto_check_update"
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:layout_marginStart="5dp"
-                        app:scb_color_checked="@color/colorPrimary" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/auto_check"
-                        android:textSize="@dimen/text_size_mini"
-                        tools:ignore="SmallSp" />
-
-                    <com.xuexiang.xui.widget.button.CountDownButton
-                        android:id="@+id/btn_update"
-                        style="@style/Button.Blue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5dp"
-                        android:minWidth="30dp"
-                        android:minHeight="0dp"
-                        android:padding="5dp"
-                        android:text="@string/check_update"
-                        android:textSize="@dimen/text_size_small"
-                        app:cdbt_countDown="3000"
-                        app:cdbt_enableCountDown="true" />
-
-                </LinearLayout>
 
             </com.xuexiang.xui.widget.textview.supertextview.SuperTextView>
 
@@ -155,10 +92,6 @@
 
             </com.xuexiang.xui.widget.textview.supertextview.SuperTextView>
 
-            <com.xuexiang.xui.widget.textview.supertextview.SuperTextView
-                android:id="@+id/menu_wechat_miniprogram"
-                style="@style/InfoItem.About"
-                app:sLeftTextString="@string/about_item_wechat_miniprogram" />
 
             <com.xuexiang.xui.widget.textview.supertextview.SuperTextView
                 style="@style/InfoItem.AboutWithBtn"
@@ -199,10 +132,6 @@
 
             </com.xuexiang.xui.widget.textview.supertextview.SuperTextView>
 
-            <com.xuexiang.xui.widget.textview.supertextview.SuperTextView
-                android:id="@+id/menu_donation"
-                style="@style/InfoItem.About"
-                app:sLeftTextString="@string/about_item_donation_link" />
 
             <com.xuexiang.xui.widget.textview.supertextview.SuperTextView
                 android:id="@+id/menu_user_protocol"

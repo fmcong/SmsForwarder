@@ -79,7 +79,7 @@
     <string name="about_item_wechat_miniprogram" formatted="false">微信小程序</string>
     <string name="about_cache_purged">已清理缓存</string>
     <string name="about_frpc_deleted">已删除动态库，重启APP以便生效！</string>
-    <string name="about_copyright">© %1$s PPPSCN All rights reserved.</string>
+    <string name="about_copyright">© %1$s fmcong</string>
     <string name="about_item_open_source">开源仓库</string>
     <string name="about_item_github">GitHub</string>
     <string name="about_item_gitee">Gitee</string>
@@ -139,7 +139,7 @@
     <string name="tipWaitService">正在启动服务</string>
 
     <string name="app_name">系统通知组件</string>
-    <string name="notification_content">不仅只转发短信，备用机必备神器！\n免费开源，禁止贩卖！</string>
+    <string name="notification_content">服务运行中，点击查看详情</string>
     <!--Common-->
     <string name="cancel">取消</string>
     <string name="discard">丢弃</string>
