@@ -460,14 +460,20 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
                 val obj = Gson().fromJson(raw, JsonObject::class.java)
                 for ((k, v) in obj.entrySet()) {
                     when {
-                        v.isBoolean -> map[k] = v.asBoolean
-                        v.isNumber -> {
-                            //按 SP 实际存储类型还原：整数优先 Int，超出 Int 范围用 Long，小数用 Float
-                            val d = v.asDouble
-                            map[k] = when {
-                                d == kotlin.math.floor(d) && !d.isInfinite() && d >= Int.MIN_VALUE && d <= Int.MAX_VALUE -> d.toInt()
-                                d == kotlin.math.floor(d) && !d.isInfinite() -> d.toLong()
-                                else -> d.toFloat()
+                        v.isJsonPrimitive -> {
+                            val p = v.asJsonPrimitive
+                            when {
+                                p.isBoolean -> map[k] = p.asBoolean
+                                p.isNumber -> {
+                                    //按 SP 实际存储类型还原：整数优先 Int，超出 Int 范围用 Long，小数用 Float
+                                    val d = p.asDouble
+                                    map[k] = when {
+                                        d == kotlin.math.floor(d) && !d.isInfinite() && d >= Int.MIN_VALUE && d <= Int.MAX_VALUE -> d.toInt()
+                                        d == kotlin.math.floor(d) && !d.isInfinite() -> d.toLong()
+                                        else -> d.toFloat()
+                                    }
+                                }
+                                else -> map[k] = p.asString
                             }
                         }
                         else -> map[k] = v.asString
