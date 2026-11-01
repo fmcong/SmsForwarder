@@ -240,7 +240,7 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
 
                     if (HttpServerUtils.restoreSettings(cloneInfo)) {
                         MaterialDialog.Builder(requireContext())
-                            .iconRes(R.drawable.icon_api_clone)
+                            .iconRes(R.drawable.icon_clone_colored)
                             .title(R.string.clone)
                             .content(R.string.import_succeeded)
                             .cancelable(false)

@@ -55,7 +55,7 @@ class ClientFragment : BaseFragment<FragmentClientBinding?>(), View.OnClickListe
     private var mCountDownHelper: CountDownButtonHelper? = null
     private var CLIENT_FRAGMENT_LIST = listOf(
         PageInfo(
-            getString(R.string.api_clone), "cn.ppps.forwarder.fragment.client.CloneFragment", "{\"\":\"\"}", CoreAnim.slide, R.drawable.icon_api_clone
+            getString(R.string.api_clone), "cn.ppps.forwarder.fragment.client.CloneFragment", "{\"\":\"\"}", CoreAnim.slide, R.drawable.icon_clone_colored
         ),
         PageInfo(
             getString(R.string.api_sms_query), "cn.ppps.forwarder.fragment.client.SmsQueryFragment", "{\"\":\"\"}", CoreAnim.slide, R.drawable.icon_api_sms_query

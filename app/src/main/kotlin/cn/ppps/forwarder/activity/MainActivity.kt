@@ -45,7 +45,6 @@ import cn.ppps.forwarder.utils.FRPC_LIB_VERSION
 import cn.ppps.forwarder.utils.Log
 import cn.ppps.forwarder.utils.SettingUtils
 import cn.ppps.forwarder.utils.XToastUtils
-import cn.ppps.forwarder.widget.GuideTipsDialog.Companion.showTips
 import cn.ppps.forwarder.workers.LoadAppListWorker
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.xuexiang.xhttp2.XHttp
@@ -181,11 +180,6 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
     private fun initData() {
         mMenuTitles = ResUtils.getStringArray(this, R.array.menu_titles)
         mMenuIcons = ResUtils.getDrawableArray(this, R.array.menu_icons)
-
-        //仅当开启自动检查且有网络时自动检查更新/获取提示
-        if (SettingUtils.autoCheckUpdate && NetworkUtils.isHaveInternet()) {
-            showTips(this)
-        }
     }
 
     //按返回键不退出回到桌面

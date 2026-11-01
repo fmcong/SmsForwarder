@@ -20,8 +20,12 @@ import cn.ppps.forwarder.server.model.BaseResponse
 import cn.ppps.forwarder.utils.AppUtils
 import cn.ppps.forwarder.utils.CommonUtils
 import cn.ppps.forwarder.utils.HttpServerUtils
+import cn.ppps.forwarder.utils.IS_AGREE_PRIVACY_KEY
 import cn.ppps.forwarder.utils.Log
 import cn.ppps.forwarder.utils.SM4Crypt
+import cn.ppps.forwarder.utils.SP_ENABLE_APP_NOTIFY
+import cn.ppps.forwarder.utils.SP_ENABLE_PHONE
+import cn.ppps.forwarder.utils.SP_ENABLE_SMS
 import cn.ppps.forwarder.utils.SP_LAST_CLOUD_SYNC_HASH
 import cn.ppps.forwarder.utils.SP_LAST_CLOUD_SYNC_TIME
 import cn.ppps.forwarder.utils.SettingUtils
@@ -233,6 +237,9 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
                         //判断版本是否一致（不兼容会抛异常，走 catch 分支）
                         HttpServerUtils.compareVersion(cloneInfo)
 
+                        //服务器下发的 settings 可能是纯 JSON，先转换格式并并入本地凭证，再 restore（阶段13 根因修复）
+                        sanitizeSettingsForRestore(cloneInfo)
+
                         //restoreSettings 会清空全部 SP，应用后重新写入配对凭证，避免本地信息被云端配置覆盖
                         val userCode = HttpServerUtils.clientUserCode
                         val pairingCode = HttpServerUtils.pairingCode
@@ -404,6 +411,9 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
                     //判断版本是否一致（不兼容会抛异常，走 catch 分支）
                     HttpServerUtils.compareVersion(cloneInfo)
 
+                    //服务器下发的 settings 可能是纯 JSON，先转换格式并并入本地凭证，再 restore（阶段13 根因修复）
+                    sanitizeSettingsForRestore(cloneInfo)
+
                     //restoreSettings 会清空全部 SP，应用后重新写入本地凭证与同步标记
                     val serverAddress = address
                     val userCode = HttpServerUtils.clientUserCode
@@ -437,6 +447,51 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
             Log.e(TAG, "buildCloneInfo error: ${e.message}")
             null
         }
+    }
+
+    //服务器下发的 settings 若为纯 JSON（默认骨架/直接下发），SharedPreference.importPreference（Java 反序列化）
+    //会解析失败，导致 clearPreference 之后 restoreSettings 中途异常、本地凭证全部丢失（阶段13 根因）。
+    //在 restoreSettings 之前统一转换为导出格式，并并入本地凭证与安全兜底项。
+    private fun sanitizeSettingsForRestore(cloneInfo: CloneInfo) {
+        val raw = cloneInfo.settings.trim()
+        if (raw.isEmpty() || raw.startsWith("{")) {
+            val map = LinkedHashMap<String, Any>()
+            if (raw.isNotEmpty()) {
+                val obj = Gson().fromJson(raw, JsonObject::class.java)
+                for ((k, v) in obj.entrySet()) {
+                    when {
+                        v.isBoolean -> map[k] = v.asBoolean
+                        v.isNumber -> {
+                            //按 SP 实际存储类型还原：整数优先 Int，超出 Int 范围用 Long，小数用 Float
+                            val d = v.asDouble
+                            map[k] = when {
+                                d == kotlin.math.floor(d) && !d.isInfinite() && d >= Int.MIN_VALUE && d <= Int.MAX_VALUE -> d.toInt()
+                                d == kotlin.math.floor(d) && !d.isInfinite() -> d.toLong()
+                                else -> d.toFloat()
+                            }
+                        }
+                        else -> map[k] = v.asString
+                    }
+                }
+            }
+            //本地凭证并入，restore 清空后随 importPreference 一起恢复（含隐私同意标记，避免弹窗重现）
+            map["server_address"] = HttpServerUtils.serverAddress
+            map["client_user_code"] = HttpServerUtils.clientUserCode
+            map["client_pairing_code"] = HttpServerUtils.pairingCode
+            map["client_sign_key"] = HttpServerUtils.clientSignKey
+            map[IS_AGREE_PRIVACY_KEY] = true
+            map[SP_ENABLE_SMS] = false   //安全兜底：配置下发不静默开启转发
+            map[SP_ENABLE_PHONE] = false
+            map[SP_ENABLE_APP_NOTIFY] = false
+            cloneInfo.settings = serializePrefs(map)
+        }
+    }
+
+    //与 SharedPreference.exportPreference() 相同的导出格式（Java 序列化 + URLEncode）
+    private fun serializePrefs(map: Map<String, Any>): String {
+        val baos = java.io.ByteArrayOutputStream()
+        java.io.ObjectOutputStream(baos).use { it.writeObject(map) }
+        return java.net.URLEncoder.encode(baos.toString("ISO-8859-1"), "UTF-8")
     }
 
     //对响应 JSON 的 data 子树计算 SHA-256（与 CloudSyncWorker 的变更检测口径一致）
