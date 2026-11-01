@@ -1,0 +1,297 @@
+package cn.ppps.forwarder.utils
+
+import cn.ppps.forwarder.entity.CloneInfo
+import cn.ppps.forwarder.server.model.BaseResponse
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
+import java.security.MessageDigest
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.concurrent.atomic.AtomicBoolean
+
+//自动双向同步引擎：
+//①拉取：/clone/pull → 响应 data 子树 SHA-256 与 last_applied_hash 比对，有变化才 restoreSettings
+//②推送：exportSettings() 序列化哈希与 last_pushed_hash 比对，有变化才 /clone/push
+//全程静默失败（同步失败不影响 App 使用）；同步执行，调用方须在后台线程调用（内部有单飞锁防并发）
+@Suppress("PrivatePropertyName", "DEPRECATION")
+object CloudSyncEngine {
+
+    private val TAG: String = CloudSyncEngine::class.java.simpleName
+
+    private val syncing = AtomicBoolean(false)
+
+    private var lastAppliedHash: String by SharedPreference(SP_LAST_CLOUD_SYNC_HASH, "")
+    private var lastPushedHash: String by SharedPreference(SP_LAST_PUSHED_HASH, "")
+    private var lastCloudSyncTime: String by SharedPreference(SP_LAST_CLOUD_SYNC_TIME, "")
+
+    //同步执行一次双向同步（拉取比对应用 + 导出比对推送）
+    @Suppress("UNUSED_PARAMETER")
+    fun syncNow(context: android.content.Context?) {
+        if (!syncing.compareAndSet(false, true)) {
+            Log.d(TAG, "syncNow: 上一轮同步尚未结束，跳过")
+            return
+        }
+        try {
+            //守卫：读值先 trim，避免脏数据导致 checkUrl 误判
+            val serverAddress = HttpServerUtils.serverAddress.trim().trimEnd('/')
+            val clientSignKey = HttpServerUtils.clientSignKey.trim()
+            val clientUserCode = HttpServerUtils.clientUserCode.trim()
+            if (serverAddress.isNullOrEmpty() || !CommonUtils.checkUrl(serverAddress)
+                || clientSignKey.isNullOrEmpty() || clientUserCode.isNullOrEmpty()
+            ) {
+                Log.d(TAG, "配置不齐全，跳过云端同步")
+                return
+            }
+            if (HttpServerUtils.clientSafetyMeasures == 2) {
+                Log.d(TAG, "RSA 模式不支持自动同步，跳过")
+                return
+            }
+
+            //①拉取比对应用
+            pullAndApply(serverAddress, clientSignKey, clientUserCode)
+
+            //②导出比对推送
+            pushIfChanged(serverAddress, clientSignKey, clientUserCode)
+        } catch (e: Exception) {
+            Log.w(TAG, "syncNow: ${e.message}")
+        } finally {
+            syncing.set(false)
+        }
+    }
+
+    //①拉取：内容有变化才应用；应用成功后记录远端哈希，并同步刷新推送基准（见 recordApplied）
+    private fun pullAndApply(serverAddress: String, clientSignKey: String, clientUserCode: String) {
+        val responseJson = pullFromServer(serverAddress, clientSignKey, clientUserCode) ?: return
+        val root = Gson().fromJson(responseJson, JsonObject::class.java)
+            ?: throw IOException("响应 JSON 解析失败")
+        val dataElement = root.get("data") ?: throw IOException("响应缺少 data 字段")
+        val remoteHash = sha256(dataElement.toString())
+        if (remoteHash == lastAppliedHash) {
+            Log.d(TAG, "云端配置未变化")
+            return
+        }
+
+        //解析 BaseResponse<CloneInfo>（Date 字段替换为当前时间，与 CloneFragment 一致）
+        val builder = GsonBuilder()
+        builder.registerTypeAdapter(Date::class.java, JsonDeserializer<Any?> { _, _, _ -> Date() })
+        val resp: BaseResponse<CloneInfo> = builder.create().fromJson(responseJson, object : TypeToken<BaseResponse<CloneInfo>>() {}.type)
+        if (resp.code != 200) {
+            Log.w(TAG, "pullAndApply: code=${resp.code}, msg=${resp.msg}")
+            return
+        }
+        val cloneInfo = resp.data ?: throw IOException("响应 data 为空")
+
+        //判断版本是否一致（版本不兼容会抛异常，由 syncNow 捕获，不更新哈希）
+        HttpServerUtils.compareVersion(cloneInfo)
+
+        sanitizeSettingsForRestore(cloneInfo)
+
+        if (HttpServerUtils.restoreSettings(cloneInfo)) {
+            //restoreSettings 会清空全部 SP，应用后重新写入本地凭证与同步标记
+            HttpServerUtils.serverAddress = serverAddress
+            HttpServerUtils.clientUserCode = clientUserCode
+            HttpServerUtils.clientSignKey = clientSignKey
+            recordApplied(remoteHash)
+            Log.i(TAG, "云端配置已应用: $lastCloudSyncTime")
+        }
+    }
+
+    //②推送：本地导出内容有变化才推送，成功后记录本地哈希
+    private fun pushIfChanged(serverAddress: String, clientSignKey: String, clientUserCode: String) {
+        val exportInfo = HttpServerUtils.exportSettings()
+        exportInfo.userCode = clientUserCode
+        val localHash = sha256(Gson().toJson(exportInfo))
+        if (localHash == lastPushedHash) {
+            Log.d(TAG, "本地配置未变化，无需推送")
+            return
+        }
+
+        //构造请求体（与 CloneFragment.doPushData 一致）
+        val msgMap: MutableMap<String, Any> = mutableMapOf()
+        val timestamp = System.currentTimeMillis()
+        msgMap["timestamp"] = timestamp
+        msgMap["sign"] = HttpServerUtils.calcSign(timestamp.toString(), clientSignKey)
+        msgMap["data"] = exportInfo
+
+        var requestMsg: String = Gson().toJson(msgMap)
+        if (HttpServerUtils.clientSafetyMeasures == 3) {
+            val sm4Key = ConvertTools.hexStringToByteArray(clientSignKey)
+            requestMsg = ConvertTools.bytes2HexString(SM4Crypt.encrypt(requestMsg.toByteArray(), sm4Key))
+        }
+
+        val (code, response) = postForResult(serverAddress + "/clone/push", clientSignKey, requestMsg)
+        if (code !in 200..299) {
+            Log.w(TAG, "pushIfChanged: HTTP $code")
+            return
+        }
+        //解析响应（协议与 CloneFragment.doPushData 一致：measures==3 时密文 hex → SM4 解密 → BaseResponse<String>）
+        var json = response
+        if (HttpServerUtils.clientSafetyMeasures == 3) {
+            val sm4Key = ConvertTools.hexStringToByteArray(clientSignKey)
+            json = String(SM4Crypt.decrypt(ConvertTools.hexStringToByteArray(json), sm4Key))
+        }
+        val resp: BaseResponse<String> = Gson().fromJson(json, object : TypeToken<BaseResponse<String>>() {}.type)
+        if (resp.code == 200) {
+            lastPushedHash = localHash
+            Log.i(TAG, "本地配置已推送")
+        } else {
+            Log.w(TAG, "pushIfChanged: code=${resp.code}, msg=${resp.msg}")
+        }
+    }
+
+    //记录「远端已应用」标记；同时以恢复后的本地重新导出哈希刷新推送基准
+    //（本地==远端，防回环；注意不能直接用远端哈希——两端序列化管道不同，字符串哈希必然不同，会造成每轮空推）
+    fun recordApplied(remoteHash: String) {
+        lastAppliedHash = remoteHash
+        val exportInfo = HttpServerUtils.exportSettings()
+        exportInfo.userCode = HttpServerUtils.clientUserCode
+        lastPushedHash = sha256(Gson().toJson(exportInfo))
+        lastCloudSyncTime = now()
+    }
+
+    //拉取云端配置，返回解密后的响应 JSON（请求失败返回 null）
+    private fun pullFromServer(serverAddress: String, clientSignKey: String, clientUserCode: String): String? {
+        //构造请求体（与 CloneFragment.doPullData 一致）
+        val msgMap: MutableMap<String, Any> = mutableMapOf()
+        val timestamp = System.currentTimeMillis()
+        msgMap["timestamp"] = timestamp
+        msgMap["sign"] = HttpServerUtils.calcSign(timestamp.toString(), clientSignKey)
+        msgMap["data"] = mutableMapOf<String, Any>(
+            "version_code" to AppUtils.getAppVersionCode(),
+            "user_code" to clientUserCode,
+        )
+        var requestMsg: String = Gson().toJson(msgMap)
+        if (HttpServerUtils.clientSafetyMeasures == 3) {
+            val sm4Key = ConvertTools.hexStringToByteArray(clientSignKey)
+            requestMsg = ConvertTools.bytes2HexString(SM4Crypt.encrypt(requestMsg.toByteArray(), sm4Key))
+        }
+
+        //同步请求（调用方保证在后台线程）
+        val connection = URL(serverAddress + "/clone/pull").openConnection() as HttpURLConnection
+        try {
+            connection.connectTimeout = SettingUtils.requestTimeout * 1000
+            connection.readTimeout = SettingUtils.requestTimeout * 1000
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            //显式 User-Agent，避免被 Cloudflare 等按 UA 拦截（1010）
+            connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.outputStream.use { it.write(requestMsg.toByteArray()) }
+
+            val code = connection.responseCode
+            if (code !in 200..299) {
+                val error = try {
+                    connection.errorStream?.bufferedReader()?.use { it.readText() }
+                } catch (e: Exception) {
+                    null
+                }
+                Log.w(TAG, "pullFromServer: HTTP $code, $error")
+                return null
+            }
+            var response = connection.inputStream.bufferedReader().use { it.readText() }
+            if (HttpServerUtils.clientSafetyMeasures == 3) {
+                val sm4Key = ConvertTools.hexStringToByteArray(clientSignKey)
+                response = String(SM4Crypt.decrypt(ConvertTools.hexStringToByteArray(response), sm4Key))
+            }
+            Log.d(TAG, "pullFromServer: $response")
+            return response
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    //POST 请求，返回 HTTP 状态码与响应体（推送用）
+    private fun postForResult(url: String, clientSignKey: String, requestMsg: String): Pair<Int, String> {
+        val connection = URL(url).openConnection() as HttpURLConnection
+        try {
+            connection.connectTimeout = SettingUtils.requestTimeout * 1000
+            connection.readTimeout = SettingUtils.requestTimeout * 1000
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.outputStream.use { it.write(requestMsg.toByteArray()) }
+            val code = connection.responseCode
+            val body = if (code in 200..299) {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                try {
+                    connection.errorStream?.bufferedReader()?.use { it.readText() }
+                } catch (e: Exception) {
+                    null
+                } ?: ""
+            }
+            return Pair(code, body)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    //服务器下发的 settings 若为纯 JSON（默认骨架/直接下发），SharedPreference.importPreference（Java 反序列化）
+    //会解析失败，导致 clearPreference 之后 restoreSettings 中途异常、本地凭证全部丢失（阶段13 根因）。
+    //在 restoreSettings 之前统一转换为导出格式，并并入本地凭证与安全兜底项。
+    fun sanitizeSettingsForRestore(cloneInfo: CloneInfo) {
+        val raw = cloneInfo.settings.trim()
+        if (raw.isEmpty() || raw.startsWith("{")) {
+            val map = LinkedHashMap<String, Any>()
+            if (raw.isNotEmpty()) {
+                val obj = Gson().fromJson(raw, JsonObject::class.java)
+                for ((k, v) in obj.entrySet()) {
+                    when {
+                        v.isJsonPrimitive -> {
+                            val p = v.asJsonPrimitive
+                            when {
+                                p.isBoolean -> map[k] = p.asBoolean
+                                p.isNumber -> {
+                                    //按 SP 实际存储类型还原：整数优先 Int，超出 Int 范围用 Long，小数用 Float
+                                    val d = p.asDouble
+                                    map[k] = when {
+                                        d == kotlin.math.floor(d) && !d.isInfinite() && d >= Int.MIN_VALUE && d <= Int.MAX_VALUE -> d.toInt()
+                                        d == kotlin.math.floor(d) && !d.isInfinite() -> d.toLong()
+                                        else -> d.toFloat()
+                                    }
+                                }
+                                else -> map[k] = p.asString
+                            }
+                        }
+                        else -> map[k] = v.asString
+                    }
+                }
+            }
+            //本地凭证并入，restore 清空后随 importPreference 一起恢复（含隐私同意标记，避免弹窗重现）
+            map["server_address"] = HttpServerUtils.serverAddress.trim().trimEnd('/')
+            map["client_user_code"] = HttpServerUtils.clientUserCode.trim()
+            map["client_pairing_code"] = HttpServerUtils.pairingCode
+            map["client_sign_key"] = HttpServerUtils.clientSignKey.trim()
+            map[IS_AGREE_PRIVACY_KEY] = true
+            map[SP_CLIENT_SAFETY_MEASURES] = 3   //恢复后保持 SM4 加密，否则推送/拉取回落明文分支
+            map[SP_ENABLE_SMS] = false   //安全兜底：配置下发不静默开启转发
+            map[SP_ENABLE_PHONE] = false
+            map[SP_ENABLE_APP_NOTIFY] = false
+            cloneInfo.settings = serializePrefs(map)
+        }
+    }
+
+    //与 SharedPreference.exportPreference() 相同的导出格式（Java 序列化 + URLEncode）
+    private fun serializePrefs(map: Map<String, Any>): String {
+        val baos = ByteArrayOutputStream()
+        java.io.ObjectOutputStream(baos).use { it.writeObject(map) }
+        return URLEncoder.encode(baos.toString("ISO-8859-1"), "UTF-8")
+    }
+
+    private fun sha256(content: String): String {
+        val bytes = MessageDigest.getInstance("SHA-256").digest(content.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    private fun now(): String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+
+}

@@ -44,6 +44,7 @@ import cn.ppps.forwarder.utils.FRPC_LIB_DOWNLOAD_URL
 import cn.ppps.forwarder.utils.FRPC_LIB_VERSION
 import cn.ppps.forwarder.utils.Log
 import cn.ppps.forwarder.utils.SettingUtils
+import cn.ppps.forwarder.utils.CloudSyncEngine
 import cn.ppps.forwarder.utils.XToastUtils
 import cn.ppps.forwarder.workers.LoadAppListWorker
 import com.jeremyliao.liveeventbus.LiveEventBus
@@ -180,6 +181,18 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
     private fun initData() {
         mMenuTitles = ResUtils.getStringArray(this, R.array.menu_titles)
         mMenuIcons = ResUtils.getDrawableArray(this, R.array.menu_icons)
+    }
+
+    //回前台触发云端同步检查（engine 内部有单飞锁与哈希比对，频繁触发无副作用）
+    override fun onResume() {
+        super.onResume()
+        Thread { CloudSyncEngine.syncNow(this) }.start()
+    }
+
+    //离前台触发推送检查（本地配置有变化才推送）
+    override fun onPause() {
+        super.onPause()
+        Thread { CloudSyncEngine.syncNow(this) }.start()
     }
 
     //按返回键不退出回到桌面

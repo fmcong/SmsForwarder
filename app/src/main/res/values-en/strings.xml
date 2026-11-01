@@ -1264,12 +1264,12 @@
     <string name="user_code_tips">e.g. 15001, distinguishes devices or users</string>
     <string name="pairing_code">Pairing Code</string>
     <string name="pairing_code_tips">Used to exchange for the key and config from the server</string>
-    <string name="pairing">Pair &amp; Fetch Config</string>
+    <string name="pairing">Request Access</string>
     <string name="pairing_code_required">User code and pairing code are required</string>
     <string name="pairing_succeeded">Paired successfully, config applied</string>
     <string name="cloud_sync">Cloud Sync</string>
     <string name="last_sync_time">Last Sync Time</string>
-    <string name="cloud_sync_auto_tips">Auto-checks the cloud config hourly; applies only when content changes</string>
+    <string name="cloud_sync_auto_tips">Changes sync both ways automatically (~every 30 min or on app foreground/background switches)</string>
     <string name="cloud_sync_measures_tips">Switches to SM4 encryption automatically after pairing</string>
     <string name="sync_section_connection">Connection</string>
     <string name="sync_section_actions">Actions</string>

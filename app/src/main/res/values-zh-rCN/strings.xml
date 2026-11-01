@@ -1265,12 +1265,12 @@
     <string name="user_code_tips">如 15001，用于区分不同设备或用户</string>
     <string name="pairing_code">配对码</string>
     <string name="pairing_code_tips">用于向服务端换取密钥与配置</string>
-    <string name="pairing">配对并获取配置</string>
+    <string name="pairing">申请访问</string>
     <string name="pairing_code_required">配置代号和配对码不能为空</string>
     <string name="pairing_succeeded">配对成功，配置已应用</string>
     <string name="cloud_sync">云端同步</string>
     <string name="last_sync_time">上次同步时间</string>
-    <string name="cloud_sync_auto_tips">每小时自动检查云端配置，内容有变化才会应用</string>
+    <string name="cloud_sync_auto_tips">配置变更将自动双向同步（约 30 分钟或切换前后台时）</string>
     <string name="cloud_sync_measures_tips">配对成功后自动设为 SM4 加密</string>
     <string name="sync_section_connection">连接配置</string>
     <string name="sync_section_actions">操作</string>

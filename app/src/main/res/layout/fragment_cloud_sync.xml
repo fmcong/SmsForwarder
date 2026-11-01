@@ -144,28 +144,6 @@
                     android:padding="5dp"
                     android:text="@string/pairing" />
 
-                <com.xuexiang.xui.widget.button.ButtonView
-                    android:id="@+id/btn_push"
-                    style="@style/ButtonView.Blue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
-                    android:gravity="center"
-                    android:minWidth="70dp"
-                    android:padding="5dp"
-                    android:text="@string/push" />
-
-                <com.xuexiang.xui.widget.button.ButtonView
-                    android:id="@+id/btn_pull"
-                    style="@style/ButtonView.Blue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
-                    android:gravity="center"
-                    android:minWidth="70dp"
-                    android:padding="5dp"
-                    android:text="@string/pull" />
-
             </LinearLayout>
 
             <LinearLayout

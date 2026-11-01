@@ -97,6 +97,7 @@ const val SP_LOCATION_MIN_DISTANCE = "location_min_distance"
 const val SP_AMAP_WEB_KEY = "amap_web_key"
 const val SP_LAST_CLOUD_SYNC_HASH = "last_cloud_sync_hash"
 const val SP_LAST_CLOUD_SYNC_TIME = "last_cloud_sync_time"
+const val SP_LAST_PUSHED_HASH = "last_pushed_hash"
 const val SP_CLIENT_PAIRING_CODE = "client_pairing_code"
 
 const val SP_BLUETOOTH = "enable_bluetooth"

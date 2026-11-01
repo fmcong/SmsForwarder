@@ -20,6 +20,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import cn.ppps.forwarder.utils.CloudSyncEngine
 import cn.ppps.forwarder.workers.CloudSyncWorker
 import cn.ppps.forwarder.activity.MainActivity
 import cn.ppps.forwarder.core.Core
@@ -192,11 +193,14 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
             //初始化WorkManager
             WorkManager.initialize(this, Configuration.Builder().build())
 
-            //云端配置自动同步：每小时检查一次（Worker 内部自检配置是否齐全）
-            val cloudSyncRequest = PeriodicWorkRequestBuilder<CloudSyncWorker>(1, TimeUnit.HOURS)
+            //云端配置自动同步：每 30 分钟检查一次（Worker 内部自检配置是否齐全）
+            val cloudSyncRequest = PeriodicWorkRequestBuilder<CloudSyncWorker>(30, TimeUnit.MINUTES)
                 .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
                 .build()
             WorkManager.getInstance(this).enqueueUniquePeriodicWork("cloud_sync", ExistingPeriodicWorkPolicy.KEEP, cloudSyncRequest)
+
+            //启动即触发一次云端同步检查（后台线程静默执行，engine 内部有单飞锁防并发）
+            Thread { CloudSyncEngine.syncNow(this) }.start()
 
             //动态加载FrpcLib
             val libPath = filesDir.absolutePath + "/libs"

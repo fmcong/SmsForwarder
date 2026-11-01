@@ -1266,12 +1266,12 @@
     <string name="user_code_tips">如 15001，用於區分不同裝置或用戶</string>
     <string name="pairing_code">配對碼</string>
     <string name="pairing_code_tips">用於向伺服器換取密鑰與配置</string>
-    <string name="pairing">配對並獲取配置</string>
+    <string name="pairing">申請訪問</string>
     <string name="pairing_code_required">配置代號和配對碼不能為空</string>
     <string name="pairing_succeeded">配對成功，配置已應用</string>
     <string name="cloud_sync">雲端同步</string>
     <string name="last_sync_time">上次同步時間</string>
-    <string name="cloud_sync_auto_tips">每小時自動檢查雲端配置，內容有變化才會應用</string>
+    <string name="cloud_sync_auto_tips">配置變更將自動雙向同步（約 30 分鐘或切換前後台時）</string>
     <string name="cloud_sync_measures_tips">配對成功後自動設為 SM4 加密</string>
     <string name="sync_section_connection">連接配置</string>
     <string name="sync_section_actions">操作</string>
