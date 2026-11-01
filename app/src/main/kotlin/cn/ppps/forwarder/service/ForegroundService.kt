@@ -349,13 +349,12 @@ class ForegroundService : Service() {
     private fun createNotificationChannel() {
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val importance = NotificationManager.IMPORTANCE_HIGH
+            val importance = NotificationManager.IMPORTANCE_MIN
             val notificationChannel = NotificationChannel(FRONT_CHANNEL_ID, FRONT_CHANNEL_NAME, importance)
             notificationChannel.description = getString(R.string.notification_content)
-            notificationChannel.enableLights(true)
-            notificationChannel.lightColor = Color.GREEN
-            notificationChannel.vibrationPattern = longArrayOf(0, 1000, 500, 1000)
-            notificationChannel.enableVibration(true)
+            notificationChannel.setShowBadge(false)
+            notificationChannel.enableLights(false)
+            notificationChannel.enableVibration(false)
             if (notificationManager != null) {
                 notificationManager!!.createNotificationChannel(notificationChannel)
             }

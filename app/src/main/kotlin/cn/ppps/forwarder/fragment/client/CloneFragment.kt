@@ -53,7 +53,7 @@ import java.io.File
 import java.util.Date
 
 @Suppress("PrivatePropertyName")
-@Page(name = "一键换新机")
+@Page(name = "云端同步")
 class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickListener {
 
     private val TAG: String = CloneFragment::class.java.simpleName
@@ -279,7 +279,9 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
         if (!TextUtils.isEmpty(clientSignKey)) {
             msgMap["sign"] = HttpServerUtils.calcSign(timestamp.toString(), clientSignKey)
         }
-        msgMap["data"] = HttpServerUtils.exportSettings()
+        val exportInfo = HttpServerUtils.exportSettings()
+        exportInfo.userCode = HttpServerUtils.clientUserCode
+        msgMap["data"] = exportInfo
 
         var requestMsg: String = Gson().toJson(msgMap)
         Log.i(TAG, "requestMsg:$requestMsg")
@@ -496,6 +498,7 @@ class CloneFragment : BaseFragment<FragmentClientCloneBinding?>(), View.OnClickL
 
         val dataMap: MutableMap<String, Any> = mutableMapOf()
         dataMap["version_code"] = AppUtils.getAppVersionCode()
+        dataMap["user_code"] = HttpServerUtils.clientUserCode
         msgMap["data"] = dataMap
 
         var requestMsg: String = Gson().toJson(msgMap)

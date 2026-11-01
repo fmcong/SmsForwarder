@@ -61,7 +61,7 @@ class HttpServerUtils private constructor() {
         var serverLocalIpOnly: Boolean by SharedPreference(SP_SERVER_LOCAL_IP_ONLY, true)
 
         //服务地址
-        var serverAddress: String by SharedPreference(SP_SERVER_ADDRESS, "http://127.0.0.1:$serverPort")
+        var serverAddress: String by SharedPreference(SP_SERVER_ADDRESS, "")
 
         //服务地址历史记录
         var serverHistory: String by SharedPreference(SP_SERVER_HISTORY, "")
@@ -71,6 +71,9 @@ class HttpServerUtils private constructor() {
 
         //客户端签名密钥/RSA公钥
         var clientSignKey: String by SharedPreference(SP_CLIENT_SIGN_KEY, "")
+
+        //云端同步的配置代号（区分不同设备/用户，如 15001）
+        var clientUserCode: String by SharedPreference(SP_CLIENT_USER_CODE, "")
 
         //服务端安全设置
         var clientSafetyMeasures: Int by SharedPreference(SP_CLIENT_SAFETY_MEASURES, if (TextUtils.isEmpty(clientSignKey)) 0 else 1)

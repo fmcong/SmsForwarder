@@ -243,6 +243,7 @@ const val SP_SERVER_HISTORY = "server_history"
 const val SP_SERVER_CONFIG = "server_config"
 const val SP_CLIENT_SAFETY_MEASURES = "client_safety_measures"
 const val SP_CLIENT_SIGN_KEY = "client_sign_key"
+const val SP_CLIENT_USER_CODE = "client_user_code"
 
 
 //自动任务

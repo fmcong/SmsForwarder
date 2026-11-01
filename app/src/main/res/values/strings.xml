@@ -782,8 +782,8 @@
     <string name="enable_function">启用功能</string>
     <string name="disable_function">禁用功能</string>
     <string name="enable_function_tips">按需选择您要启用远程控制的功能</string>
-    <string name="api_clone">一键换新机</string>
-    <string name="api_clone_tips">一键克隆本机的通用配置、发送通道、转发规则到新机器</string>
+    <string name="api_clone">云端同步</string>
+    <string name="api_clone_tips">通过云端服务器备份与恢复全部配置（含 FRP）</string>
     <string name="api_sms_send">远程发短信</string>
     <string name="api_sms_send_tips">非免费短信，短信资费以您的手机套餐为准</string>
     <string name="api_sms_query">远程查短信</string>
@@ -1288,4 +1288,7 @@
     <string name="start_discovery">搜索设备</string>
     <string name="invalid_bluetooth_mac_address">蓝牙设备MAC地址无效，例如：AA:BB:CC:DD:EE:FF</string>
     <string name="auto_start_redmi"><![CDATA[红米手机：授权管理 -> 自启动管理 -> 允许应用自启动]]></string>
+    <string name="user_code">配置代号</string>
+    <string name="user_code_tips">如 15001，用于区分不同设备或用户</string>
+    <string name="operating_instruction_new">功能说明：\n通过云端服务器备份与恢复全部配置（通用设置、发送通道、转发规则、FRP、自动任务）。\n\n操作说明：\n1.在下方填入服务器地址、密钥（与云端一致）和配置代号\n2.点【推送】：将本机当前全部配置备份到云端\n3.点【拉取】：从云端恢复配置到本机（完全覆盖）\n\n注意事项：\n1.配置代号区分不同设备或用户，同一代号共享同一份配置\n2.恢复后发送通道、转发规则、FRP 等将被完全覆盖\n3.设备名称、SIM 卡信息等本机属性不会被覆盖\n4.恢复完成后请到系统设置检查各权限</string>
 </resources>

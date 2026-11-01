@@ -189,7 +189,20 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
 
             //动态加载FrpcLib
             val libPath = filesDir.absolutePath + "/libs"
-            val soFile = File(libPath)
+            val soFile = File(libPath, "libgojni.so")
+            if (!soFile.exists()) {
+                //引擎已随APK打包（excludeFrpclib=false），从系统原生库目录就地拷贝，无需外网下载
+                try {
+                    val packed = File(applicationInfo.nativeLibraryDir, "libgojni.so")
+                    if (packed.exists()) {
+                        soFile.parentFile?.mkdirs()
+                        packed.copyTo(soFile, overwrite = true)
+                        Log.i("APP", "libgojni.so 已从安装包内复制到 ${'$'}libPath")
+                    }
+                } catch (throwable: Throwable) {
+                    Log.e("APP", "拷贝内置 frpclib 失败: " + throwable.message)
+                }
+            }
             if (soFile.exists()) {
                 try {
                     TinkerLoadLibrary.installNativeLibraryPath(classLoader, soFile)

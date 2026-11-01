@@ -28,4 +28,7 @@ data class CloneInfo(
 
     @SerializedName("task_list")
     var taskList: List<Task>? = null,
+
+    @SerializedName("user_code")
+    var userCode: String? = null,
 ) : Serializable

@@ -216,6 +216,15 @@ class ClientFragment : BaseFragment<FragmentClientBinding?>(), View.OnClickListe
             }
         })
 
+        binding!!.etUserCode.setText(HttpServerUtils.clientUserCode)
+        binding!!.etUserCode.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable) {
+                HttpServerUtils.clientUserCode = binding!!.etUserCode.text.toString().trim()
+            }
+        })
+
         binding!!.btnWechatMiniprogram.setOnClickListener(this)
         binding!!.btnServerHistory.setOnClickListener(this)
         binding!!.btnServerTest.setOnClickListener(this)

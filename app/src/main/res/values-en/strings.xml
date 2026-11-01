@@ -751,8 +751,8 @@
     <string name="enable_function">Enable Function</string>
     <string name="disable_function">Disable Function</string>
     <string name="enable_function_tips">Select the features you want to enable remote control as needed</string>
-    <string name="api_clone">OneKey Clone</string>
-    <string name="api_clone_tips">One-click cloning of the general config of the machine, sender, and rules to the new machine</string>
+    <string name="api_clone">Cloud Sync</string>
+    <string name="api_clone_tips">Back up and restore all settings (incl. FRP) via your cloud server</string>
     <string name="api_sms_send">Send Sms</string>
     <string name="api_sms_send_tips">Non-free, SMS rates are subject to your mobile phone plan</string>
     <string name="api_sms_query">Query Sms</string>
@@ -1257,4 +1257,7 @@
     <string name="start_discovery">Discovery</string>
     <string name="invalid_bluetooth_mac_address">Bluetooth Mac Address is invalid, eg. AA:BB:CC:DD:EE:FF</string>
     <string name="auto_start_redmi"><![CDATA[RedMi: Authorization Management -> Self-Start Management -> Allow Apps to Self-Start]]></string>
+    <string name="user_code">User Code</string>
+    <string name="user_code_tips">e.g. 15001, distinguishes devices or users</string>
+    <string name="operating_instruction_new">Backup and restore all settings via your cloud server.\n1. Fill in server address, key and user code\n2. Push: upload current settings\n3. Pull: restore settings from cloud</string>
 </resources>
