@@ -179,8 +179,11 @@ class LocationService : Service() {
                         requestMethod = "GET"
                         inputStream.bufferedReader().use { it.readText() }
                     }
-                    val regeocodes = JSONObject(json).optJSONArray("regeocodes")
-                    val address = regeocodes?.optJSONObject(0)?.optString("formatted_address") ?: ""
+                    //实测（2026-11-01）：v3/geocode/regeo 返回单数对象 regeocode，而非旧文档的 regeocodes 数组；两者都兼容
+                    val root = JSONObject(json)
+                    val address = root.optJSONObject("regeocode")?.optString("formatted_address")
+                        ?: root.optJSONArray("regeocodes")?.optJSONObject(0)?.optString("formatted_address")
+                        ?: ""
                     if (!address.isEmpty()) onResult(address)
                 } catch (e: Exception) {
                     Log.w(TAG, "reverseGeocodeByAmap: ${e.message}")
