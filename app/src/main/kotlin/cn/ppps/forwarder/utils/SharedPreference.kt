@@ -106,14 +106,53 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
      * 如果查找不到类型就采用反序列化方法来返回类型
      * default是默认对象 以防止会返回空对象的异常
      * 即如果name没有查找到value 就返回默认的序列化对象，然后经过反序列化返回
+     *
+     * 类型容错读取：云端同步/后台表单/离线导入三条写入路径都可能产生类型漂移
+     * （如 Long 型键被写成 Int/String），读取端对 ClassCastException 降级兜底，避免崩溃。
      */
     private fun getPreference(name: String, default: T): T = with(preference) {
         val res: Any = when (default) {
-            is Long -> getLong(name, default)
-            is String -> this.getString(name, default)!!
-            is Int -> getInt(name, default)
-            is Boolean -> getBoolean(name, default)
-            is Float -> getFloat(name, default)
+            is Long -> try {
+                getLong(name, default)
+            } catch (e: ClassCastException) {
+                try {
+                    (getString(name, null) ?: "").toDoubleOrNull()?.toLong() ?: default
+                } catch (e: Exception) {
+                    default
+                }
+            }
+            is String -> try {
+                getString(name, default) ?: default
+            } catch (e: ClassCastException) {
+                default
+            }
+            is Int -> try {
+                getInt(name, default)
+            } catch (e: ClassCastException) {
+                try {
+                    (getString(name, null) ?: "").toDoubleOrNull()?.toInt() ?: default
+                } catch (e: Exception) {
+                    default
+                }
+            }
+            is Boolean -> try {
+                getBoolean(name, default)
+            } catch (e: ClassCastException) {
+                try {
+                    getString(name, null) == "true"
+                } catch (e: Exception) {
+                    default
+                }
+            }
+            is Float -> try {
+                getFloat(name, default)
+            } catch (e: ClassCastException) {
+                try {
+                    (getString(name, null) ?: "").toFloatOrNull() ?: default
+                } catch (e: Exception) {
+                    default
+                }
+            }
             //else -> throw IllegalArgumentException("This type can be get from Preferences")
             else -> deSerialization(getString(name, serialize(default)).toString())
         }
