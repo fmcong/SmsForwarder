@@ -1269,6 +1269,16 @@
     <string name="pairing">配對並獲取配置</string>
     <string name="pairing_code_required">配置代號和配對碼不能為空</string>
     <string name="pairing_succeeded">配對成功，配置已應用</string>
+    <string name="cloud_sync">雲端同步</string>
+    <string name="last_sync_time">上次同步時間</string>
+    <string name="cloud_sync_auto_tips">每小時自動檢查雲端配置，內容有變化才會應用</string>
+    <string name="cloud_sync_measures_tips">配對成功後自動設為 SM4 加密</string>
+    <string name="sync_section_connection">連接配置</string>
+    <string name="sync_section_actions">操作</string>
+    <string name="sync_section_status">狀態</string>
+    <string name="current_user_code">當前代號</string>
+    <string name="invalid_address_detail">服務地址無效：'%s'</string>
+    <string name="cloud_sync_need_key">請先配對或填寫 SM4 密鑰</string>
     <string name="webhook_cloud_tips">上報自建雲端可用：{\"type\":\"notification\",\"sender\":\"[from]\",\"title\":\"[title]\",\"content\":\"[content]\",\"app_name\":\"{{APP_NAME}}\"}，請求頭示例 X-Clone-Key</string>
     <string name="operating_instruction_new">功能說明：\n透過雲端伺服器備份與還原全部配置。\n\n操作說明：\n1.填入伺服器位址、金鑰與配置代號\n2.點【推送】：備份本機配置到雲端\n3.點【拉取】：從雲端還原配置到本機\n\n注意事項：\n1.配置代號區分不同裝置或用戶\n2.還原後各項配置將被完全覆蓋</string>
 </resources>

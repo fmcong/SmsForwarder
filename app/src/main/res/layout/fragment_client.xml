@@ -174,32 +174,6 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/layout_pairing_code"
-                style="@style/BarStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:ignore="RtlSymmetry">
-
-                <TextView
-                    android:id="@+id/tv_pairing_code"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/pairing_code"
-                    android:textStyle="bold" />
-
-                <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
-                    android:id="@+id/et_pairing_code"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:layout_weight="1"
-                    android:hint="@string/pairing_code_tips"
-                    android:singleLine="true"
-                    app:met_passWordButton="true" />
-
-            </LinearLayout>
-
-            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -226,17 +200,6 @@
                     android:minWidth="70dp"
                     android:padding="5dp"
                     android:text="@string/server_test" />
-
-                <com.xuexiang.xui.widget.button.ButtonView
-                    android:id="@+id/btn_pairing"
-                    style="@style/ButtonView.Green"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
-                    android:gravity="center"
-                    android:minWidth="70dp"
-                    android:padding="5dp"
-                    android:text="@string/pairing" />
 
                 <com.xuexiang.xui.widget.button.ButtonView
                     android:id="@+id/btn_wechat_miniprogram"

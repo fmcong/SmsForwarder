@@ -40,7 +40,25 @@ class CloudSyncWorker(context: Context, params: WorkerParameters) : Worker(conte
 
     override fun doWork(): Result {
         try {
-            val responseJson = pullFromServer() ?: return Result.success()
+            //守卫：读值先 trim，避免脏数据导致 checkUrl 误判
+            val serverAddress = HttpServerUtils.serverAddress.trim().trimEnd('/')
+            val clientSignKey = HttpServerUtils.clientSignKey.trim()
+            val clientUserCode = HttpServerUtils.clientUserCode.trim()
+            if (serverAddress.isNullOrEmpty() || !CommonUtils.checkUrl(serverAddress)
+                || clientSignKey.isNullOrEmpty() || clientUserCode.isNullOrEmpty()
+            ) {
+                Log.d(TAG, "配置不齐全，跳过云端同步检查")
+                return Result.success()
+            }
+            if (HttpServerUtils.clientSafetyMeasures == 2) {
+                Log.d(TAG, "RSA 模式不支持自动同步，跳过")
+                return Result.success()
+            }
+
+            //心跳：只记录结果，失败不影响后续拉取
+            sendHeartbeat(serverAddress, clientSignKey, clientUserCode)
+
+            val responseJson = pullFromServer(serverAddress, clientSignKey, clientUserCode) ?: return Result.success()
             applyIfChanged(responseJson)
         } catch (e: Exception) {
             //周期任务下一轮自然会重试，不返回 retry 以免密集重试
@@ -49,22 +67,41 @@ class CloudSyncWorker(context: Context, params: WorkerParameters) : Worker(conte
         return Result.success()
     }
 
-    //拉取云端配置，返回解密后的响应 JSON（守卫不通过或请求失败返回 null）
-    private fun pullFromServer(): String? {
-        val serverAddress = HttpServerUtils.serverAddress
-        val clientSignKey = HttpServerUtils.clientSignKey
-        val clientUserCode = HttpServerUtils.clientUserCode
-        if (serverAddress.isNullOrEmpty() || !CommonUtils.checkUrl(serverAddress)
-            || clientSignKey.isNullOrEmpty() || clientUserCode.isNullOrEmpty()
-        ) {
-            Log.d(TAG, "配置不齐全，跳过云端同步检查")
-            return null
+    //心跳上报：POST {serverAddress}/heartbeat/{userCode}，X-Clone-Key 鉴权；任何失败仅记日志
+    private fun sendHeartbeat(serverAddress: String, clientSignKey: String, clientUserCode: String) {
+        try {
+            val body = Gson().toJson(
+                mapOf(
+                    "device_mark" to SettingUtils.extraDeviceMark,
+                    "version_code" to AppUtils.getAppVersionCode(),
+                )
+            )
+            val connection = URL("$serverAddress/heartbeat/$clientUserCode").openConnection() as HttpURLConnection
+            try {
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                connection.requestMethod = "POST"
+                connection.doOutput = true
+                connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
+                connection.setRequestProperty("X-Clone-Key", clientSignKey)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.outputStream.use { it.write(body.toByteArray()) }
+                val code = connection.responseCode
+                if (code in 200..299) {
+                    Log.d(TAG, "heartbeat: ok ($code)")
+                } else {
+                    Log.w(TAG, "heartbeat: HTTP $code")
+                }
+            } finally {
+                connection.disconnect()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "heartbeat: ${e.message}")
         }
-        if (HttpServerUtils.clientSafetyMeasures == 2) {
-            Log.d(TAG, "RSA 模式不支持自动同步，跳过")
-            return null
-        }
+    }
 
+    //拉取云端配置，返回解密后的响应 JSON（守卫不通过或请求失败返回 null）
+    private fun pullFromServer(serverAddress: String, clientSignKey: String, clientUserCode: String): String? {
         //构造请求体（与 CloneFragment.doPullData 一致）
         val msgMap: MutableMap<String, Any> = mutableMapOf()
         val timestamp = System.currentTimeMillis()

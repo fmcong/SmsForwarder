@@ -1267,6 +1267,16 @@
     <string name="pairing">Pair &amp; Fetch Config</string>
     <string name="pairing_code_required">User code and pairing code are required</string>
     <string name="pairing_succeeded">Paired successfully, config applied</string>
+    <string name="cloud_sync">Cloud Sync</string>
+    <string name="last_sync_time">Last Sync Time</string>
+    <string name="cloud_sync_auto_tips">Auto-checks the cloud config hourly; applies only when content changes</string>
+    <string name="cloud_sync_measures_tips">Switches to SM4 encryption automatically after pairing</string>
+    <string name="sync_section_connection">Connection</string>
+    <string name="sync_section_actions">Actions</string>
+    <string name="sync_section_status">Status</string>
+    <string name="current_user_code">Current User Code</string>
+    <string name="invalid_address_detail">Invalid service address: '%s'</string>
+    <string name="cloud_sync_need_key">Pair first or fill in the SM4 key</string>
     <string name="webhook_cloud_tips">For self-hosted cloud reporting: {\"type\":\"notification\",\"sender\":\"[from]\",\"title\":\"[title]\",\"content\":\"[content]\",\"app_name\":\"{{APP_NAME}}\"}, header example: X-Clone-Key</string>
     <string name="operating_instruction_new">Backup and restore all settings via your cloud server.\n1. Fill in server address, key and user code\n2. Push: upload current settings\n3. Pull: restore settings from cloud</string>
 </resources>

@@ -129,6 +129,15 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
                     .open(this@SettingsFragment)
             }
         })
+        //云端同步中心：配对 / 推送备份 / 拉取恢复
+        titleBar!!.addAction(object : TitleBar.ImageAction(R.drawable.icon_api_clone) {
+            @SingleClick
+            override fun performAction(view: View) {
+                PageOption.to(CloudSyncFragment::class.java)
+                    .setNewActivity(true)
+                    .open(this@SettingsFragment)
+            }
+        })
         return titleBar
     }
 
