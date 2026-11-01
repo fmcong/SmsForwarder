@@ -230,6 +230,105 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         super.onResume()
         //初始化APP下拉列表
         initAppSpinner()
+        //云端同步可能已更新 SP，切回本页时把控件状态重新回显（XPage 复用 fragment，initViews 只跑一次）
+        refreshFromPrefs()
+    }
+
+    //控件 ← SP 全量回显（仅 UI 赋值；监听器保持不动，写回同值无害）
+    @SuppressLint("SetTextI18n", "UseSwitchCompatOrMaterialCode")
+    private fun refreshFromPrefs() {
+        if (!initViewsFinished || binding == null) return
+
+        //转发短信
+        binding!!.sbEnableSms.isChecked = SettingUtils.enableSms
+        //转发通话记录
+        binding!!.sbEnablePhone.isChecked = SettingUtils.enablePhone
+        binding!!.scbCallType1.isChecked = SettingUtils.enableCallType1
+        binding!!.scbCallType2.isChecked = SettingUtils.enableCallType2
+        binding!!.scbCallType3.isChecked = SettingUtils.enableCallType3
+        binding!!.scbCallType4.isChecked = SettingUtils.enableCallType4
+        binding!!.scbCallType5.isChecked = SettingUtils.enableCallType5
+        binding!!.scbCallType6.isChecked = SettingUtils.enableCallType6
+        //转发应用通知
+        binding!!.sbEnableAppNotify.isChecked = SettingUtils.enableAppNotify
+        binding!!.layoutOptionalAction.visibility = if (SettingUtils.enableAppNotify) View.VISIBLE else View.GONE
+        binding!!.scbCancelAppNotify.isChecked = SettingUtils.enableCancelAppNotify
+        binding!!.scbNotUserPresent.isChecked = SettingUtils.enableNotUserPresent
+        //发现蓝牙设备服务
+        binding!!.sbEnableBluetooth.isChecked = SettingUtils.enableBluetooth
+        binding!!.layoutBluetoothSetting.visibility = if (SettingUtils.enableBluetooth) View.VISIBLE else View.GONE
+        binding!!.xsbScanInterval.setDefaultValue((SettingUtils.bluetoothScanInterval / 1000).toInt())
+        binding!!.scbIgnoreAnonymous.isChecked = SettingUtils.bluetoothIgnoreAnonymous
+        //GPS定位功能
+        binding!!.sbEnableLocation.isChecked = SettingUtils.enableLocation
+        binding!!.layoutLocationSetting.visibility = if (SettingUtils.enableLocation) View.VISIBLE else View.GONE
+        binding!!.rgAccuracy.check(
+            when (SettingUtils.locationAccuracy) {
+                Criteria.ACCURACY_FINE -> R.id.rb_accuracy_fine
+                Criteria.ACCURACY_COARSE -> R.id.rb_accuracy_coarse
+                Criteria.NO_REQUIREMENT -> R.id.rb_accuracy_no_requirement
+                else -> R.id.rb_accuracy_fine
+            }
+        )
+        binding!!.rgPowerRequirement.check(
+            when (SettingUtils.locationPowerRequirement) {
+                Criteria.POWER_HIGH -> R.id.rb_power_requirement_high
+                Criteria.POWER_MEDIUM -> R.id.rb_power_requirement_medium
+                Criteria.POWER_LOW -> R.id.rb_power_requirement_low
+                Criteria.NO_REQUIREMENT -> R.id.rb_power_requirement_no_requirement
+                else -> R.id.rb_power_requirement_low
+            }
+        )
+        binding!!.xsbMinInterval.setDefaultValue((SettingUtils.locationMinInterval / 1000).toInt())
+        binding!!.xsbMinDistance.setDefaultValue(SettingUtils.locationMinDistance)
+        binding!!.etAmapWebKey.setText(SettingUtils.amapWebKey)
+        //短信指令
+        binding!!.sbEnableSmsCommand.isChecked = SettingUtils.enableSmsCommand
+        binding!!.etSafePhone.setText(SettingUtils.smsCommandSafePhone)
+        binding!!.etSafePhone.visibility = if (SettingUtils.enableSmsCommand) View.VISIBLE else View.GONE
+        //靠近听筒关屏
+        binding!!.sbEnableCloseToEarpieceTurnOffScreen.isChecked = SettingUtils.enableCloseToEarpieceTurnOffScreen
+        //启动时异步获取已安装App信息
+        binding!!.sbEnableLoadAppList.isChecked = SettingUtils.enableLoadAppList
+        binding!!.scbLoadUserApp.isChecked = SettingUtils.enableLoadUserAppList
+        binding!!.scbLoadSystemApp.isChecked = SettingUtils.enableLoadSystemAppList
+        //自动消除额外APP通知 / 通知关键词黑名单
+        binding!!.etAppList.setText(SettingUtils.cancelExtraAppNotify)
+        binding!!.etAppNotifyBlacklist.setText(SettingUtils.appNotifyBlacklist)
+        //自动过滤重复消息 / 免打扰
+        binding!!.xsbDuplicateMessagesLimits.setDefaultValue(SettingUtils.duplicateMessagesLimits)
+        binding!!.tvSilentPeriod.text = mTimeOption[SettingUtils.silentPeriodStart] + " ~ " + mTimeOption[SettingUtils.silentPeriodEnd]
+        binding!!.scbSilentPeriodLogs.isChecked = SettingUtils.enableSilentPeriodLogs
+        //不在最近任务列表中显示
+        binding!!.sbExcludeFromRecents.isChecked = SettingUtils.enableExcludeFromRecents
+        //Cactus增强保活措施
+        binding!!.sbEnableCactus.isChecked = SettingUtils.enableCactus
+        binding!!.layoutCactusOptional.visibility = if (SettingUtils.enableCactus) View.VISIBLE else View.GONE
+        binding!!.scbPlaySilenceMusic.isChecked = SettingUtils.enablePlaySilenceMusic
+        binding!!.scbOnePixelActivity.isChecked = SettingUtils.enableOnePixelActivity
+        binding!!.layoutMusicInterval.visibility = if (SettingUtils.enableCactus && SettingUtils.enablePlaySilenceMusic) View.VISIBLE else View.GONE
+        binding!!.xsbMusicInterval.setDefaultValue(SettingUtils.musicInterval)
+        //接口请求重试/延时/超时
+        binding!!.xsbRetryTimes.setDefaultValue(SettingUtils.requestRetryTimes)
+        binding!!.xsbDelayTime.setDefaultValue(SettingUtils.requestDelayTime)
+        binding!!.xsbTimeout.setDefaultValue(SettingUtils.requestTimeout)
+        //设备备注 / SIM1/SIM2 主键与备注
+        binding!!.etExtraDeviceMark.setText(SettingUtils.extraDeviceMark)
+        binding!!.etSubidSim1.setText("${SettingUtils.subidSim1}")
+        binding!!.etExtraSim1.setText(SettingUtils.extraSim1)
+        if (binding!!.layoutSim2.visibility == View.VISIBLE) {
+            binding!!.etSubidSim2.setText("${SettingUtils.subidSim2}")
+            binding!!.etExtraSim2.setText(SettingUtils.extraSim2)
+        }
+        //通知内容 / 自定义模板
+        binding!!.etNotifyContent.setText(SettingUtils.notifyContent)
+        binding!!.sbSmsTemplate.isChecked = SettingUtils.enableSmsTemplate
+        binding!!.layoutSmsTemplate.visibility = if (SettingUtils.enableSmsTemplate) View.VISIBLE else View.GONE
+        binding!!.etSmsTemplate.setText(SettingUtils.smsTemplate)
+        //纯客户端 / 纯任务 / 调试模式（多语言 RadioGroup 走 MultiLanguages 而非 SP，不在回显范围）
+        binding!!.sbDirectlyToClient.isChecked = SettingUtils.enablePureClientMode
+        binding!!.sbDirectlyToTask.isChecked = SettingUtils.enablePureTaskMode
+        binding!!.sbDebugMode.isChecked = SettingUtils.enableDebugMode
     }
 
     override fun initListeners() {
