@@ -47,16 +47,22 @@ data class MsgInfo(
     }
 
     fun getContentForSend(ruleSmsTemplate: String = "", regexReplace: String = "", ruleTitle: String = ""): String {
-        var customSmsTemplate: String = getString(R.string.tag_from).toString() + "\n" +
-                getString(R.string.tag_sms) + "\n" +
-                getString(R.string.tag_card_slot) + "\n" +
-                when (type) {
-                    "sms", "call" -> "SubId：${getString(R.string.tag_card_subid)}\n"
-                    "app" -> "UID：${getString(R.string.tag_uid)}\n"
-                    else -> ""
-                } +
-                getString(R.string.tag_receive_time) + "\n" +
-                getString(R.string.tag_device_name)
+        //默认模板（按消息类型区分）
+        var customSmsTemplate: String = when (type) {
+            "app" -> "🔔 ${getString(R.string.tag_title)}（${getString(R.string.tag_app_name)}）\n" +
+                    "${getString(R.string.tag_msg)}\n" +
+                    "⏰ ${getString(R.string.tag_receive_time)}"
+
+            "call" -> "📞 ${getString(R.string.tag_call_type)} 【${getString(R.string.tag_from)}】\n" +
+                    "${getString(R.string.tag_contact_name)} ${getString(R.string.tag_phone_area)}\n" +
+                    "⏰ ${getString(R.string.tag_receive_time)}"
+
+            else -> "📩 短信 【${getString(R.string.tag_from)}】\n" +
+                    getString(R.string.tag_sms) + "\n" +
+                    "⏰ ${getString(R.string.tag_receive_time)}\n" +
+                    "📶 ${getString(R.string.tag_card_slot)}\n" +
+                    "🔋 ${getString(R.string.tag_battery_pct)}%"
+        }
 
         //优先取转发规则的自定义模板，留空则取全局设置
         if (ruleSmsTemplate.isNotEmpty()) {

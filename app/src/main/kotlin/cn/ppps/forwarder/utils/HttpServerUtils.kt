@@ -75,6 +75,9 @@ class HttpServerUtils private constructor() {
         //云端同步的配置代号（区分不同设备/用户，如 15001）
         var clientUserCode: String by SharedPreference(SP_CLIENT_USER_CODE, "")
 
+        //配对码（用于 /pair/apply 换取 SM4 密钥与配置）
+        var pairingCode: String by SharedPreference(SP_CLIENT_PAIRING_CODE, "")
+
         //服务端安全设置
         var clientSafetyMeasures: Int by SharedPreference(SP_CLIENT_SAFETY_MEASURES, if (TextUtils.isEmpty(clientSignKey)) 0 else 1)
 

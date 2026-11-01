@@ -1263,5 +1263,11 @@
     <string name="auto_start_redmi"><![CDATA[红米手机：授权管理 -> 自启动管理 -> 允许应用自启动]]></string>
     <string name="user_code">配置代号</string>
     <string name="user_code_tips">如 15001，用于区分不同设备或用户</string>
+    <string name="pairing_code">配对码</string>
+    <string name="pairing_code_tips">用于向服务端换取密钥与配置</string>
+    <string name="pairing">配对并获取配置</string>
+    <string name="pairing_code_required">配置代号和配对码不能为空</string>
+    <string name="pairing_succeeded">配对成功，配置已应用</string>
+    <string name="webhook_cloud_tips">上报自建云端可用：{\"type\":\"notification\",\"sender\":\"[from]\",\"title\":\"[title]\",\"content\":\"[content]\",\"app_name\":\"{{APP_NAME}}\"}，请求头示例 X-Clone-Key</string>
     <string name="operating_instruction_new">功能说明：\n通过云端服务器备份与恢复全部配置（通用设置、发送通道、转发规则、FRP、自动任务）。\n\n操作说明：\n1.在下方填入服务器地址、密钥（与云端一致）和配置代号\n2.点【推送】：将本机当前全部配置备份到云端\n3.点【拉取】：从云端恢复配置到本机（完全覆盖）\n\n注意事项：\n1.配置代号区分不同设备或用户，同一代号共享同一份配置\n2.恢复后发送通道、转发规则、FRP 等将被完全覆盖\n3.设备名称、SIM 卡信息等本机属性不会被覆盖\n4.恢复完成后请到系统设置检查各权限</string>
 </resources>

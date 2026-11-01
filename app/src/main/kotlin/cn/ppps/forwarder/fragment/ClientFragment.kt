@@ -7,12 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioGroup
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.R
 import cn.ppps.forwarder.adapter.WidgetItemAdapter
 import cn.ppps.forwarder.core.BaseFragment
 import cn.ppps.forwarder.databinding.FragmentClientBinding
+import cn.ppps.forwarder.entity.CloneInfo
 import cn.ppps.forwarder.server.model.BaseResponse
 import cn.ppps.forwarder.server.model.ConfigData
 import cn.ppps.forwarder.utils.Base64
@@ -43,6 +47,7 @@ import com.xuexiang.xui.widget.dialog.materialdialog.MaterialDialog
 import com.xuexiang.xutil.XUtil
 import com.xuexiang.xutil.data.ConvertTools
 import com.xuexiang.xutil.resource.ResUtils.getColors
+import java.util.Date
 
 @Suppress("PrivatePropertyName", "DEPRECATION")
 @Page(name = "主动控制·客户端")
@@ -53,6 +58,7 @@ class ClientFragment : BaseFragment<FragmentClientBinding?>(), View.OnClickListe
     private var serverConfig: ConfigData? = null
     private var serverHistory: MutableMap<String, String> = mutableMapOf()
     private var mCountDownHelper: CountDownButtonHelper? = null
+    private var mPairingCountDownHelper: CountDownButtonHelper? = null
     private var CLIENT_FRAGMENT_LIST = listOf(
         PageInfo(
             getString(R.string.api_clone), "cn.ppps.forwarder.fragment.client.CloneFragment", "{\"\":\"\"}", CoreAnim.slide, R.drawable.icon_api_clone
@@ -95,6 +101,18 @@ class ClientFragment : BaseFragment<FragmentClientBinding?>(), View.OnClickListe
 
             override fun onFinished() {
                 binding!!.btnServerTest.text = getString(R.string.server_test)
+            }
+        })
+
+        //配对按钮增加倒计时，避免重复点击
+        mPairingCountDownHelper = CountDownButtonHelper(binding!!.btnPairing, SettingUtils.requestTimeout)
+        mPairingCountDownHelper!!.setOnCountDownListener(object : CountDownButtonHelper.OnCountDownListener {
+            override fun onCountDown(time: Int) {
+                binding!!.btnPairing.text = String.format(getString(R.string.seconds_n), time)
+            }
+
+            override fun onFinished() {
+                binding!!.btnPairing.text = getString(R.string.pairing)
             }
         })
 
@@ -225,9 +243,19 @@ class ClientFragment : BaseFragment<FragmentClientBinding?>(), View.OnClickListe
             }
         })
 
+        binding!!.etPairingCode.setText(HttpServerUtils.pairingCode)
+        binding!!.etPairingCode.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable) {
+                HttpServerUtils.pairingCode = binding!!.etPairingCode.text.toString().trim()
+            }
+        })
+
         binding!!.btnWechatMiniprogram.setOnClickListener(this)
         binding!!.btnServerHistory.setOnClickListener(this)
         binding!!.btnServerTest.setOnClickListener(this)
+        binding!!.btnPairing.setOnClickListener(this)
     }
 
     @SingleClick
@@ -305,6 +333,8 @@ class ClientFragment : BaseFragment<FragmentClientBinding?>(), View.OnClickListe
                 queryConfig(true)
             }
 
+            R.id.btn_pairing -> doPairing()
+
             else -> {}
         }
     }
@@ -330,6 +360,94 @@ class ClientFragment : BaseFragment<FragmentClientBinding?>(), View.OnClickListe
             Log.e(TAG, "onItemClick error: ${e.message}")
             XToastUtils.error(e.message.toString())
         }
+    }
+
+    //配对：用「配置代号 + 配对码」向服务端换取 SM4 密钥与全量配置（POST /pair/apply，明文 JSON，由 HTTPS 保护）
+    private fun doPairing() {
+        if (!CommonUtils.checkUrl(HttpServerUtils.serverAddress)) {
+            XToastUtils.error(getString(R.string.invalid_service_address))
+            return
+        }
+        if (TextUtils.isEmpty(HttpServerUtils.clientUserCode) || TextUtils.isEmpty(HttpServerUtils.pairingCode)) {
+            XToastUtils.error(getString(R.string.pairing_code_required))
+            return
+        }
+
+        mPairingCountDownHelper?.start()
+
+        val requestUrl: String = HttpServerUtils.serverAddress + "/pair/apply"
+        Log.i(TAG, "requestUrl:$requestUrl")
+
+        val bodyMap: MutableMap<String, Any> = mutableMapOf()
+        bodyMap["code"] = HttpServerUtils.clientUserCode
+        bodyMap["access_code"] = HttpServerUtils.pairingCode
+        bodyMap["device_mark"] = SettingUtils.extraDeviceMark
+
+        XHttp.post(requestUrl).keepJson(true).timeStamp(true)
+            .headers("User-Agent", "SmsForwarder-Clone/1.0")
+            .upJson(Gson().toJson(bodyMap))
+            .execute(object : SimpleCallBack<String>() {
+                override fun onError(e: ApiException) {
+                    XToastUtils.error(e.displayMessage)
+                    mPairingCountDownHelper?.finish()
+                }
+
+                override fun onSuccess(response: String) {
+                    Log.i(TAG, response)
+                    try {
+                        val resp = Gson().fromJson(response, JsonObject::class.java)
+                        val code = resp?.get("code")?.asInt ?: -1
+                        val msg = resp?.get("msg")?.asString ?: ""
+                        if (code != 200) {
+                            XToastUtils.error(getString(R.string.request_failed) + msg)
+                            return
+                        }
+                        val data = resp?.getAsJsonObject("data")
+                        val sm4Key = data?.get("sm4_key")?.asString ?: ""
+                        val configElement = data?.get("config")
+                        if (TextUtils.isEmpty(sm4Key) || configElement == null) {
+                            XToastUtils.error(getString(R.string.request_failed) + msg)
+                            return
+                        }
+
+                        //解析 CloneInfo（Date 字段替换为当前时间，与 CloneFragment 一致）
+                        val builder = GsonBuilder()
+                        builder.registerTypeAdapter(Date::class.java, JsonDeserializer<Any?> { _, _, _ -> Date() })
+                        val cloneInfo = builder.create().fromJson(configElement, CloneInfo::class.java)
+                        if (cloneInfo == null) {
+                            XToastUtils.error(getString(R.string.request_failed) + msg)
+                            return
+                        }
+
+                        //判断版本是否一致（不兼容会抛异常，走 catch 分支）
+                        HttpServerUtils.compareVersion(cloneInfo)
+
+                        //restoreSettings 会清空全部 SP，应用后重新写入配对凭证，避免本地信息被云端配置覆盖
+                        val serverAddress = HttpServerUtils.serverAddress
+                        val userCode = HttpServerUtils.clientUserCode
+                        val pairingCode = HttpServerUtils.pairingCode
+                        HttpServerUtils.restoreSettings(cloneInfo)
+                        HttpServerUtils.clientSignKey = sm4Key
+                        HttpServerUtils.clientSafetyMeasures = 3
+                        HttpServerUtils.serverAddress = serverAddress
+                        HttpServerUtils.clientUserCode = userCode
+                        HttpServerUtils.pairingCode = pairingCode
+
+                        //刷新界面回显
+                        binding!!.etSignKey.setText(sm4Key)
+                        binding!!.tvSignKey.text = getString(R.string.sm4_key)
+                        binding!!.rgSafetyMeasures.check(R.id.rb_safety_measures_sm4)
+                        binding!!.etUserCode.setText(HttpServerUtils.clientUserCode)
+
+                        XToastUtils.success(getString(R.string.pairing_succeeded))
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Log.e(TAG, "doPairing error: ${e.message}")
+                        XToastUtils.error(getString(R.string.request_failed) + e.message)
+                    }
+                    mPairingCountDownHelper?.finish()
+                }
+            })
     }
 
     private fun queryConfig(needToast: Boolean) {
@@ -448,6 +566,7 @@ class ClientFragment : BaseFragment<FragmentClientBinding?>(), View.OnClickListe
 
     override fun onDestroyView() {
         if (mCountDownHelper != null) mCountDownHelper!!.recycle()
+        if (mPairingCountDownHelper != null) mPairingCountDownHelper!!.recycle()
         super.onDestroyView()
     }
 
