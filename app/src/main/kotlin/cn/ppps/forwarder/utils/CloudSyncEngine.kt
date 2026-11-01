@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
+import com.xuexiang.xutil.data.ConvertTools
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
