@@ -183,17 +183,16 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
         mMenuIcons = ResUtils.getDrawableArray(this, R.array.menu_icons)
     }
 
-    //回前台触发云端同步检查（engine 内部有单飞锁与哈希比对，频繁触发无副作用）
-    //60s 前台轮询已上移到 App 的 ActivityLifecycleCallbacks（任意页面在前台都轮询）
+    //回前台触发云端同步检查（只拉不推；60s 前台轮询在 App 的 ActivityLifecycleCallbacks 中）
     override fun onResume() {
         super.onResume()
-        Thread { CloudSyncEngine.syncNow(this) }.start()
+        Thread { CloudSyncEngine.syncIfRemoteChanged() }.start()
     }
 
-    //离前台触发推送检查（本地配置有变化才推送）
+    //离前台再检查一次云端是否更新（只拉不推；推送改为后台「读取配置」need_push 触发）
     override fun onPause() {
         super.onPause()
-        Thread { CloudSyncEngine.syncNow(this) }.start()
+        Thread { CloudSyncEngine.syncIfRemoteChanged() }.start()
     }
 
     //按返回键不退出回到桌面

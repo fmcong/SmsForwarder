@@ -225,7 +225,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
             WorkManager.getInstance(this).enqueueUniquePeriodicWork("cloud_sync", ExistingPeriodicWorkPolicy.KEEP, cloudSyncRequest)
 
             //启动即触发一次云端同步检查（后台线程静默执行，engine 内部有单飞锁防并发）
-            Thread { CloudSyncEngine.syncNow(this) }.start()
+            Thread { CloudSyncEngine.syncIfRemoteChanged() }.start()
 
             //同步轮询挂 Application 生命周期：任意页面（云端同步/关于/Logcat 等独立 Activity）在前台都轮询，
             //全部页面不可见才停（省电）；进入前台立即校准一次再按 60s 周期

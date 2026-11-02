@@ -14,6 +14,7 @@ import cn.ppps.forwarder.R
 import cn.ppps.forwarder.core.BaseFragment
 import cn.ppps.forwarder.databinding.FragmentCloudSyncBinding
 import cn.ppps.forwarder.entity.CloneInfo
+import cn.ppps.forwarder.entity.LocationInfo
 import cn.ppps.forwarder.entity.MsgInfo
 import cn.ppps.forwarder.utils.CloudSyncEngine
 import cn.ppps.forwarder.utils.CommonUtils
@@ -34,7 +35,9 @@ import com.xuexiang.xui.widget.actionbar.TitleBar
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 //云端同步中心：申请访问（/pair/apply 换取 SM4 密钥与配置）
 //推送/拉取已全自动：CloudSyncEngine 双向同步（约 30 分钟周期或切换前后台触发）
@@ -203,24 +206,21 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
                         //判断版本是否一致（不兼容会抛异常，走 catch 分支）
                         HttpServerUtils.compareVersion(cloneInfo)
 
-                        //restoreSettings 会清空全部 SP，应用后重新写入配对凭证，避免本地信息被云端配置覆盖；
-                        //拉取应用期间的 SP 写入不触发状态上报（engine 的 suppressPushDuring 防回环）
-                        CloudSyncEngine.suppressPushDuring {
-                            //服务器下发的 settings 可能是纯 JSON，先转换格式并并入本地凭证，再 restore（阶段13 根因修复）
-                            CloudSyncEngine.sanitizeSettingsForRestore(cloneInfo)
+                        //restoreSettings 会清空全部 SP，应用后重新写入配对凭证，避免本地信息被云端配置覆盖
+                        //服务器下发的 settings 可能是纯 JSON，先转换格式并并入本地凭证，再 restore（阶段13 根因修复）
+                        CloudSyncEngine.sanitizeSettingsForRestore(cloneInfo)
 
-                            val userCode = HttpServerUtils.clientUserCode
-                            val pairingCode = HttpServerUtils.pairingCode
-                            HttpServerUtils.restoreSettings(cloneInfo)
-                            HttpServerUtils.clientSignKey = sm4Key
-                            HttpServerUtils.clientSafetyMeasures = 3
-                            HttpServerUtils.serverAddress = address
-                            HttpServerUtils.clientUserCode = userCode
-                            HttpServerUtils.pairingCode = pairingCode
+                        val userCode = HttpServerUtils.clientUserCode
+                        val pairingCode = HttpServerUtils.pairingCode
+                        HttpServerUtils.restoreSettings(cloneInfo)
+                        HttpServerUtils.clientSignKey = sm4Key
+                        HttpServerUtils.clientSafetyMeasures = 3
+                        HttpServerUtils.serverAddress = address
+                        HttpServerUtils.clientUserCode = userCode
+                        HttpServerUtils.pairingCode = pairingCode
 
-                            //记录同步标记（远端已应用 + 推送基准），避免引擎下一轮重复应用/回推
-                            CloudSyncEngine.recordApplied(sha256(configElement.toString()))
-                        }
+                        //记录同步标记（远端已应用 + 推送基准），避免引擎下一轮重复应用/回推
+                        CloudSyncEngine.recordApplied(sha256(configElement.toString()))
 
                         //配对成功自检：三套模板各渲染一条样例上报云端后台（失败仅 Log，不阻断配对）
                         sendSelfCheckReports(address, sm4Key, HttpServerUtils.clientUserCode)
@@ -249,31 +249,49 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
     private fun sendSelfCheckReports(serverAddress: String, clientSignKey: String, userCode: String) {
         Thread {
             try {
-                val now = Date()
-                //样例 MsgInfo（真实字段结构：app 类型 from=应用名、simInfo=通知标题；call 类型 callType=3 未接来电）
-                val reports = listOf(
-                    SelfCheckReport(
-                        "selfcheck_sms", "自检", "模板自检·短信", "系统通知组件",
-                        MsgInfo(type = "sms", from = "10086", content = "【中国移动】您本月话费 88.88 元，当前余额充足。", date = now, simInfo = "卡槽1", simSlot = 0, subId = 1)
-                    ),
-                    SelfCheckReport(
-                        "selfcheck_notification", "微信", "模板自检·通知", "微信",
-                        MsgInfo(type = "app", from = "微信", content = "张三：晚上一起吃饭吗？", date = now, simInfo = "张三", uid = 10001)
-                    ),
-                    SelfCheckReport(
-                        "selfcheck_call", "10086", "模板自检·通话", "系统电话",
-                        MsgInfo(type = "call", from = "10086", content = "通话时长 1 分 23 秒", date = now, simInfo = "卡槽1", simSlot = 0, callType = 3)
-                    ),
+                //注入样例定位（深圳福田），渲染完成后恢复原缓存，证明定位变量链路可用
+                val originalLocation = HttpServerUtils.apiLocationCache
+                HttpServerUtils.apiLocationCache = LocationInfo(
+                    longitude = 114.057868,
+                    latitude = 22.543099,
+                    address = "广东省深圳市福田区莲花街道福中三路1182号",
+                    time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()),
+                    provider = "selfcheck",
                 )
-                for (report in reports) {
-                    val bodyMap: Map<String, String> = mapOf(
-                        "type" to report.type,
-                        "sender" to report.sender,
-                        "title" to report.title,
-                        "content" to report.msg.getContentForSend(),
-                        "app_name" to report.appName,
+                try {
+                    val now = Date()
+                    //样例 MsgInfo（真实字段结构：app 类型 from=应用名、simInfo=通知标题；call 类型 callType=3 未接来电）
+                    val reports = listOf(
+                        SelfCheckReport(
+                            "selfcheck_sms", "自检", "模板自检·短信", "系统通知组件",
+                            MsgInfo(type = "sms", from = "10086", content = "【中国移动】您本月话费 88.88 元，当前余额充足。", date = now, simInfo = "卡槽1", simSlot = 0, subId = 1)
+                        ),
+                        SelfCheckReport(
+                            "selfcheck_notification", "微信", "模板自检·通知", "微信",
+                            MsgInfo(type = "app", from = "微信", content = "张三：晚上一起吃饭吗？", date = now, simInfo = "张三", uid = 10001)
+                        ),
+                        SelfCheckReport(
+                            "selfcheck_call", "10086", "模板自检·通话", "系统电话",
+                            MsgInfo(type = "call", from = "10086", content = "通话时长 1 分 23 秒", date = now, simInfo = "卡槽1", simSlot = 0, callType = 3)
+                        ),
                     )
-                    postReport(serverAddress, clientSignKey, userCode, Gson().toJson(bodyMap))
+                    //定位段落用真实模板机制自然渲染（{{LOCATION_ADDRESS}}/{{LOCATION_LONGITUDE}}/{{LOCATION_LATITUDE}}/{{LOCATION_MAP_LINK}}）
+                    val locationTemplate = "📍 ${getString(R.string.tag_location_address)} (${getString(R.string.tag_location_longitude)},${getString(R.string.tag_location_latitude)})\n" +
+                            "🗺️ ${getString(R.string.tag_location_map_link)}"
+                    val locationRendered = reports.first().msg.replaceTemplate(locationTemplate)
+                    for (report in reports) {
+                        val bodyMap: Map<String, String> = mapOf(
+                            "type" to report.type,
+                            "sender" to report.sender,
+                            "title" to report.title,
+                            //样例模板渲染结果 + 定位段落（模板未含定位变量时也追加，确保证明定位链路可用）
+                            "content" to (report.msg.getContentForSend() + "\n" + locationRendered),
+                            "app_name" to report.appName,
+                        )
+                        postReport(serverAddress, clientSignKey, userCode, Gson().toJson(bodyMap))
+                    }
+                } finally {
+                    HttpServerUtils.apiLocationCache = originalLocation
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "sendSelfCheckReports: ${e.message}")

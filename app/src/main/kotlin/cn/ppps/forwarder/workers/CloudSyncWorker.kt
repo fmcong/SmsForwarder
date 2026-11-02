@@ -19,7 +19,7 @@ import cn.ppps.forwarder.utils.SettingUtils
 import java.net.HttpURLConnection
 import java.net.URL
 
-//云端同步周期任务：心跳上报 + 调用 CloudSyncEngine 双向同步（拉取/推送/变更检测逻辑全部在 engine）
+//云端同步周期任务：心跳上报 + CloudSyncEngine 轻量检查（有更新才拉取应用；推送仅由后台 need_push 触发）
 @Suppress("DEPRECATION")
 class CloudSyncWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
 
@@ -46,7 +46,7 @@ class CloudSyncWorker(context: Context, params: WorkerParameters) : Worker(conte
             sendHeartbeat(serverAddress, clientSignKey, clientUserCode)
 
             //双向同步：拉取比对应用 + 导出比对推送（CloudSyncEngine 内部静默失败）
-            CloudSyncEngine.syncNow(applicationContext)
+            CloudSyncEngine.syncIfRemoteChanged()
         } catch (e: Exception) {
             //周期任务下一轮自然会重试，不返回 retry 以免密集重试
             Log.w(TAG, "doWork: ${e.message}")

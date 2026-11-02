@@ -23,9 +23,9 @@ import java.util.Locale
 import java.util.TreeMap
 import java.util.concurrent.atomic.AtomicBoolean
 
-//自动双向同步引擎：
-//①拉取：/clone/pull → 响应 data 子树 SHA-256 与 last_applied_hash 比对，有变化才 restoreSettings
-//②推送：exportSettings() 序列化哈希与 last_pushed_hash 比对，有变化才 /clone/push
+//自动双向同步引擎（手动推送模式）：
+//①拉取：/clone/check 发现 updated_ts 变化 → /clone/pull → 应用（后台「下发配置」自动生效）
+//②推送：仅当 check 返回 need_push=true（后台点「读取配置」）→ 强制 /clone/push 一次
 //全程静默失败（同步失败不影响 App 使用）；同步执行，调用方须在后台线程调用（内部有单飞锁防并发）
 @Suppress("PrivatePropertyName", "DEPRECATION")
 object CloudSyncEngine {
@@ -34,53 +34,8 @@ object CloudSyncEngine {
 
     private val syncing = AtomicBoolean(false)
 
-    //拉取应用（restoreSettings/importPreference）期间的 SP 写入抑制标志，防「拉取→触发推送→又拉取」回环
-    private val pushSuppressed = AtomicBoolean(false)
-
-    fun isPushSuppressed(): Boolean = pushSuppressed.get()
-
-    //在 block 内产生的 SP 写入不触发状态上报调度（拉取应用/配对应用路径使用）
-    fun <R> suppressPushDuring(block: () -> R): R {
-        pushSuppressed.set(true)
-        try {
-            return block()
-        } finally {
-            pushSuppressed.set(false)
-        }
-    }
-
-    //状态上报：SP 写入钩子经 10s 防抖调度到此，再 2s 二次防抖合并并发调度；
-    //pushIfChanged 内部哈希比对（last_pushed_hash）保证内容没变绝不真推
-    fun pushSoon() {
-        pushHandler.postDelayed({
-            Thread {
-                try {
-                    val serverAddress = HttpServerUtils.serverAddress.trim().trimEnd('/')
-                    val clientSignKey = HttpServerUtils.clientSignKey.trim()
-                    val clientUserCode = HttpServerUtils.clientUserCode.trim()
-                    if (serverAddress.isNullOrEmpty() || !CommonUtils.checkUrl(serverAddress)
-                        || clientSignKey.isNullOrEmpty() || clientUserCode.isNullOrEmpty()
-                        || HttpServerUtils.clientSafetyMeasures == 2
-                    ) {
-                        return@Thread
-                    }
-                    if (!syncing.compareAndSet(false, true)) {
-                        Log.d(TAG, "pushSoon: 同步进行中，跳过")
-                        return@Thread
-                    }
-                    try {
-                        pushIfChanged(serverAddress, clientSignKey, clientUserCode)
-                    } finally {
-                        syncing.set(false)
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "pushSoon: ${e.message}")
-                }
-            }.start()
-        }, 2_000)
-    }
-
-    private val pushHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    //check 结果：无动作 / 云端有更新需拉取应用 / 后台请求回传当前配置
+    enum class CheckResult { NONE, CHANGED, NEED_PUSH }
 
     private var lastAppliedHash: String by SharedPreference(SP_LAST_CLOUD_SYNC_HASH, "")
     private var lastPushedHash: String by SharedPreference(SP_LAST_PUSHED_HASH, "")
@@ -91,7 +46,7 @@ object CloudSyncEngine {
     @Volatile
     private var pendingStoreTs: String = ""
 
-    //轻量检查 + 有变化才应用：App 在前台时每 60s 调一次（只取 store 时间戳，几十字节；后台靠 Worker 30 分钟兜底）
+    //轻量检查 + 按需动作：App 在前台时每 60s 调一次（只取 store 时间戳，几十字节；后台靠 Worker 30 分钟兜底）
     fun syncIfRemoteChanged() {
         if (!syncing.compareAndSet(false, true)) {
             Log.d(TAG, "syncIfRemoteChanged: 上一轮同步尚未结束，跳过")
@@ -108,12 +63,20 @@ object CloudSyncEngine {
                 return
             }
 
-            if (!checkForUpdates(serverAddress, clientSignKey, clientUserCode)) {
-                Log.d(TAG, "云端 store 未变化，跳过拉取")
-                return
-            }
-            if (pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
-                lastStoreTs = pendingStoreTs
+            when (checkForUpdates(serverAddress, clientSignKey, clientUserCode)) {
+                CheckResult.NONE -> Log.d(TAG, "云端 store 未变化，跳过")
+
+                CheckResult.CHANGED -> {
+                    if (pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
+                        lastStoreTs = pendingStoreTs
+                    }
+                }
+
+                CheckResult.NEED_PUSH -> {
+                    //后台「读取配置」：强制推一次当前配置（绕过哈希观察），成功后服务端自动清 flag
+                    Log.i(TAG, "服务端请求回传配置（need_push）")
+                    pushIfChanged(serverAddress, clientSignKey, clientUserCode, force = true)
+                }
             }
         } catch (e: Exception) {
             Log.w(TAG, "syncIfRemoteChanged: ${e.message}")
@@ -122,8 +85,8 @@ object CloudSyncEngine {
         }
     }
 
-    //GET /clone/check?uc=xxx（X-Clone-Key 鉴权，User-Agent 显式）→ updated_ts 与本地记录比对
-    private fun checkForUpdates(serverAddress: String, clientSignKey: String, clientUserCode: String): Boolean {
+    //GET /clone/check?uc=xxx（X-Clone-Key 鉴权，User-Agent 显式）→ 解析 need_push / updated_ts
+    private fun checkForUpdates(serverAddress: String, clientSignKey: String, clientUserCode: String): CheckResult {
         val connection = URL("$serverAddress/clone/check?uc=$clientUserCode").openConnection() as HttpURLConnection
         try {
             connection.connectTimeout = 10_000
@@ -134,57 +97,24 @@ object CloudSyncEngine {
             val code = connection.responseCode
             if (code !in 200..299) {
                 Log.w(TAG, "checkForUpdates: HTTP $code")
-                return false
+                return CheckResult.NONE
             }
             val body = connection.inputStream.bufferedReader().use { it.readText() }
-            val root = Gson().fromJson(body, JsonObject::class.java) ?: return false
-            if (root.get("code")?.asInt != 200) return false
-            val data = root.getAsJsonObject("data") ?: return false
-            if (data.get("exists")?.asBoolean == false) return false
-            val ts = data.get("updated_ts")?.asString ?: return false
-            if (ts.isEmpty()) return false
+            val root = Gson().fromJson(body, JsonObject::class.java) ?: return CheckResult.NONE
+            if (root.get("code")?.asInt != 200) return CheckResult.NONE
+            val data = root.getAsJsonObject("data") ?: return CheckResult.NONE
+            if (data.get("exists")?.asBoolean == false) return CheckResult.NONE
+            val ts = data.get("updated_ts")?.asString ?: return CheckResult.NONE
+            if (ts.isEmpty()) return CheckResult.NONE
             pendingStoreTs = ts
-            return ts != lastStoreTs
+            //后台点「读取配置」：优先响应强制回传（不受 ts 比对影响）
+            if (data.get("need_push")?.asBoolean == true) return CheckResult.NEED_PUSH
+            return if (ts != lastStoreTs) CheckResult.CHANGED else CheckResult.NONE
         } catch (e: Exception) {
             Log.w(TAG, "checkForUpdates: ${e.message}")
-            return false
+            return CheckResult.NONE
         } finally {
             connection.disconnect()
-        }
-    }
-
-    //同步执行一次双向同步（拉取比对应用 + 导出比对推送）
-    @Suppress("UNUSED_PARAMETER")
-    fun syncNow(context: android.content.Context?) {
-        if (!syncing.compareAndSet(false, true)) {
-            Log.d(TAG, "syncNow: 上一轮同步尚未结束，跳过")
-            return
-        }
-        try {
-            //守卫：读值先 trim，避免脏数据导致 checkUrl 误判
-            val serverAddress = HttpServerUtils.serverAddress.trim().trimEnd('/')
-            val clientSignKey = HttpServerUtils.clientSignKey.trim()
-            val clientUserCode = HttpServerUtils.clientUserCode.trim()
-            if (serverAddress.isNullOrEmpty() || !CommonUtils.checkUrl(serverAddress)
-                || clientSignKey.isNullOrEmpty() || clientUserCode.isNullOrEmpty()
-            ) {
-                Log.d(TAG, "配置不齐全，跳过云端同步")
-                return
-            }
-            if (HttpServerUtils.clientSafetyMeasures == 2) {
-                Log.d(TAG, "RSA 模式不支持自动同步，跳过")
-                return
-            }
-
-            //①拉取比对应用
-            pullAndApply(serverAddress, clientSignKey, clientUserCode)
-
-            //②导出比对推送
-            pushIfChanged(serverAddress, clientSignKey, clientUserCode)
-        } catch (e: Exception) {
-            Log.w(TAG, "syncNow: ${e.message}")
-        } finally {
-            syncing.set(false)
         }
     }
 
@@ -213,27 +143,24 @@ object CloudSyncEngine {
         //判断版本是否一致（版本不兼容会抛异常，由调用方捕获，不更新哈希）
         HttpServerUtils.compareVersion(cloneInfo)
 
-        //拉取应用期间产生的 SP 写入不触发状态上报（防「拉取→推送→又拉取」回环）
-        suppressPushDuring {
-            sanitizeSettingsForRestore(cloneInfo)
+        sanitizeSettingsForRestore(cloneInfo)
 
-            if (HttpServerUtils.restoreSettings(cloneInfo)) {
-                //restoreSettings 会清空全部 SP，应用后重新写入本地凭证与同步标记
-                HttpServerUtils.serverAddress = serverAddress
-                HttpServerUtils.clientUserCode = clientUserCode
-                HttpServerUtils.clientSignKey = clientSignKey
-                recordApplied(remoteHash)
-                Log.i(TAG, "云端配置已应用: $lastCloudSyncTime")
-            }
+        if (HttpServerUtils.restoreSettings(cloneInfo)) {
+            //restoreSettings 会清空全部 SP，应用后重新写入本地凭证与同步标记
+            HttpServerUtils.serverAddress = serverAddress
+            HttpServerUtils.clientUserCode = clientUserCode
+            HttpServerUtils.clientSignKey = clientSignKey
+            recordApplied(remoteHash)
+            Log.i(TAG, "云端配置已应用: $lastCloudSyncTime")
         }
         return true
     }
 
-    //②推送：本地导出内容有变化才推送，成功后记录本地哈希
-    private fun pushIfChanged(serverAddress: String, clientSignKey: String, clientUserCode: String) {
+    //②推送：默认内容有变化才推送（force=true 强制推一次，用于后台 need_push 请求），成功后记录本地哈希
+    private fun pushIfChanged(serverAddress: String, clientSignKey: String, clientUserCode: String, force: Boolean = false) {
         val exportInfo = buildLocalExport(clientUserCode)
         val localHash = sha256(Gson().toJson(exportInfo))
-        if (localHash == lastPushedHash) {
+        if (!force && localHash == lastPushedHash) {
             Log.d(TAG, "本地配置未变化，无需推送")
             return
         }
