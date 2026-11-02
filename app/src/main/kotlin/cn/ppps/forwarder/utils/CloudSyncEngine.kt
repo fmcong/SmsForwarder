@@ -381,6 +381,8 @@ object CloudSyncEngine {
             //显式 User-Agent，避免被 Cloudflare 等按 UA 拦截（1010）
             connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
             connection.setRequestProperty("Content-Type", "application/json")
+            //阶段28：pull/push 显式携带设备密钥（服务端已收紧为强制校验，消除"加密即认证"）
+            connection.setRequestProperty("X-Clone-Key", clientSignKey)
             connection.outputStream.use { it.write(requestMsg.toByteArray()) }
 
             val code = connection.responseCode
