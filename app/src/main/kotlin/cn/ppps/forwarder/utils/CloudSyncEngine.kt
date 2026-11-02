@@ -215,12 +215,15 @@ object CloudSyncEngine {
     private fun settingsEquivalent(remote: String, local: String): Boolean {
         if (remote.trim() == local.trim()) return true
         return try {
-            val a = normalizeSettings(remote)
-            val b = normalizeSettings(local)
+            //排除运行时易变键：电量/IP 等随设备运行自然变化，不应阻止「等价跳过」（阶段26 实测定位）
+            val a = normalizeSettings(remote).filterKeys { it !in RUNTIME_VOLATILE_KEYS }
+            val b = normalizeSettings(local).filterKeys { it !in RUNTIME_VOLATILE_KEYS }
             val eq = a == b
             if (!eq) {
                 val dk = (a.keys + b.keys).filter { a[it] != b[it] }
-                Log.w(TAG, "settingsEquivalent=false: remote=${a.size}键 local=${b.size}键 差异=${dk.take(4).joinToString { "$it: 云端=${a[it]?.take(40)} 本地=${b[it]?.take(40)}" }}")
+                Log.w(TAG, "settingsEquivalent=false: remote=${a.size}键 local=${b.size}键 差异=${dk.take(4).joinToString { "$it: 云端=${a[it]?.take(40)?.replace("
+", " ")} 本地=${b[it]?.take(40)?.replace("
+", " ")}" }}")
             }
             eq
         } catch (e: Exception) {
@@ -228,6 +231,12 @@ object CloudSyncEngine {
             false
         }
     }
+
+    //运行时易变键：随设备运行自然变化，等价比较与导出均无意义
+    private val RUNTIME_VOLATILE_KEYS = setOf(
+        "battery_level", "battery_pct", "battery_status", "battery_info",
+        "ipv4", "last_heartbeat"
+    )
 
     private fun normalizeSettings(json: String): Map<String, String> {
         val m: Map<*, *> = Gson().fromJson(json, Map::class.java) ?: return emptyMap()
