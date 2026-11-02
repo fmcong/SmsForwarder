@@ -295,7 +295,9 @@ object CloudSyncEngine {
             if (!dir.exists() && !dir.mkdirs()) return false
             val fileName = "backup_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date()) + ".json"
             File(dir, fileName).writeText(json)
-            //保留最近 10 份（文件名含时间戳，按名称排序即时间序）
+            //固定名覆盖写：与时间戳归档同内容，便于用户直接识别（对齐原项目 smsforwarder.json）
+            File(dir, "smsforwarder.json").writeText(json)
+            //保留最近 10 份（文件名含时间戳，按名称排序即时间序；smsforwarder.json 不参与轮换）
             val backups = dir.listFiles { f -> f.isFile && f.name.startsWith("backup_") && f.name.endsWith(".json") }
                 ?.sortedBy { it.name } ?: return true
             if (backups.size > 10) {
