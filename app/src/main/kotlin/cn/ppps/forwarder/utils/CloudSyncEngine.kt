@@ -73,7 +73,11 @@ object CloudSyncEngine {
                 }
 
                 CheckResult.NEED_PUSH -> {
-                    //后台「读取配置」：强制推一次当前配置（绕过哈希观察），成功后服务端自动清 flag
+                    //后台「读取配置」：把设备当前配置回推 store，成功后服务端自动清 flag
+                    //若云端同时有更新的下发（ts 也变了），先拉取应用再回推，避免用旧配置覆盖刚下发的配置
+                    if (pendingStoreTs != lastStoreTs && pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
+                        lastStoreTs = pendingStoreTs
+                    }
                     Log.i(TAG, "服务端请求回传配置（need_push）")
                     pushIfChanged(serverAddress, clientSignKey, clientUserCode, force = true)
                 }
