@@ -1,5 +1,9 @@
 package cn.ppps.forwarder.utils
 
+import android.annotation.SuppressLint
+import android.os.Environment
+import android.telephony.TelephonyManager
+import androidx.core.app.ActivityCompat
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.entity.CloneInfo
 import cn.ppps.forwarder.server.model.BaseResponse
@@ -189,6 +193,66 @@ object CloudSyncEngine {
                 Log.w(TAG, "autoSync: ${e.message}")
             }
         }.start()
+    }
+
+    //心跳上报：POST {serverAddress}/heartbeat/{userCode}，X-Clone-Key 鉴权，body 带 device_mark/version_code/phone。
+    //Worker 周期与 App 进前台（startSyncPolling，在线判定只认心跳 2 小时内有效）共用；
+    //守卫不通过（未配置/RSA）直接跳过；任何失败仅记日志，不影响后续同步
+    fun sendHeartbeat(serverAddress: String, clientSignKey: String, clientUserCode: String) {
+        if (serverAddress.isEmpty() || !CommonUtils.checkUrl(serverAddress)
+            || clientSignKey.isEmpty() || clientUserCode.isEmpty()
+            || HttpServerUtils.clientSafetyMeasures == 2
+        ) {
+            Log.d(TAG, "sendHeartbeat: 配置不齐全或 RSA 模式，跳过")
+            return
+        }
+        try {
+            val body = Gson().toJson(
+                mapOf(
+                    "device_mark" to SettingUtils.extraDeviceMark,
+                    "version_code" to AppUtils.getAppVersionCode(),
+                    "phone" to getHeartbeatPhone(),
+                )
+            )
+            val connection = URL("$serverAddress/heartbeat/$clientUserCode").openConnection() as HttpURLConnection
+            try {
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                connection.requestMethod = "POST"
+                connection.doOutput = true
+                connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
+                connection.setRequestProperty("X-Clone-Key", clientSignKey)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.outputStream.use { it.write(body.toByteArray()) }
+                val code = connection.responseCode
+                if (code in 200..299) {
+                    Log.d(TAG, "heartbeat: ok ($code)")
+                } else {
+                    Log.w(TAG, "heartbeat: HTTP $code")
+                }
+            } finally {
+                connection.disconnect()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "heartbeat: ${e.message}")
+        }
+    }
+
+    //心跳手机号：TelephonyManager.line1Number（需 READ_PHONE_STATE，清单已声明）→ SIM1 备注 → 空串
+    @SuppressLint("MissingPermission")
+    private fun getHeartbeatPhone(): String {
+        val fallback = SettingUtils.extraSim1.trim()
+        return try {
+            val granted = ActivityCompat.checkSelfPermission(
+                App.context, android.Manifest.permission.READ_PHONE_STATE
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            val tm = App.context.getSystemService(android.content.Context.TELEPHONY_SERVICE) as? TelephonyManager
+            val line1 = if (granted && tm != null) tm.line1Number?.trim().orEmpty() else ""
+            if (line1.isNotEmpty() && line1 != "null") line1 else fallback
+        } catch (e: Exception) {
+            Log.w(TAG, "getHeartbeatPhone: ${e.message}")
+            fallback
+        }
     }
 
     //①拉取：内容有变化才应用；返回 true=已应用或确认无变化，false=请求/解析失败

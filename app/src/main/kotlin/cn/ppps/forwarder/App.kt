@@ -165,9 +165,24 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
         }
     }
 
-    //进入前台：立即校准一次，再按 60s 周期轮询（只取云端 store 时间戳，变了才全量拉取）
+    //进入前台：立即心跳（在线判定只认心跳，2 小时内有效）+ 校准一次，再按 60s 周期轮询（只取云端 store 时间戳，变了才全量拉取）
     private fun startSyncPolling() {
-        Thread { CloudSyncEngine.syncIfRemoteChanged() }.start()
+        Thread {
+            try {
+                CloudSyncEngine.sendHeartbeat(
+                    HttpServerUtils.serverAddress.trim().trimEnd('/'),
+                    HttpServerUtils.clientSignKey.trim(),
+                    HttpServerUtils.clientUserCode.trim(),
+                )
+            } catch (e: Exception) {
+                Log.w("APP", "startSyncPolling heartbeat: ${e.message}")
+            }
+            try {
+                CloudSyncEngine.syncIfRemoteChanged()
+            } catch (e: Exception) {
+                Log.w("APP", "startSyncPolling sync: ${e.message}")
+            }
+        }.start()
         syncPollHandler.removeCallbacks(syncPollRunnable)
         syncPollHandler.postDelayed(syncPollRunnable, 60_000)
     }
