@@ -229,7 +229,7 @@ object CloudSyncEngine {
 
     private fun normalizeSettings(json: String): Map<String, String> {
         val m: Map<*, *> = Gson().fromJson(json, Map::class.java) ?: return emptyMap()
-        return m.entries.associate { it.key.toString() to String.valueOf(it.value) }
+        return m.entries.associate { it.key.toString() to it.value.toString() }
     }
 
     //②推送：默认内容有变化才推送（force=true 强制推一次，用于后台 need_push 请求），成功后记录本地哈希
