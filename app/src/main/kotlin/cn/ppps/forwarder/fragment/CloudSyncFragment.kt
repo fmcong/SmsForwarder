@@ -1,6 +1,8 @@
 package cn.ppps.forwarder.fragment
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -80,6 +82,11 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
             }
         })
 
+        //阶段31：备份路径（点击经系统文件管理器自定义，点「默认」恢复）
+        binding!!.tvBackupPath.text = backupPathDisplay()
+        binding!!.tvBackupPath.setOnClickListener(this)
+        binding!!.btnBackupReset.setOnClickListener(this)
+
         refreshStatus()
     }
 
@@ -131,6 +138,53 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
     override fun onClick(v: View) {
         when (v.id) {
             R.id.btn_pairing -> doPairing()
+            R.id.tv_backup_path -> {
+                //阶段31：经系统文件管理器选择备份目录（SAF）
+                try {
+                    startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 4101)
+                } catch (e: Exception) {
+                    XToastUtils.error("无法打开文件管理器：" + e.message)
+                }
+            }
+            R.id.btn_backup_reset -> {
+                SettingUtils.backupDirUri = ""
+                binding!!.tvBackupPath.text = backupPathDisplay()
+                XToastUtils.info("已恢复默认备份路径")
+            }
+        }
+    }
+
+    //阶段31：备份路径展示与选择
+    private fun backupPathDisplay(): String {
+        val uri = SettingUtils.backupDirUri
+        if (uri.isNullOrEmpty()) return "默认（应用目录）"
+        return try {
+            val u = android.net.Uri.parse(uri)
+            var name = ""
+            context?.contentResolver?.query(
+                u, arrayOf(android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME),
+                null, null, null
+            )?.use { c -> if (c.moveToFirst()) name = c.getString(0) ?: "" } ?: ""
+            if (name.isNotEmpty()) "$name（smsforwarder.json）" else uri.takeLast(40)
+        } catch (e: Exception) {
+            uri.takeLast(40)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 4101 && resultCode == android.app.Activity.RESULT_OK && data?.data != null) {
+            try {
+                context?.contentResolver?.takePersistableUriPermission(
+                    data.data!!,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+                SettingUtils.backupDirUri = data.data!!.toString()
+                binding!!.tvBackupPath.text = backupPathDisplay()
+                XToastUtils.success("备份路径已更新，之后的本地备份将写入所选目录")
+            } catch (e: Exception) {
+                XToastUtils.error("备份路径设置失败：" + e.message)
+            }
         }
     }
 

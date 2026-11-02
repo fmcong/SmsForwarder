@@ -10,6 +10,8 @@ import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.xuexiang.xutil.data.ConvertTools
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -67,7 +69,12 @@ object CloudSyncEngine {
                 CheckResult.NONE -> Log.d(TAG, "云端 store 未变化，跳过")
 
                 CheckResult.CHANGED -> {
-                    if (pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
+                    //阶段31：本地有未推送修改时，不自动应用云端（防重置用户设置）；
+                    //内容等价的场景已由 pullAndApply 内部跳过；自动推送（10s 防抖）会把本地修改先推上去，之后恢复自动应用
+                    val localHash = sha256(Gson().toJson(buildLocalExport(clientUserCode)))
+                    if (localHash != lastPushedHash) {
+                        Log.w(TAG, "云端有更新但本地存在未推送修改，跳过自动应用（防重置）")
+                    } else if (pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
                         lastStoreTs = pendingStoreTs
                     }
                 }
@@ -144,6 +151,44 @@ object CloudSyncEngine {
         val listsEmpty = cloneInfo.senderList.isNullOrEmpty() && cloneInfo.ruleList.isNullOrEmpty() &&
                 cloneInfo.frpcList.isNullOrEmpty() && cloneInfo.taskList.isNullOrEmpty()
         return settingsEmpty && listsEmpty
+    }
+
+    //===== 阶段31：设置变更自动同步（防抖 10s → 本地备份 + 推送上云）=====
+    //用户期望语义：App 改开关 → 自动备份一份 json 到本地 → 网页「读取配置」读到的与 App 一致
+    private val autoSyncHandler = Handler(Looper.getMainLooper())
+    private val LOCAL_ENGINE_KEYS = setOf(
+        SP_LAST_CLOUD_SYNC_HASH, SP_LAST_PUSHED_HASH, SP_LAST_CLOUD_SYNC_TIME, SP_LAST_STORE_TS
+    )
+    private val NON_SYNC_KEYS = setOf(
+        "battery_level", "battery_pct", "battery_status", "battery_info", "battery_plugged",
+        "battery_temperature", "battery_voltage", "battery_health", "ipv4", "ipv6",
+        "network_state", "discovered_devices", "ip_list", "api_location_cache",
+        "location_info_new", "location_info_old", "last_heartbeat", "security_defaults_version",
+        "access_token_", "expires_in_", "feishu_access_token_", "feishu_expires_in_"
+    )
+
+    /**SP 任意键变更回调（SharedPreference.setValue 委托）；状态键/运行时键不触发，其余防抖 10s 后备份+推送*/
+    fun onSettingChanged(key: String) {
+        if (key in LOCAL_ENGINE_KEYS || key in NON_SYNC_KEYS) return
+        if (key.startsWith("access_token_") || key.startsWith("expires_in_") || key.startsWith("feishu_")) return
+        if (HttpServerUtils.clientSafetyMeasures == 2) return
+        autoSyncHandler.removeCallbacks(autoSyncRunnable)
+        autoSyncHandler.postDelayed(autoSyncRunnable, 10_000L)
+    }
+
+    private val autoSyncRunnable = Runnable {
+        Thread {
+            try {
+                val addr = (HttpServerUtils.serverAddress ?: "").trim().trimEnd('/')
+                val sk = (HttpServerUtils.clientSignKey ?: "").trim()
+                val uc = (HttpServerUtils.clientUserCode ?: "").trim()
+                if (addr.isEmpty() || sk.isEmpty() || uc.isEmpty()) return@Thread
+                Log.i(TAG, "设置变更自动同步（防抖 10s 触发）")
+                pushIfChanged(addr, sk, uc)
+            } catch (e: Exception) {
+                Log.w(TAG, "autoSync: ${e.message}")
+            }
+        }.start()
     }
 
     //①拉取：内容有变化才应用；返回 true=已应用或确认无变化，false=请求/解析失败
@@ -285,8 +330,48 @@ object CloudSyncEngine {
         }
     }
 
-    //本地自动备份：{externalFilesDir}/Documents/YubaSync/backup_yyyyMMdd_HHmmss.json，失败降级到 filesDir/backups，保留最近 10 份
+    //本地自动备份：优先自定义路径（SAF，固定名 smsforwarder.json）；默认 {externalFilesDir}/Documents/YubaSync/（时间戳归档 10 份 + 固定名），失败降级 filesDir/backups
     private fun backupLocally(json: String) {
+        //阶段31：自定义备份路径（用户经系统文件管理器选择的 SAF tree URI）
+        val customUri = SettingUtils.backupDirUri
+        if (!customUri.isNullOrEmpty()) {
+            try {
+                val treeUri = android.net.Uri.parse(customUri)
+                val resolver = App.context.contentResolver
+                val dirUri = android.provider.DocumentsContract.buildDocumentUriUsingTree(
+                    treeUri, android.provider.DocumentsContract.getTreeDocumentId(treeUri)
+                )
+                //删除旧的主备份文件（固定名覆盖写语义）
+                resolver.query(
+                    android.provider.DocumentsContract.buildChildDocumentsUriUsingTree(
+                        treeUri, android.provider.DocumentsContract.getTreeDocumentId(treeUri)
+                    ),
+                    arrayOf(android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                            android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME),
+                    null, null, null
+                )?.use { c ->
+                    while (c.moveToNext()) {
+                        if (c.getString(1) == "smsforwarder.json") {
+                            resolver.delete(
+                                android.provider.DocumentsContract.buildDocumentUriUsingTree(treeUri, c.getString(0)),
+                                null, null
+                            )
+                        }
+                    }
+                }
+                val newDoc = android.provider.DocumentsContract.createDocument(
+                    resolver, dirUri, "application/json", "smsforwarder.json"
+                )
+                if (newDoc != null) {
+                    resolver.openOutputStream(newDoc)?.use { it.write(json.toByteArray()) }
+                    Log.d(TAG, "backup(自定义路径): $customUri")
+                    return
+                }
+                Log.w(TAG, "backupLocally custom: createDocument 返回空，回落默认路径")
+            } catch (e: Exception) {
+                Log.w(TAG, "backupLocally custom: ${e.message}，回落默认路径")
+            }
+        }
         try {
             val baseDir = App.context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
             if (writeBackup(File(baseDir ?: App.context.filesDir, "YubaSync"), json)) return

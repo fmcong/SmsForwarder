@@ -134,6 +134,9 @@ class SettingUtils private constructor() {
         //是否纯客户端模式
         var enablePureClientMode: Boolean by SharedPreference(SP_PURE_CLIENT_MODE, false)
 
+        /**阶段31：云端同步本地备份的自定义路径（SAF tree URI；空=默认应用外部目录 Documents/YubaSync）*/
+        var backupDirUri: String by SharedPreference(SP_BACKUP_DIR_URI, "")
+
         //是否纯任务模式
         var enablePureTaskMode: Boolean by SharedPreference(SP_PURE_TASK_MODE, false)
 

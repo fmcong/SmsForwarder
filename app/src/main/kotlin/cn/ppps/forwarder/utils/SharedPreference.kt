@@ -94,8 +94,13 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
     }
 
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        //手动同步模式：设置写入不再自动触发云端推送，仅在云端 check 返回 need_push 时按需推送
         putPreference(name, value)
+        //阶段31：恢复自动同步语义——设置变更 → 防抖 10s → 本地备份 + 推送上云
+        //（用户期望：改开关即备份与同步，网页「读取配置」读到的与 App 一致）
+        try {
+            CloudSyncEngine.onSettingChanged(name)
+        } catch (_: Exception) {
+        }
     }
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {

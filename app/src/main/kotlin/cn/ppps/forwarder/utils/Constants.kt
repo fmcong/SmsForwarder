@@ -39,6 +39,9 @@ const val PACKAGE_NAME = "cn.ppps.forwarder"
 //通用设置
 const val SP_ENABLE_SMS = "enable_sms"
 
+//阶段31：云端同步本地备份的自定义路径（SAF tree URI，空=默认应用目录）
+const val SP_BACKUP_DIR_URI = "backup_dir_uri"
+
 const val SP_ENABLE_PHONE = "enable_phone"
 const val SP_ENABLE_CALL_TYPE_1 = "enable_call_type_1"
 const val SP_ENABLE_CALL_TYPE_2 = "enable_call_type_2"

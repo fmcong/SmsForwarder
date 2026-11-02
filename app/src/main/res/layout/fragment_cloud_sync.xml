@@ -198,6 +198,47 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
+                <!-- 阶段31：备份路径（点击经系统文件管理器自定义，长按恢复默认） -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    tools:ignore="RtlSymmetry">
+
+                    <TextView
+                        android:layout_width="76dp"
+                        android:layout_height="wrap_content"
+                        android:text="备份路径"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_backup_path"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:ellipsize="middle"
+                        android:focusable="true"
+                        android:singleLine="true"
+                        android:text="默认（应用目录）"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/btn_backup_reset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="6dp"
+                        android:text="默认"
+                        android:textColor="@color/xui_config_color_gray_5"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
