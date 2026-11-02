@@ -13,6 +13,17 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
     companion object {
         lateinit var preference: SharedPreferences
 
+        //状态上报防抖调度：任何设置写入后 10s 合并一次推送检查（engine 侧还有 2s 二次防抖 + 哈希比对）
+        //engine 拉取应用（restoreSettings/importPreference）期间的写入会被 isPushSuppressed 过滤，防止拉取→推送回环
+        private val pushHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        private val pushRunnable = Runnable { CloudSyncEngine.pushSoon() }
+
+        fun schedulePush() {
+            if (CloudSyncEngine.isPushSuppressed()) return
+            pushHandler.removeCallbacks(pushRunnable)
+            pushHandler.postDelayed(pushRunnable, 10_000)
+        }
+
         fun init(context: Context) {
             preference = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 val directBootContext: Context = context.createDeviceProtectedStorageContext()
@@ -94,7 +105,9 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
     }
 
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        return putPreference(name, value)
+        putPreference(name, value)
+        //任何设置写入 → 防抖调度一次状态上报（10s 合并高频写，如电池/定位缓存）
+        schedulePush()
     }
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {

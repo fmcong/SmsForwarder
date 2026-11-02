@@ -200,21 +200,24 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
                         //判断版本是否一致（不兼容会抛异常，走 catch 分支）
                         HttpServerUtils.compareVersion(cloneInfo)
 
-                        //服务器下发的 settings 可能是纯 JSON，先转换格式并并入本地凭证，再 restore（阶段13 根因修复）
-                        CloudSyncEngine.sanitizeSettingsForRestore(cloneInfo)
+                        //restoreSettings 会清空全部 SP，应用后重新写入配对凭证，避免本地信息被云端配置覆盖；
+                        //拉取应用期间的 SP 写入不触发状态上报（engine 的 suppressPushDuring 防回环）
+                        CloudSyncEngine.suppressPushDuring {
+                            //服务器下发的 settings 可能是纯 JSON，先转换格式并并入本地凭证，再 restore（阶段13 根因修复）
+                            CloudSyncEngine.sanitizeSettingsForRestore(cloneInfo)
 
-                        //restoreSettings 会清空全部 SP，应用后重新写入配对凭证，避免本地信息被云端配置覆盖
-                        val userCode = HttpServerUtils.clientUserCode
-                        val pairingCode = HttpServerUtils.pairingCode
-                        HttpServerUtils.restoreSettings(cloneInfo)
-                        HttpServerUtils.clientSignKey = sm4Key
-                        HttpServerUtils.clientSafetyMeasures = 3
-                        HttpServerUtils.serverAddress = address
-                        HttpServerUtils.clientUserCode = userCode
-                        HttpServerUtils.pairingCode = pairingCode
+                            val userCode = HttpServerUtils.clientUserCode
+                            val pairingCode = HttpServerUtils.pairingCode
+                            HttpServerUtils.restoreSettings(cloneInfo)
+                            HttpServerUtils.clientSignKey = sm4Key
+                            HttpServerUtils.clientSafetyMeasures = 3
+                            HttpServerUtils.serverAddress = address
+                            HttpServerUtils.clientUserCode = userCode
+                            HttpServerUtils.pairingCode = pairingCode
 
-                        //记录同步标记（远端已应用 + 推送基准），避免引擎下一轮重复应用/回推
-                        CloudSyncEngine.recordApplied(sha256(configElement.toString()))
+                            //记录同步标记（远端已应用 + 推送基准），避免引擎下一轮重复应用/回推
+                            CloudSyncEngine.recordApplied(sha256(configElement.toString()))
+                        }
 
                         refreshStatus()
                         XToastUtils.success(getString(R.string.pairing_succeeded))

@@ -30,6 +30,54 @@ object CloudSyncEngine {
 
     private val syncing = AtomicBoolean(false)
 
+    //拉取应用（restoreSettings/importPreference）期间的 SP 写入抑制标志，防「拉取→触发推送→又拉取」回环
+    private val pushSuppressed = AtomicBoolean(false)
+
+    fun isPushSuppressed(): Boolean = pushSuppressed.get()
+
+    //在 block 内产生的 SP 写入不触发状态上报调度（拉取应用/配对应用路径使用）
+    fun <R> suppressPushDuring(block: () -> R): R {
+        pushSuppressed.set(true)
+        try {
+            return block()
+        } finally {
+            pushSuppressed.set(false)
+        }
+    }
+
+    //状态上报：SP 写入钩子经 10s 防抖调度到此，再 2s 二次防抖合并并发调度；
+    //pushIfChanged 内部哈希比对（last_pushed_hash）保证内容没变绝不真推
+    fun pushSoon() {
+        pushHandler.postDelayed({
+            Thread {
+                try {
+                    val serverAddress = HttpServerUtils.serverAddress.trim().trimEnd('/')
+                    val clientSignKey = HttpServerUtils.clientSignKey.trim()
+                    val clientUserCode = HttpServerUtils.clientUserCode.trim()
+                    if (serverAddress.isNullOrEmpty() || !CommonUtils.checkUrl(serverAddress)
+                        || clientSignKey.isNullOrEmpty() || clientUserCode.isNullOrEmpty()
+                        || HttpServerUtils.clientSafetyMeasures == 2
+                    ) {
+                        return@Thread
+                    }
+                    if (!syncing.compareAndSet(false, true)) {
+                        Log.d(TAG, "pushSoon: 同步进行中，跳过")
+                        return@Thread
+                    }
+                    try {
+                        pushIfChanged(serverAddress, clientSignKey, clientUserCode)
+                    } finally {
+                        syncing.set(false)
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "pushSoon: ${e.message}")
+                }
+            }.start()
+        }, 2_000)
+    }
+
+    private val pushHandler = android.os.Handler(android.os.Looper.getMainLooper())
+
     private var lastAppliedHash: String by SharedPreference(SP_LAST_CLOUD_SYNC_HASH, "")
     private var lastPushedHash: String by SharedPreference(SP_LAST_PUSHED_HASH, "")
     private var lastCloudSyncTime: String by SharedPreference(SP_LAST_CLOUD_SYNC_TIME, "")
@@ -94,15 +142,18 @@ object CloudSyncEngine {
         //判断版本是否一致（版本不兼容会抛异常，由 syncNow 捕获，不更新哈希）
         HttpServerUtils.compareVersion(cloneInfo)
 
-        sanitizeSettingsForRestore(cloneInfo)
+        //拉取应用期间产生的 SP 写入不触发状态上报（防「拉取→推送→又拉取」回环）
+        suppressPushDuring {
+            sanitizeSettingsForRestore(cloneInfo)
 
-        if (HttpServerUtils.restoreSettings(cloneInfo)) {
-            //restoreSettings 会清空全部 SP，应用后重新写入本地凭证与同步标记
-            HttpServerUtils.serverAddress = serverAddress
-            HttpServerUtils.clientUserCode = clientUserCode
-            HttpServerUtils.clientSignKey = clientSignKey
-            recordApplied(remoteHash)
-            Log.i(TAG, "云端配置已应用: $lastCloudSyncTime")
+            if (HttpServerUtils.restoreSettings(cloneInfo)) {
+                //restoreSettings 会清空全部 SP，应用后重新写入本地凭证与同步标记
+                HttpServerUtils.serverAddress = serverAddress
+                HttpServerUtils.clientUserCode = clientUserCode
+                HttpServerUtils.clientSignKey = clientSignKey
+                recordApplied(remoteHash)
+                Log.i(TAG, "云端配置已应用: $lastCloudSyncTime")
+            }
         }
     }
 
