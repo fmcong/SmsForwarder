@@ -178,9 +178,8 @@ object CloudSyncEngine {
         //判断版本是否一致（版本不兼容会抛异常，由调用方捕获，不更新哈希）
         HttpServerUtils.compareVersion(cloneInfo)
 
-        sanitizeSettingsForRestore(cloneInfo)
-
-        //阶段26：内容等价检查——云端配置与本地一致时跳过 restore（不清空消息/转发日志），仅推进基准
+        //阶段26：内容等价检查——必须在 sanitize 之前（sanitize 会把 settings 转为序列化格式）。
+        //云端配置与本地一致时跳过 restore（不清空消息/转发日志），仅推进基准
         val localSettings = Gson().toJson(TreeMap<String, Any>(SharedPreference.preference.all).apply {
             remove(SP_LAST_CLOUD_SYNC_HASH)
             remove(SP_LAST_PUSHED_HASH)
@@ -195,6 +194,9 @@ object CloudSyncEngine {
             Log.i(TAG, "云端配置与本地一致，跳过 restore（保护消息/转发日志）")
             return true
         }
+
+        sanitizeSettingsForRestore(cloneInfo)
+
         if (HttpServerUtils.restoreSettings(cloneInfo)) {
             //restoreSettings 会清空全部 SP，应用后重新写入本地凭证与同步标记
             HttpServerUtils.serverAddress = serverAddress
