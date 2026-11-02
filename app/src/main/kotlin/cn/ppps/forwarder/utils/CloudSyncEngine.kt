@@ -209,16 +209,27 @@ object CloudSyncEngine {
         return false
     }
 
-    //阶段26：settings 语义等价判断（字符串相等优先，失败再按 Map 解析比较）
+    //阶段26：settings 语义等价判断（键值统一 String 归一后比较，容纳数值类型表示差异）
     private fun settingsEquivalent(remote: String, local: String): Boolean {
         if (remote.trim() == local.trim()) return true
         return try {
-            val a: Map<*, *>? = Gson().fromJson(remote, Map::class.java)
-            val b: Map<*, *>? = Gson().fromJson(local, Map::class.java)
-            a != null && b != null && a == b
+            val a = normalizeSettings(remote)
+            val b = normalizeSettings(local)
+            val eq = a == b
+            if (!eq) {
+                val dk = (a.keys + b.keys).filter { a[it] != b[it] }
+                Log.w(TAG, "settingsEquivalent=false: remote=${a.size}键 local=${b.size}键 差异=${dk.take(4).joinToString { "$it: 云端=${a[it]?.take(40)} 本地=${b[it]?.take(40)}" }}")
+            }
+            eq
         } catch (e: Exception) {
+            Log.w(TAG, "settingsEquivalent 异常: ${e.message}")
             false
         }
+    }
+
+    private fun normalizeSettings(json: String): Map<String, String> {
+        val m: Map<*, *> = Gson().fromJson(json, Map::class.java) ?: return emptyMap()
+        return m.entries.associate { it.key.toString() to String.valueOf(it.value) }
     }
 
     //②推送：默认内容有变化才推送（force=true 强制推一次，用于后台 need_push 请求），成功后记录本地哈希

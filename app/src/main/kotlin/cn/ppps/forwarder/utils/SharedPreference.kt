@@ -140,7 +140,12 @@ class SharedPreference<T>(private val name: String, private val default: T) : Re
                 getBoolean(name, default)
             } catch (e: ClassCastException) {
                 try {
-                    getString(name, null) == "true"
+                    //容错扩展：字符串 "true"/"1" 均视为开启（阶段26 审查 P2-3）
+                    when (getString(name, null)) {
+                        "true", "1" -> true
+                        "false", "0" -> false
+                        else -> default
+                    }
                 } catch (e: Exception) {
                     default
                 }
