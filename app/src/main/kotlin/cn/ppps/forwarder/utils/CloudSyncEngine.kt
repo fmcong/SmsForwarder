@@ -221,9 +221,7 @@ object CloudSyncEngine {
             val eq = a == b
             if (!eq) {
                 val dk = (a.keys + b.keys).filter { a[it] != b[it] }
-                Log.w(TAG, "settingsEquivalent=false: remote=${a.size}键 local=${b.size}键 差异=${dk.take(4).joinToString { "$it: 云端=${a[it]?.take(40)?.replace("
-", " ")} 本地=${b[it]?.take(40)?.replace("
-", " ")}" }}")
+                Log.w(TAG, "settingsEquivalent=false: remote=${a.size}键 local=${b.size}键 差异=${dk.take(4)}")
             }
             eq
         } catch (e: Exception) {
