@@ -74,9 +74,16 @@ object CloudSyncEngine {
 
                 CheckResult.NEED_PUSH -> {
                     //后台「读取配置」：把设备当前配置回推 store，成功后服务端自动清 flag
-                    //若云端同时有更新的下发（ts 也变了），先拉取应用再回推，避免用旧配置覆盖刚下发的配置
-                    if (pendingStoreTs != lastStoreTs && pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
-                        lastStoreTs = pendingStoreTs
+                    //若云端同时有更新的下发（ts 也变了），先拉取应用再回推；拉取失败则本轮放弃回推，
+                    //防止用设备旧配置覆盖云端刚下发的新配置（阶段26）
+                    val cloudAlsoChanged = pendingStoreTs != lastStoreTs
+                    if (cloudAlsoChanged) {
+                        if (pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
+                            lastStoreTs = pendingStoreTs
+                        } else {
+                            Log.w(TAG, "云端有更新但拉取失败，本轮放弃回推（防旧覆盖新）")
+                            return
+                        }
                     }
                     Log.i(TAG, "服务端请求回传配置（need_push）")
                     pushIfChanged(serverAddress, clientSignKey, clientUserCode, force = true)
@@ -173,6 +180,21 @@ object CloudSyncEngine {
 
         sanitizeSettingsForRestore(cloneInfo)
 
+        //阶段26：内容等价检查——云端配置与本地一致时跳过 restore（不清空消息/转发日志），仅推进基准
+        val localSettings = Gson().toJson(TreeMap<String, Any>(SharedPreference.preference.all).apply {
+            remove(SP_LAST_CLOUD_SYNC_HASH)
+            remove(SP_LAST_PUSHED_HASH)
+            remove(SP_LAST_CLOUD_SYNC_TIME)
+            remove(SP_LAST_STORE_TS)
+            remove(SP_API_LOCATION_CACHE)
+            remove(SP_LOCATION_INFO_OLD)
+            remove(SP_LOCATION_INFO_NEW)
+        })
+        if (settingsEquivalent(cloneInfo.settings ?: "", localSettings)) {
+            recordApplied(remoteHash)
+            Log.i(TAG, "云端配置与本地一致，跳过 restore（保护消息/转发日志）")
+            return true
+        }
         if (HttpServerUtils.restoreSettings(cloneInfo)) {
             //restoreSettings 会清空全部 SP，应用后重新写入本地凭证与同步标记
             HttpServerUtils.serverAddress = serverAddress
@@ -180,8 +202,23 @@ object CloudSyncEngine {
             HttpServerUtils.clientSignKey = clientSignKey
             recordApplied(remoteHash)
             Log.i(TAG, "云端配置已应用: $lastCloudSyncTime")
+            return true
         }
-        return true
+        //阶段26：restore 失败不得推进基准（否则本次下发被永久跳过）
+        Log.w(TAG, "restoreSettings 失败，本轮不推进 last_applied/last_store_ts")
+        return false
+    }
+
+    //阶段26：settings 语义等价判断（字符串相等优先，失败再按 Map 解析比较）
+    private fun settingsEquivalent(remote: String, local: String): Boolean {
+        if (remote.trim() == local.trim()) return true
+        return try {
+            val a: Map<*, *>? = Gson().fromJson(remote, Map::class.java)
+            val b: Map<*, *>? = Gson().fromJson(local, Map::class.java)
+            a != null && b != null && a == b
+        } catch (e: Exception) {
+            false
+        }
     }
 
     //②推送：默认内容有变化才推送（force=true 强制推一次，用于后台 need_push 请求），成功后记录本地哈希

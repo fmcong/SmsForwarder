@@ -212,11 +212,12 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
             context = applicationContext
             initLibs()
 
-            //纯客户端模式
-            if (SettingUtils.enablePureClientMode) return
-
-            //初始化WorkManager
+            //初始化WorkManager（必须在纯客户端判断之前：manifest 已移除默认初始化器，
+            //纯客户端模式下跳过会导致任何 Worker 入队抛 IllegalStateException 崩溃——阶段26 审查 P1-5）
             WorkManager.initialize(this, Configuration.Builder().build())
+
+            //纯客户端模式：不注册云端同步（其余功能照常）
+            if (SettingUtils.enablePureClientMode) return
 
             //云端配置自动同步：每 30 分钟检查一次（Worker 内部自检配置是否齐全）
             val cloudSyncRequest = PeriodicWorkRequestBuilder<CloudSyncWorker>(30, TimeUnit.MINUTES)
