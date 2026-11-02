@@ -238,31 +238,42 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
     }
 
     //配对成功自检：用当前模板机制渲染短信/通知/通话三条样例，逐条 POST /report/{uc}（失败仅 Log）
+    private data class SelfCheckReport(
+        val type: String,
+        val sender: String,
+        val title: String,
+        val appName: String,
+        val msg: MsgInfo,
+    )
+
     private fun sendSelfCheckReports(serverAddress: String, clientSignKey: String, userCode: String) {
         Thread {
             try {
                 val now = Date()
                 //样例 MsgInfo（真实字段结构：app 类型 from=应用名、simInfo=通知标题；call 类型 callType=3 未接来电）
-                val smsMsg = MsgInfo(type = "sms", from = "10086", content = "【中国移动】您本月话费 88.88 元，当前余额充足。", date = now, simInfo = "卡槽1", simSlot = 0, subId = 1)
-                val notifyMsg = MsgInfo(type = "app", from = "微信", content = "张三：晚上一起吃饭吗？", date = now, simInfo = "张三", uid = 10001)
-                val callMsg = MsgInfo(type = "call", from = "10086", content = "通话时长 1 分 23 秒", date = now, simInfo = "卡槽1", simSlot = 0, callType = 3)
-                val samples = listOf(
-                    Triple("selfcheck_sms", "系统通知组件", smsMsg to "模板自检·短信", "自检"),
-                    Triple("selfcheck_notification", "微信", notifyMsg to "模板自检·通知", "微信"),
-                    Triple("selfcheck_call", "系统电话", callMsg to "模板自检·通话", "10086"),
+                val reports = listOf(
+                    SelfCheckReport(
+                        "selfcheck_sms", "自检", "模板自检·短信", "系统通知组件",
+                        MsgInfo(type = "sms", from = "10086", content = "【中国移动】您本月话费 88.88 元，当前余额充足。", date = now, simInfo = "卡槽1", simSlot = 0, subId = 1)
+                    ),
+                    SelfCheckReport(
+                        "selfcheck_notification", "微信", "模板自检·通知", "微信",
+                        MsgInfo(type = "app", from = "微信", content = "张三：晚上一起吃饭吗？", date = now, simInfo = "张三", uid = 10001)
+                    ),
+                    SelfCheckReport(
+                        "selfcheck_call", "10086", "模板自检·通话", "系统电话",
+                        MsgInfo(type = "call", from = "10086", content = "通话时长 1 分 23 秒", date = now, simInfo = "卡槽1", simSlot = 0, callType = 3)
+                    ),
                 )
-                for ((type, appName, sample) in samples) {
-                    val (msg, title, sender) = sample
-                    val body = Gson().toJson(
-                        mapOf(
-                            "type" to type,
-                            "sender" to sender,
-                            "title" to title,
-                            "content" to msg.getContentForSend(),
-                            "app_name" to appName,
-                        )
+                for (report in reports) {
+                    val bodyMap: Map<String, String> = mapOf(
+                        "type" to report.type,
+                        "sender" to report.sender,
+                        "title" to report.title,
+                        "content" to report.msg.getContentForSend(),
+                        "app_name" to report.appName,
                     )
-                    postReport(serverAddress, clientSignKey, userCode, body)
+                    postReport(serverAddress, clientSignKey, userCode, Gson().toJson(bodyMap))
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "sendSelfCheckReports: ${e.message}")
