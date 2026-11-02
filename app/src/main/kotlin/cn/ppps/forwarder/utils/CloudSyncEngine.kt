@@ -13,7 +13,6 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.xuexiang.xutil.data.ConvertTools
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import java.io.ByteArrayOutputStream
