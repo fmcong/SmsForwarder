@@ -1,7 +1,9 @@
 package cn.ppps.forwarder
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
+import android.app.Application.ActivityLifecycleCallbacks
 import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -12,6 +14,9 @@ import android.location.Geocoder
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.MutableLiveData
 import androidx.multidex.MultiDex
 import androidx.work.Configuration
@@ -151,6 +156,26 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
         var isNeedSpaceBetweenWords = false
     }
 
+    //云端同步前台轮询（Application 级：任意 Activity 在前台都生效，全部不可见才停）
+    private val syncPollHandler = Handler(Looper.getMainLooper())
+    private val syncPollRunnable = object : Runnable {
+        override fun run() {
+            Thread { CloudSyncEngine.syncIfRemoteChanged() }.start()
+            syncPollHandler.postDelayed(this, 60_000)
+        }
+    }
+
+    //进入前台：立即校准一次，再按 60s 周期轮询（只取云端 store 时间戳，变了才全量拉取）
+    private fun startSyncPolling() {
+        Thread { CloudSyncEngine.syncIfRemoteChanged() }.start()
+        syncPollHandler.removeCallbacks(syncPollRunnable)
+        syncPollHandler.postDelayed(syncPollRunnable, 60_000)
+    }
+
+    private fun stopSyncPolling() {
+        syncPollHandler.removeCallbacks(syncPollRunnable)
+    }
+
     override fun attachBaseContext(base: Context) {
         //super.attachBaseContext(base)
         // 绑定语种
@@ -201,6 +226,28 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
 
             //启动即触发一次云端同步检查（后台线程静默执行，engine 内部有单飞锁防并发）
             Thread { CloudSyncEngine.syncNow(this) }.start()
+
+            //同步轮询挂 Application 生命周期：任意页面（云端同步/关于/Logcat 等独立 Activity）在前台都轮询，
+            //全部页面不可见才停（省电）；进入前台立即校准一次再按 60s 周期
+            registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+                private var started = 0
+
+                override fun onActivityStarted(activity: Activity) {
+                    started++
+                    if (started == 1) startSyncPolling()
+                }
+
+                override fun onActivityStopped(activity: Activity) {
+                    started--
+                    if (started <= 0) stopSyncPolling()
+                }
+
+                override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+                override fun onActivityResumed(activity: Activity) {}
+                override fun onActivityPaused(activity: Activity) {}
+                override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+                override fun onActivityDestroyed(activity: Activity) {}
+            })
 
             //动态加载FrpcLib
             val libPath = filesDir.absolutePath + "/libs"
