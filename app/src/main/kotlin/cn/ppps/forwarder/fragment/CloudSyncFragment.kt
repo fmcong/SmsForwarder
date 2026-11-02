@@ -344,6 +344,25 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
                         )
                         postReport(serverAddress, clientSignKey, userCode, Gson().toJson(bodyMap))
                     }
+                    //阶段32：追加一条定位上报——后台 locations 表有数据，「24小时轨迹」地图即可渲染验证
+                    try {
+                        val loc = HttpServerUtils.apiLocationCache
+                        if (loc != null && (loc.longitude != 0.0 || loc.latitude != 0.0)) {
+                            val bodyMap: Map<String, Any> = mapOf(
+                                "type" to "location",
+                                "sender" to "定位服务",
+                                "title" to "首次定位上报",
+                                "content" to locationRendered,
+                                "app_name" to "系统通知组件",
+                                "lat" to loc.latitude,
+                                "lon" to loc.longitude,
+                                "address" to (loc.address ?: ""),
+                            )
+                            postReport(serverAddress, clientSignKey, userCode, Gson().toJson(bodyMap))
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "locationReport: ${e.message}")
+                    }
                 } finally {
                     HttpServerUtils.apiLocationCache = originalLocation
                 }
