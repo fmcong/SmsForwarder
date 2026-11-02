@@ -122,6 +122,23 @@ object CloudSyncEngine {
         }
     }
 
+    //空配置判定：settings 为空或空 JSON 对象，且四个列表全空/缺失（真实配置不可能同时满足）
+    private fun isEmptyConfig(cloneInfo: CloneInfo): Boolean {
+        val raw = cloneInfo.settings.trim()
+        val settingsEmpty = if (raw.startsWith("{")) {
+            try {
+                Gson().fromJson(raw, JsonObject::class.java)?.entrySet()?.isEmpty() != false
+            } catch (e: Exception) {
+                false
+            }
+        } else {
+            raw.isEmpty()
+        }
+        val listsEmpty = cloneInfo.senderList.isNullOrEmpty() && cloneInfo.ruleList.isNullOrEmpty() &&
+                cloneInfo.frpcList.isNullOrEmpty() && cloneInfo.taskList.isNullOrEmpty()
+        return settingsEmpty && listsEmpty
+    }
+
     //①拉取：内容有变化才应用；返回 true=已应用或确认无变化，false=请求/解析失败
     private fun pullAndApply(serverAddress: String, clientSignKey: String, clientUserCode: String): Boolean {
         val responseJson = pullFromServer(serverAddress, clientSignKey, clientUserCode) ?: return false
@@ -143,6 +160,13 @@ object CloudSyncEngine {
             return false
         }
         val cloneInfo = resp.data ?: throw IOException("响应 data 为空")
+
+        //防呆护栏：settings 为空/空对象 且 sender/rule/frpc/task 四列表全空 → 疑似误保存的空配置，
+        //跳过应用防止设备被清空（不 restore、不更新 last_applied_hash/last_store_ts，下轮仍会检查并在 store 恢复后自动应用）
+        if (isEmptyConfig(cloneInfo)) {
+            Log.w(TAG, "检测到空配置下发，已跳过应用（防误清空）")
+            return false
+        }
 
         //判断版本是否一致（版本不兼容会抛异常，由调用方捕获，不更新哈希）
         HttpServerUtils.compareVersion(cloneInfo)
