@@ -278,6 +278,12 @@ object CloudSyncEngine {
             remove(SP_LAST_CLOUD_SYNC_HASH)
             remove(SP_LAST_PUSHED_HASH)
             remove(SP_LAST_CLOUD_SYNC_TIME)
+            //last_store_ts 是设备本地 check 比对基准，导出后会被下发导回本地改写基准，导致 ts 比对失真
+            remove(SP_LAST_STORE_TS)
+            //定位运行缓存/快照同属设备私有运行状态：云端用不到，且会让新设备继承旧坐标（多设备互相污染）
+            remove(SP_API_LOCATION_CACHE)
+            remove(SP_LOCATION_INFO_OLD)
+            remove(SP_LOCATION_INFO_NEW)
         })
         return exportInfo
     }
