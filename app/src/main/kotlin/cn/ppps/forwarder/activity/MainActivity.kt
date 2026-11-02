@@ -6,6 +6,8 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -183,15 +185,27 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
         mMenuIcons = ResUtils.getDrawableArray(this, R.array.menu_icons)
     }
 
-    //回前台触发云端同步检查（engine 内部有单飞锁与哈希比对，频繁触发无副作用）
+    //前台轻量轮询：每 60s 只取云端 store 时间戳，变了才全量拉取应用（后台时移除，靠 Worker 30 分钟兜底）
+    private val syncPollHandler = Handler(Looper.getMainLooper())
+    private val syncPollRunnable = object : Runnable {
+        override fun run() {
+            Thread { CloudSyncEngine.syncIfRemoteChanged() }.start()
+            syncPollHandler.postDelayed(this, 60_000)
+        }
+    }
+
+    //回前台触发云端同步检查（engine 内部有单飞锁与哈希比对，频繁触发无副作用）+ 启动 60s 轻量轮询
     override fun onResume() {
         super.onResume()
         Thread { CloudSyncEngine.syncNow(this) }.start()
+        syncPollHandler.removeCallbacks(syncPollRunnable)
+        syncPollHandler.postDelayed(syncPollRunnable, 60_000)
     }
 
-    //离前台触发推送检查（本地配置有变化才推送）
+    //离前台触发推送检查（本地配置有变化才推送）+ 停止轮询省电
     override fun onPause() {
         super.onPause()
+        syncPollHandler.removeCallbacks(syncPollRunnable)
         Thread { CloudSyncEngine.syncNow(this) }.start()
     }
 

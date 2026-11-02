@@ -1,5 +1,6 @@
 package cn.ppps.forwarder.utils
 
+import cn.ppps.forwarder.App
 import cn.ppps.forwarder.entity.CloneInfo
 import cn.ppps.forwarder.server.model.BaseResponse
 import com.google.gson.Gson
@@ -8,7 +9,9 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.xuexiang.xutil.data.ConvertTools
+import android.os.Environment
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -16,6 +19,7 @@ import java.net.URLEncoder
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import java.util.TreeMap
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -81,6 +85,73 @@ object CloudSyncEngine {
     private var lastAppliedHash: String by SharedPreference(SP_LAST_CLOUD_SYNC_HASH, "")
     private var lastPushedHash: String by SharedPreference(SP_LAST_PUSHED_HASH, "")
     private var lastCloudSyncTime: String by SharedPreference(SP_LAST_CLOUD_SYNC_TIME, "")
+    private var lastStoreTs: String by SharedPreference(SP_LAST_STORE_TS, "")
+
+    //轻量检查时拿到的云端 store 时间戳，全量拉取应用成功后才落盘（避免应用失败却记已同步）
+    @Volatile
+    private var pendingStoreTs: String = ""
+
+    //轻量检查 + 有变化才应用：App 在前台时每 60s 调一次（只取 store 时间戳，几十字节；后台靠 Worker 30 分钟兜底）
+    fun syncIfRemoteChanged() {
+        if (!syncing.compareAndSet(false, true)) {
+            Log.d(TAG, "syncIfRemoteChanged: 上一轮同步尚未结束，跳过")
+            return
+        }
+        try {
+            val serverAddress = HttpServerUtils.serverAddress.trim().trimEnd('/')
+            val clientSignKey = HttpServerUtils.clientSignKey.trim()
+            val clientUserCode = HttpServerUtils.clientUserCode.trim()
+            if (serverAddress.isNullOrEmpty() || !CommonUtils.checkUrl(serverAddress)
+                || clientSignKey.isNullOrEmpty() || clientUserCode.isNullOrEmpty()
+                || HttpServerUtils.clientSafetyMeasures == 2
+            ) {
+                return
+            }
+
+            if (!checkForUpdates(serverAddress, clientSignKey, clientUserCode)) {
+                Log.d(TAG, "云端 store 未变化，跳过拉取")
+                return
+            }
+            if (pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
+                lastStoreTs = pendingStoreTs
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "syncIfRemoteChanged: ${e.message}")
+        } finally {
+            syncing.set(false)
+        }
+    }
+
+    //GET /clone/check?uc=xxx（X-Clone-Key 鉴权，User-Agent 显式）→ updated_ts 与本地记录比对
+    private fun checkForUpdates(serverAddress: String, clientSignKey: String, clientUserCode: String): Boolean {
+        val connection = URL("$serverAddress/clone/check?uc=$clientUserCode").openConnection() as HttpURLConnection
+        try {
+            connection.connectTimeout = 10_000
+            connection.readTimeout = 10_000
+            connection.requestMethod = "GET"
+            connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
+            connection.setRequestProperty("X-Clone-Key", clientSignKey)
+            val code = connection.responseCode
+            if (code !in 200..299) {
+                Log.w(TAG, "checkForUpdates: HTTP $code")
+                return false
+            }
+            val body = connection.inputStream.bufferedReader().use { it.readText() }
+            val root = Gson().fromJson(body, JsonObject::class.java) ?: return false
+            if (root.get("code")?.asInt != 200) return false
+            val data = root.getAsJsonObject("data") ?: return false
+            if (data.get("exists")?.asBoolean == false) return false
+            val ts = data.get("updated_ts")?.asString ?: return false
+            if (ts.isEmpty()) return false
+            pendingStoreTs = ts
+            return ts != lastStoreTs
+        } catch (e: Exception) {
+            Log.w(TAG, "checkForUpdates: ${e.message}")
+            return false
+        } finally {
+            connection.disconnect()
+        }
+    }
 
     //同步执行一次双向同步（拉取比对应用 + 导出比对推送）
     @Suppress("UNUSED_PARAMETER")
@@ -117,16 +188,16 @@ object CloudSyncEngine {
         }
     }
 
-    //①拉取：内容有变化才应用；应用成功后记录远端哈希，并同步刷新推送基准（见 recordApplied）
-    private fun pullAndApply(serverAddress: String, clientSignKey: String, clientUserCode: String) {
-        val responseJson = pullFromServer(serverAddress, clientSignKey, clientUserCode) ?: return
+    //①拉取：内容有变化才应用；返回 true=已应用或确认无变化，false=请求/解析失败
+    private fun pullAndApply(serverAddress: String, clientSignKey: String, clientUserCode: String): Boolean {
+        val responseJson = pullFromServer(serverAddress, clientSignKey, clientUserCode) ?: return false
         val root = Gson().fromJson(responseJson, JsonObject::class.java)
             ?: throw IOException("响应 JSON 解析失败")
         val dataElement = root.get("data") ?: throw IOException("响应缺少 data 字段")
         val remoteHash = sha256(dataElement.toString())
         if (remoteHash == lastAppliedHash) {
             Log.d(TAG, "云端配置未变化")
-            return
+            return true
         }
 
         //解析 BaseResponse<CloneInfo>（Date 字段替换为当前时间，与 CloneFragment 一致）
@@ -135,11 +206,11 @@ object CloudSyncEngine {
         val resp: BaseResponse<CloneInfo> = builder.create().fromJson(responseJson, object : TypeToken<BaseResponse<CloneInfo>>() {}.type)
         if (resp.code != 200) {
             Log.w(TAG, "pullAndApply: code=${resp.code}, msg=${resp.msg}")
-            return
+            return false
         }
         val cloneInfo = resp.data ?: throw IOException("响应 data 为空")
 
-        //判断版本是否一致（版本不兼容会抛异常，由 syncNow 捕获，不更新哈希）
+        //判断版本是否一致（版本不兼容会抛异常，由调用方捕获，不更新哈希）
         HttpServerUtils.compareVersion(cloneInfo)
 
         //拉取应用期间产生的 SP 写入不触发状态上报（防「拉取→推送→又拉取」回环）
@@ -155,6 +226,7 @@ object CloudSyncEngine {
                 Log.i(TAG, "云端配置已应用: $lastCloudSyncTime")
             }
         }
+        return true
     }
 
     //②推送：本地导出内容有变化才推送，成功后记录本地哈希
@@ -194,8 +266,46 @@ object CloudSyncEngine {
         if (resp.code == 200) {
             lastPushedHash = localHash
             Log.i(TAG, "本地配置已推送")
+            //本地自动备份：同一份 JSON 存应用专属外部目录，保留最近 10 份
+            backupLocally(Gson().toJson(exportInfo))
         } else {
             Log.w(TAG, "pushIfChanged: code=${resp.code}, msg=${resp.msg}")
+        }
+    }
+
+    //本地自动备份：{externalFilesDir}/Documents/YubaSync/backup_yyyyMMdd_HHmmss.json，失败降级到 filesDir/backups，保留最近 10 份
+    private fun backupLocally(json: String) {
+        try {
+            val baseDir = App.context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+            if (writeBackup(File(baseDir ?: App.context.filesDir, "YubaSync"), json)) return
+        } catch (e: Exception) {
+            Log.w(TAG, "backupLocally external: ${e.message}")
+        }
+        try {
+            if (!writeBackup(File(App.context.filesDir, "backups"), json)) {
+                Log.w(TAG, "backupLocally: 写入失败")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "backupLocally internal: ${e.message}")
+        }
+    }
+
+    private fun writeBackup(dir: File, json: String): Boolean {
+        return try {
+            if (!dir.exists() && !dir.mkdirs()) return false
+            val fileName = "backup_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date()) + ".json"
+            File(dir, fileName).writeText(json)
+            //保留最近 10 份（文件名含时间戳，按名称排序即时间序）
+            val backups = dir.listFiles { f -> f.isFile && f.name.startsWith("backup_") && f.name.endsWith(".json") }
+                ?.sortedBy { it.name } ?: return true
+            if (backups.size > 10) {
+                backups.take(backups.size - 10).forEach { it.delete() }
+            }
+            Log.d(TAG, "backup: ${File(dir, fileName).absolutePath}")
+            true
+        } catch (e: Exception) {
+            Log.w(TAG, "writeBackup: ${e.message}")
+            false
         }
     }
 

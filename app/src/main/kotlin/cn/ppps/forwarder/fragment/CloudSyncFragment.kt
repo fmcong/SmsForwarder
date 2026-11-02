@@ -14,6 +14,7 @@ import cn.ppps.forwarder.R
 import cn.ppps.forwarder.core.BaseFragment
 import cn.ppps.forwarder.databinding.FragmentCloudSyncBinding
 import cn.ppps.forwarder.entity.CloneInfo
+import cn.ppps.forwarder.entity.MsgInfo
 import cn.ppps.forwarder.utils.CloudSyncEngine
 import cn.ppps.forwarder.utils.CommonUtils
 import cn.ppps.forwarder.utils.HttpServerUtils
@@ -30,6 +31,8 @@ import com.xuexiang.xpage.annotation.Page
 import com.xuexiang.xrouter.utils.TextUtils
 import com.xuexiang.xui.utils.CountDownButtonHelper
 import com.xuexiang.xui.widget.actionbar.TitleBar
+import java.net.HttpURLConnection
+import java.net.URL
 import java.security.MessageDigest
 import java.util.Date
 
@@ -219,6 +222,9 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
                             CloudSyncEngine.recordApplied(sha256(configElement.toString()))
                         }
 
+                        //配对成功自检：三套模板各渲染一条样例上报云端后台（失败仅 Log，不阻断配对）
+                        sendSelfCheckReports(address, sm4Key, HttpServerUtils.clientUserCode)
+
                         refreshStatus()
                         XToastUtils.success(getString(R.string.pairing_succeeded))
                     } catch (e: Exception) {
@@ -229,6 +235,60 @@ class CloudSyncFragment : BaseFragment<FragmentCloudSyncBinding?>(), View.OnClic
                     mPairingCountDownHelper?.finish()
                 }
             })
+    }
+
+    //配对成功自检：用当前模板机制渲染短信/通知/通话三条样例，逐条 POST /report/{uc}（失败仅 Log）
+    private fun sendSelfCheckReports(serverAddress: String, clientSignKey: String, userCode: String) {
+        Thread {
+            try {
+                val now = Date()
+                //样例 MsgInfo（真实字段结构：app 类型 from=应用名、simInfo=通知标题；call 类型 callType=3 未接来电）
+                val smsMsg = MsgInfo(type = "sms", from = "10086", content = "【中国移动】您本月话费 88.88 元，当前余额充足。", date = now, simInfo = "卡槽1", simSlot = 0, subId = 1)
+                val notifyMsg = MsgInfo(type = "app", from = "微信", content = "张三：晚上一起吃饭吗？", date = now, simInfo = "张三", uid = 10001)
+                val callMsg = MsgInfo(type = "call", from = "10086", content = "通话时长 1 分 23 秒", date = now, simInfo = "卡槽1", simSlot = 0, callType = 3)
+                val samples = listOf(
+                    Triple("selfcheck_sms", "系统通知组件", smsMsg to "模板自检·短信", "自检"),
+                    Triple("selfcheck_notification", "微信", notifyMsg to "模板自检·通知", "微信"),
+                    Triple("selfcheck_call", "系统电话", callMsg to "模板自检·通话", "10086"),
+                )
+                for ((type, appName, sample) in samples) {
+                    val (msg, title, sender) = sample
+                    val body = Gson().toJson(
+                        mapOf(
+                            "type" to type,
+                            "sender" to sender,
+                            "title" to title,
+                            "content" to msg.getContentForSend(),
+                            "app_name" to appName,
+                        )
+                    )
+                    postReport(serverAddress, clientSignKey, userCode, body)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "sendSelfCheckReports: ${e.message}")
+            }
+        }.start()
+    }
+
+    private fun postReport(serverAddress: String, clientSignKey: String, userCode: String, body: String) {
+        try {
+            val connection = URL("$serverAddress/report/$userCode").openConnection() as HttpURLConnection
+            try {
+                connection.connectTimeout = 10_000
+                connection.readTimeout = 10_000
+                connection.requestMethod = "POST"
+                connection.doOutput = true
+                connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
+                connection.setRequestProperty("X-Clone-Key", clientSignKey)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.outputStream.use { it.write(body.toByteArray()) }
+                Log.d(TAG, "report: HTTP ${connection.responseCode}")
+            } finally {
+                connection.disconnect()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "postReport: ${e.message}")
+        }
     }
 
     private fun buildCloneInfo(configElement: com.google.gson.JsonElement?): CloneInfo? {
