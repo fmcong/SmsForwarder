@@ -205,7 +205,13 @@ object CloudSyncEngine {
     private fun buildLocalExport(userCode: String): CloneInfo {
         val exportInfo = HttpServerUtils.exportSettings()
         exportInfo.userCode = userCode
-        exportInfo.settings = Gson().toJson(TreeMap<String, Any>(SharedPreference.preference.all))
+        exportInfo.settings = Gson().toJson(TreeMap<String, Any>(SharedPreference.preference.all).apply {
+            //剔除同步引擎自身状态键：它们每次 recordApplied 都会变，导出它们会导致
+            //「哈希更新→导出必变→永远推送」的自我喂养死循环（实测每 13s 一次）
+            remove(Constants.SP_LAST_CLOUD_SYNC_HASH)
+            remove(Constants.SP_LAST_PUSHED_HASH)
+            remove(Constants.SP_LAST_CLOUD_SYNC_TIME)
+        })
         return exportInfo
     }
 
