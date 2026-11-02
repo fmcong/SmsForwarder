@@ -502,6 +502,9 @@ object CloudSyncEngine {
             connection.doOutput = true
             connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
             connection.setRequestProperty("Content-Type", "application/json")
+            //阶段31 补漏：postForResult 是 push 的唯一通道，必须携带设备密钥
+            //（阶段28 的修复因锚点重复误加到了 pullFromServer，push 一直裸奔 403）
+            connection.setRequestProperty("X-Clone-Key", clientSignKey)
             connection.outputStream.use { it.write(requestMsg.toByteArray()) }
             val code = connection.responseCode
             val body = if (code in 200..299) {
