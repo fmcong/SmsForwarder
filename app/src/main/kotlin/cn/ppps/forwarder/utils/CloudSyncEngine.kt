@@ -302,7 +302,14 @@ object CloudSyncEngine {
             remove(SP_LOCATION_INFO_OLD)
             remove(SP_LOCATION_INFO_NEW)
         })
-        if (settingsEquivalent(cloneInfo.settings ?: "", localSettings)) {
+        //阶段32：等价判断必须含四列表（sender/rule/frpc/task）——否则网页新增的通道/规则/FRP
+        //会因"settings 相同"被误判等价而永远到不了设备
+        val localExport = buildLocalExport(clientUserCode)
+        val listsEqual =
+            frpcSignature(cloneInfo.frpcList) == frpcSignature(localExport.frpcList) &&
+            senderSignature(cloneInfo.senderList) == senderSignature(localExport.senderList) &&
+            ruleSignature(cloneInfo.ruleList) == ruleSignature(localExport.ruleList)
+        if (settingsEquivalent(cloneInfo.settings ?: "", localSettings) && listsEqual) {
             recordApplied(remoteHash)
             Log.i(TAG, "云端配置与本地一致，跳过 restore（保护消息/转发日志）")
             return true
@@ -353,6 +360,16 @@ object CloudSyncEngine {
     private fun settingsFingerprint(info: CloneInfo): String =
         sha256(normalizeSettings(info.settings ?: "").entries
             .joinToString("&") { "${it.key}=${it.value}" })
+
+    //阶段32：四列表签名（排除 time 字段——远端 Date 反序列化为当前时间，必不等）
+    private fun frpcSignature(l: List<cn.ppps.forwarder.database.entity.Frpc>?): String =
+        l?.joinToString("|") { "${it.name}#${it.autorun}#${it.config}" } ?: ""
+
+    private fun senderSignature(l: List<cn.ppps.forwarder.database.entity.Sender>?): String =
+        l?.joinToString("|") { "${it.type}#${it.name}#${it.status}#${it.jsonSetting}" } ?: ""
+
+    private fun ruleSignature(l: List<cn.ppps.forwarder.database.entity.Rule>?): String =
+        l?.joinToString("|") { "${it.type}#${it.filed}#${it.check}#${it.value}#${it.senderId}#${it.simSlot}#${it.status}#${it.smsTemplate}" } ?: ""
 
     private fun normalizeSettings(json: String): Map<String, String> {
         val m: Map<*, *> = Gson().fromJson(json, Map::class.java) ?: return emptyMap()
