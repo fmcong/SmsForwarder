@@ -44,6 +44,7 @@ object CloudSyncEngine {
 
     private var lastAppliedHash: String by SharedPreference(SP_LAST_CLOUD_SYNC_HASH, "")
     private var lastPushedHash: String by SharedPreference(SP_LAST_PUSHED_HASH, "")
+    private var lastPushedFingerprint: String by SharedPreference(SP_LAST_PUSHED_FINGERPRINT, "")
     private var lastCloudSyncTime: String by SharedPreference(SP_LAST_CLOUD_SYNC_TIME, "")
     private var lastStoreTs: String by SharedPreference(SP_LAST_STORE_TS, "")
 
@@ -72,10 +73,10 @@ object CloudSyncEngine {
                 CheckResult.NONE -> Log.d(TAG, "云端 store 未变化，跳过")
 
                 CheckResult.CHANGED -> {
-                    //阶段31：本地有未推送修改时，不自动应用云端（防重置用户设置）；
-                    //内容等价的场景已由 pullAndApply 内部跳过；自动推送（10s 防抖）会把本地修改先推上去，之后恢复自动应用
-                    val localHash = sha256(Gson().toJson(buildLocalExport(clientUserCode)))
-                    if (localHash != lastPushedHash) {
+                    //阶段31b：守卫改用「有效设置指纹」（排除电量/IP 等易变键）——
+                    //此前用全量导出哈希，电量一变即误判"本地有未推送修改"，云端更新被永久抑制
+                    val localFp = settingsFingerprint(buildLocalExport(clientUserCode))
+                    if (lastPushedFingerprint.isNotEmpty() && localFp != lastPushedFingerprint) {
                         Log.w(TAG, "云端有更新但本地存在未推送修改，跳过自动应用（防重置）")
                     } else if (pullAndApply(serverAddress, clientSignKey, clientUserCode)) {
                         lastStoreTs = pendingStoreTs
@@ -293,6 +294,7 @@ object CloudSyncEngine {
             remove(SP_LAST_PUSHED_HASH)
             remove(SP_LAST_CLOUD_SYNC_TIME)
             remove(SP_LAST_STORE_TS)
+            remove(SP_LAST_PUSHED_FINGERPRINT)
             remove(SP_API_LOCATION_CACHE)
             remove(SP_LOCATION_INFO_OLD)
             remove(SP_LOCATION_INFO_NEW)
@@ -344,9 +346,15 @@ object CloudSyncEngine {
         "ipv4", "last_heartbeat"
     )
 
+    //阶段31b：有效设置指纹——排除易变键后归一化序列化，用于"本地是否真有修改"的判断
+    private fun settingsFingerprint(info: CloneInfo): String =
+        sha256(normalizeSettings(info.settings ?: "").entries
+            .joinToString("&") { "${it.key}=${it.value}" })
+
     private fun normalizeSettings(json: String): Map<String, String> {
         val m: Map<*, *> = Gson().fromJson(json, Map::class.java) ?: return emptyMap()
         return m.entries.associate { it.key.toString() to it.value.toString() }
+            .filterKeys { it !in RUNTIME_VOLATILE_KEYS }
     }
 
     //②推送：默认内容有变化才推送（force=true 强制推一次，用于后台 need_push 请求），成功后记录本地哈希
@@ -385,6 +393,7 @@ object CloudSyncEngine {
         val resp: BaseResponse<String> = Gson().fromJson(json, object : TypeToken<BaseResponse<String>>() {}.type)
         if (resp.code == 200) {
             lastPushedHash = localHash
+            lastPushedFingerprint = settingsFingerprint(exportInfo)
             Log.i(TAG, "本地配置已推送")
             //本地自动备份：同一份 JSON 存应用专属外部目录，保留最近 10 份
             backupLocally(Gson().toJson(exportInfo))
@@ -485,6 +494,7 @@ object CloudSyncEngine {
             remove(SP_LAST_CLOUD_SYNC_TIME)
             //last_store_ts 是设备本地 check 比对基准，导出后会被下发导回本地改写基准，导致 ts 比对失真
             remove(SP_LAST_STORE_TS)
+            remove(SP_LAST_PUSHED_FINGERPRINT)
             //定位运行缓存/快照同属设备私有运行状态：云端用不到，且会让新设备继承旧坐标（多设备互相污染）
             remove(SP_API_LOCATION_CACHE)
             remove(SP_LOCATION_INFO_OLD)
@@ -499,6 +509,7 @@ object CloudSyncEngine {
         lastAppliedHash = remoteHash
         val exportInfo = buildLocalExport(HttpServerUtils.clientUserCode)
         lastPushedHash = sha256(Gson().toJson(exportInfo))
+        lastPushedFingerprint = settingsFingerprint(exportInfo)
         lastCloudSyncTime = now()
     }
 

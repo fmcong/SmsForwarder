@@ -102,6 +102,9 @@ const val SP_LAST_CLOUD_SYNC_HASH = "last_cloud_sync_hash"
 const val SP_LAST_CLOUD_SYNC_TIME = "last_cloud_sync_time"
 const val SP_LAST_PUSHED_HASH = "last_pushed_hash"
 const val SP_LAST_STORE_TS = "last_store_ts"
+
+//阶段31b：推送基准的「有效设置指纹」（排除电量/IP 等易变键），用于冲突守卫防重置判断
+const val SP_LAST_PUSHED_FINGERPRINT = "last_pushed_fingerprint"
 const val SP_CLIENT_PAIRING_CODE = "client_pairing_code"
 
 const val SP_BLUETOOTH = "enable_bluetooth"
