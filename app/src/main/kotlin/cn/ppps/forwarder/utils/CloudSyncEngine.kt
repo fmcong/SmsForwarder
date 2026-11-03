@@ -188,6 +188,9 @@ object CloudSyncEngine {
                 val uc = (HttpServerUtils.clientUserCode ?: "").trim()
                 if (addr.isEmpty() || sk.isEmpty() || uc.isEmpty()) return@Thread
                 Log.i(TAG, "设置变更自动同步（防抖 10s 触发）")
+                //阶段31c：先拉后推——推送前先把云端新下发（如 FRP 配置）收下来，
+                //否则本地旧状态（不含云端新增的 frpc/通道/规则）会把云端覆盖回空
+                syncIfRemoteChanged()
                 pushIfChanged(addr, sk, uc)
             } catch (e: Exception) {
                 Log.w(TAG, "autoSync: ${e.message}")
