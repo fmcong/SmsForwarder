@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.entity.CloneInfo
 import cn.ppps.forwarder.entity.LocationInfo
+import cn.ppps.forwarder.entity.MsgInfo
 import cn.ppps.forwarder.server.model.BaseResponse
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -309,6 +310,58 @@ object CloudSyncEngine {
             }
         } catch (e: Exception) {
             Log.w(TAG, "reportLocationToCloud: ${e.message}")
+        }
+    }
+
+    //真实转发日志同步到云端消息记录：POST {serverAddress}/report/{userCode}，body 与服务端 messages 表字段对齐。
+    //不带 lat/lon/address，避免被 _handle_report 误判为 location 写入 locations 表。
+    //同步执行，调用方须在后台线程调用；守卫不通过静默跳过，任何失败仅记日志，不影响转发主链路
+    fun reportForwardLog(msgInfo: MsgInfo) {
+        val serverAddress = HttpServerUtils.serverAddress.trim().trimEnd('/')
+        val clientSignKey = HttpServerUtils.clientSignKey.trim()
+        val clientUserCode = HttpServerUtils.clientUserCode.trim()
+        if (serverAddress.isEmpty() || !CommonUtils.checkUrl(serverAddress)
+            || clientSignKey.isEmpty() || clientUserCode.isEmpty()
+            || HttpServerUtils.clientSafetyMeasures == 2
+        ) {
+            Log.d(TAG, "reportForwardLog: 配置不齐全或 RSA 模式，跳过")
+            return
+        }
+        try {
+            val title = when (msgInfo.type) {
+                "sms" -> "短信转发"
+                "call" -> "通话转发"
+                "app" -> "应用通知转发"
+                else -> "转发日志"
+            }
+            val bodyMap: Map<String, Any> = mapOf(
+                "type" to msgInfo.type,
+                "sender" to msgInfo.from,
+                "title" to title,
+                "content" to msgInfo.content,
+                "app_name" to (if (msgInfo.type == "app") msgInfo.from else "系统通知组件"),
+            )
+            val connection = URL("$serverAddress/report/$clientUserCode").openConnection() as HttpURLConnection
+            try {
+                connection.connectTimeout = 10_000
+                connection.readTimeout = 10_000
+                connection.requestMethod = "POST"
+                connection.doOutput = true
+                connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
+                connection.setRequestProperty("X-Clone-Key", clientSignKey)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.outputStream.use { it.write(Gson().toJson(bodyMap).toByteArray()) }
+                val code = connection.responseCode
+                if (code in 200..299) {
+                    Log.d(TAG, "reportForwardLog: ok ($code)")
+                } else {
+                    Log.w(TAG, "reportForwardLog: HTTP $code")
+                }
+            } finally {
+                connection.disconnect()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "reportForwardLog: ${e.message}")
         }
     }
 

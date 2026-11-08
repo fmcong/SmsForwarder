@@ -17,6 +17,7 @@ import cn.ppps.forwarder.database.entity.Rule
 import cn.ppps.forwarder.entity.MsgInfo
 import cn.ppps.forwarder.entity.TaskSetting
 import cn.ppps.forwarder.utils.CHECK_SIM_SLOT_ALL
+import cn.ppps.forwarder.utils.CloudSyncEngine
 import cn.ppps.forwarder.utils.DataProvider
 import cn.ppps.forwarder.utils.HistoryUtils
 import cn.ppps.forwarder.utils.Log
@@ -98,6 +99,16 @@ class SendWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
 
                 val msg = Msg(0, msgInfo.type, msgInfo.from, msgInfo.content, msgInfo.simSlot, msgInfo.simInfo, msgInfo.subId, msgInfo.callType)
                 val msgId = Core.msg.insert(msg)
+
+                //阶段36：一条真实转发日志产生后同步到云端消息记录（后台线程，绝不阻塞 sendMsgSender；失败仅记日志）
+                Thread {
+                    try {
+                        CloudSyncEngine.reportForwardLog(msgInfo)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "reportForwardLog: ${e.message}")
+                    }
+                }.start()
+
                 for (rule in ruleListMatched) {
                     val sender = rule.senderList[0]
                     if (isSilentPeriod) {
