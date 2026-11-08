@@ -16,6 +16,7 @@ import com.google.gson.Gson
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.entity.LocationInfo
 import cn.ppps.forwarder.utils.ACTION_RESTART
+import cn.ppps.forwarder.utils.CloudSyncEngine
 import cn.ppps.forwarder.utils.ACTION_START
 import cn.ppps.forwarder.utils.ACTION_STOP
 import cn.ppps.forwarder.utils.HttpServerUtils
@@ -41,6 +42,10 @@ import java.util.Date
 class LocationService : Service() {
 
     private val TAG: String = LocationService::class.java.simpleName
+
+    //阶段34：周期定位上报节流（仅内存记录上次上报时间，进程重启后首条定位即可上报）
+    private var lastCloudReportTime = 0L
+
     private val locationStatusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
@@ -125,6 +130,24 @@ class LocationService : Service() {
                         Log.d(TAG, "locationInfoNew = $locationInfoNew")
                         HttpServerUtils.apiLocationCache = locationInfoNew
                         TaskUtils.locationInfoNew = locationInfoNew
+
+                        //阶段34：周期性定位上报（默认关闭：仅用户开启 GPS 定位服务时才注册本回调，此处再显式判一次）
+                        //节流：间隔 = max(用户设定的定位最小间隔, 60s 硬下限)，避免高频定位刷库；后台线程执行，异常不外抛
+                        if (SettingUtils.enableLocation) {
+                            val now = System.currentTimeMillis()
+                            val minInterval = maxOf(SettingUtils.locationMinInterval, 60_000L)
+                            if (now - lastCloudReportTime >= minInterval) {
+                                lastCloudReportTime = now
+                                val snapshot = locationInfoNew.copy()
+                                Thread {
+                                    try {
+                                        CloudSyncEngine.reportLocationToCloud(snapshot)
+                                    } catch (e: Exception) {
+                                        Log.w(TAG, "reportLocationToCloud: ${e.message}")
+                                    }
+                                }.start()
+                            }
+                        }
 
                         //触发自动任务
                         val locationInfoOld = TaskUtils.locationInfoOld

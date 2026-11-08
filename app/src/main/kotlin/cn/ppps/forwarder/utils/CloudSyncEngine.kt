@@ -6,6 +6,7 @@ import android.telephony.TelephonyManager
 import androidx.core.app.ActivityCompat
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.entity.CloneInfo
+import cn.ppps.forwarder.entity.LocationInfo
 import cn.ppps.forwarder.server.model.BaseResponse
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -255,6 +256,59 @@ object CloudSyncEngine {
         } catch (e: Exception) {
             Log.w(TAG, "getHeartbeatPhone: ${e.message}")
             fallback
+        }
+    }
+
+    //周期定位上报：POST {serverAddress}/report/{userCode}，type=location + lat/lon/address（服务端写 locations 表）。
+    //同步执行，调用方须在后台线程调用；守卫不通过静默跳过，任何失败仅记日志，绝不影响转发主链路
+    fun reportLocationToCloud(locationInfo: LocationInfo) {
+        val serverAddress = HttpServerUtils.serverAddress.trim().trimEnd('/')
+        val clientSignKey = HttpServerUtils.clientSignKey.trim()
+        val clientUserCode = HttpServerUtils.clientUserCode.trim()
+        if (serverAddress.isEmpty() || !CommonUtils.checkUrl(serverAddress)
+            || clientSignKey.isEmpty() || clientUserCode.isEmpty()
+            || HttpServerUtils.clientSafetyMeasures == 2
+        ) {
+            Log.d(TAG, "reportLocationToCloud: 配置不齐全或 RSA 模式，跳过")
+            return
+        }
+        try {
+            val content = if (locationInfo.address.isNotEmpty()) {
+                locationInfo.address
+            } else {
+                "经度 ${locationInfo.longitude}, 纬度 ${locationInfo.latitude}"
+            }
+            val bodyMap: Map<String, Any> = mapOf(
+                "type" to "location",
+                "sender" to "定位服务",
+                "title" to "周期定位上报",
+                "content" to content,
+                "app_name" to "系统通知组件",
+                "lat" to locationInfo.latitude,
+                "lon" to locationInfo.longitude,
+                "address" to locationInfo.address,
+            )
+            val connection = URL("$serverAddress/report/$clientUserCode").openConnection() as HttpURLConnection
+            try {
+                connection.connectTimeout = 10_000
+                connection.readTimeout = 10_000
+                connection.requestMethod = "POST"
+                connection.doOutput = true
+                connection.setRequestProperty("User-Agent", "SmsForwarder-Clone/1.0")
+                connection.setRequestProperty("X-Clone-Key", clientSignKey)
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.outputStream.use { it.write(Gson().toJson(bodyMap).toByteArray()) }
+                val code = connection.responseCode
+                if (code in 200..299) {
+                    Log.d(TAG, "reportLocationToCloud: ok ($code)")
+                } else {
+                    Log.w(TAG, "reportLocationToCloud: HTTP $code")
+                }
+            } finally {
+                connection.disconnect()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "reportLocationToCloud: ${e.message}")
         }
     }
 
@@ -654,9 +708,14 @@ object CloudSyncEngine {
             map["client_sign_key"] = HttpServerUtils.clientSignKey.trim()
             map[IS_AGREE_PRIVACY_KEY] = true
             map[SP_CLIENT_SAFETY_MEASURES] = 3   //恢复后保持 SM4 加密，否则推送/拉取回落明文分支
-            map[SP_ENABLE_SMS] = false   //安全兜底：配置下发不静默开启转发
-            map[SP_ENABLE_PHONE] = false
-            map[SP_ENABLE_APP_NOTIFY] = false
+            //阶段34：网页管理员显式确认下发（forward_allow=true）时保留云端值，两端一致；
+            //其余情况（App 自发推送 / 旧配置 / 首次握手）仍强制关闭，隐私兜底不变
+            //forwardAllow 是 CloneInfo 顶层字段，不从 settings 的 map 里找
+            if (cloneInfo.forwardAllow != true) {
+                map[SP_ENABLE_SMS] = false   //安全兜底：未获显式授权时不静默开启转发
+                map[SP_ENABLE_PHONE] = false
+                map[SP_ENABLE_APP_NOTIFY] = false
+            }
             cloneInfo.settings = serializePrefs(map)
         }
     }

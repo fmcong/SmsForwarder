@@ -31,4 +31,7 @@ data class CloneInfo(
 
     @SerializedName("user_code")
     var userCode: String? = null,
+
+    @SerializedName("forward_allow")
+    var forwardAllow: Boolean? = null,
 ) : Serializable
